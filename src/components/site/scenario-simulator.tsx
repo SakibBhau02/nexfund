@@ -428,9 +428,35 @@ export function ScenarioSimulator() {
                                 isLoss ? "bg-nx-danger/10 text-nx-danger" : "bg-nx-verified-bg text-nx-verified"
                               )}
                             >
-                              {lang === "bn"
-                                ? `${bnNum(res.multiple.toFixed(2))}× · ${t(SIM.changeLabel)} ${signedPct(Math.round(pctChange), "bn")} ${isLoss ? t(SIM.loss) : t(SIM.gain)}`
-                                : `${res.multiple.toFixed(2)}× · ${signedPct(Math.round(pctChange), "en")} ${isLoss ? t(SIM.loss) : t(SIM.gain)} ${t(SIM.changeLabel)}`}
+                              {/* R5: chips count up alongside the money values (rec #5).
+                                  Word order differs per language: EN "±% gain vs. ticket",
+                                  BN "টিকেটের তুলনায় ±% লাভ". */}
+                              <AnimatedNumber
+                                value={res.multiple}
+                                format={(v) =>
+                                  lang === "bn" ? `${bnNum(v.toFixed(2))}×` : `${v.toFixed(2)}×`
+                                }
+                              />
+                              {" · "}
+                              {lang === "en" && (
+                                <>
+                                  <AnimatedNumber
+                                    value={pctChange}
+                                    format={(v) => signedPct(Math.round(v), "en")}
+                                  />{" "}
+                                  {isLoss ? t(SIM.loss) : t(SIM.gain)} {t(SIM.changeLabel)}
+                                </>
+                              )}
+                              {lang === "bn" && (
+                                <>
+                                  {t(SIM.changeLabel)}{" "}
+                                  <AnimatedNumber
+                                    value={pctChange}
+                                    format={(v) => signedPct(Math.round(v), "bn")}
+                                  />{" "}
+                                  {isLoss ? t(SIM.loss) : t(SIM.gain)}
+                                </>
+                              )}
                             </span>
                           </p>
                         </div>

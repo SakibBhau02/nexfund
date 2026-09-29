@@ -1581,3 +1581,55 @@ export const ARTICLES: Record<
     terms: ["capital loss", "due diligence", "ticket", "exit"],
   },
 };
+
+/* ── R5: share / permalink copy for the insight reader ── */
+export const SHARE = {
+  shareArticle: { en: "Share this guide", bn: "গাইডটি শেয়ার করুন" } as L,
+  linkCopied: { en: "Link copied ✓", bn: "লিংক কপি হয়েছে ✓" } as L,
+  copyFailed: {
+    en: "Couldn't copy — copy the address from your browser's address bar.",
+    bn: "কপি করা যায়নি — ব্রাউজারের অ্যাড্রেস বার থেকে লিংকটি কপি করুন।",
+  } as L,
+} as const;
+
+/* ── R5: opportunity compare feature ── */
+export const CMP = {
+  chip: { en: "Compare", bn: "তুলনা" } as L,
+  chipAria: { en: "Add to compare", bn: "তুলনায় যোগ করুন" } as L,
+  chipAriaOn: { en: "Remove from compare", bn: "তুলনা থেকে সরান" } as L,
+  maxToast: {
+    en: "Compare up to 3 at a time — remove one first.",
+    bn: "একসঙ্গে সর্বোচ্চ ৩টি — আগে একটি সরিয়ে নিন।",
+  } as L,
+  barAria: { en: "Compare tray", bn: "তুলনার ট্রে" } as L,
+  open: { en: "Compare now", bn: "এখনই তুলনা করুন" } as L,
+  clear: { en: "Clear all", bn: "সব মুছুন" } as L,
+  selected: (n: number): L => ({
+    en: `${n} selected`,
+    bn: `${bnDigit(n)}টি নির্বাচিত`,
+  }),
+  title: { en: "Side-by-side", bn: "পাশাপাশি তুলনা" } as L,
+  sub: {
+    en: "The same honest facts as each listing — lined up so the differences stand out. Nothing is ranked; you decide what matters.",
+    bn: "প্রতিটি লিস্টিংয়ের মতোই সৎ তথ্য — পাশাপাশি সাজানো, যাতে পার্থক্যগুলো চোখে পড়ে। কোনো র‍্যাংকিং নেই; কোনটা গুরুত্বপূর্ণ সেটা আপনিই ঠিক করুন।",
+  } as L,
+  removeOne: { en: "Remove", bn: "সরান" } as L,
+  colAttribute: { en: "Attribute", bn: "বৈশিষ্ট্য" } as L,
+  rowSector: { en: "Sector", bn: "খাত" } as L,
+  rowLocation: { en: "Location", bn: "অবস্থান" } as L,
+  rowSeeking: { en: "Ticket sought", bn: "খোঁজা টিকেট" } as L,
+  rowInstrument: { en: "Instrument", bn: "ইনস্ট্রুমেন্ট" } as L,
+  rowStage: { en: "Vetting stage", bn: "ভেটিং ধাপ" } as L,
+  rowBadges: { en: "Verified so far", bn: "এ পর্যন্ত যাচাই" } as L,
+  rowRisk: { en: "Top risk", bn: "প্রধান ঝুঁকি" } as L,
+  rowDownside: { en: "Downside case", bn: "ডাউনসাইড কেস" } as L,
+  rowBase: { en: "Base case", bn: "বেস কেস" } as L,
+  rowUpside: { en: "Upside case", bn: "আপসাইড কেস" } as L,
+  rowExit: { en: "Illustrative exit", bn: "নমুনা এক্সিট" } as L,
+  scenFootnote: {
+    en: "Scenario figures reuse each listing's illustrative model — assumptions for honesty, not forecasts and not advice.",
+    bn: "সিনারিওর সংখ্যাগুলো প্রতিটি লিস্টিংয়ের নমুনা মডেল থেকে নেওয়া — সততার জন্য অনুমান, পূর্বাভাস বা পরামর্শ নয়।",
+  } as L,
+  ctaDetail: { en: "Open full summary", bn: "সম্পূর্ণ সারসংক্ষেপ খুলুন" } as L,
+  scenNA: { en: "—", bn: "—" } as L,
+} as const;

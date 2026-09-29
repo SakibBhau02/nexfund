@@ -1,25 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ShieldCheck,
   AlertTriangle,
+  Check,
+  GitCompareArrows,
   Lock,
   MapPin,
   ArrowUpRight,
   Info,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage, type L } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { OPP, BADGES, BADGE_TIPS, type BadgeKey } from "@/lib/content";
-import { formatTkRange } from "@/lib/format";
+import { OPP, BADGES, BADGE_TIPS, CMP, type BadgeKey } from "@/lib/content";
+import { formatTkRange, bnNum } from "@/lib/format";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
 import { G } from "./glossary";
+import { CompareDialog } from "./dialogs/compare-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -64,11 +68,51 @@ export type OpportunityDTO = {
   modelNoteBn?: string;
 };
 
+/** Compare feature limits & tray hint (R5-CMP local copy — CMP covers the rest) */
+const MAX_COMPARE = 3;
+const MIN_TWO: L = {
+  en: "Pick at least 2 listings to compare",
+  bn: "তুলনা করতে অন্তত ২টি তালিকা বাছাই করুন",
+};
+
 export function Opportunities() {
   const { t, lang } = useLanguage();
   const openInvestor = useDialogStore((s) => s.openInvestor);
   const openOpportunity = useDialogStore((s) => s.openOpportunity);
   const [sector, setSector] = useState<string>("all");
+
+  /* ── R5-CMP: side-by-side compare state. The shortlist lives in the zustand
+     store so the language cross-fade (key={lang} remount) keeps the picks. ── */
+  const compare = useDialogStore((s) => s.compareSlugs);
+  const setCompare = useDialogStore((s) => s.setCompareSlugs);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [capToast, setCapToast] = useState(false);
+  const toastTimer = useRef<number | null>(null);
+  const reduce = useReducedMotion();
+
+  const flashCapToast = () => {
+    setCapToast(true);
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setCapToast(false), 2800);
+  };
+
+  // clear the pending toast timer on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const toggleCompare = (slug: string) => {
+    if (compare.includes(slug)) {
+      setCompare(compare.filter((s) => s !== slug));
+    } else if (compare.length >= MAX_COMPARE) {
+      // cap reached — don't add; flash the hint instead
+      flashCapToast();
+    } else {
+      setCompare([...compare, slug]);
+    }
+  };
 
   const { data, isLoading } = useQuery<OpportunityDTO[]>({
     queryKey: ["opportunities"],
@@ -91,6 +135,15 @@ export function Opportunities() {
     if (!data) return [];
     return sector === "all" ? data : data.filter((o) => o.sector === sector);
   }, [data, sector]);
+
+  /* selected opportunities in pick order, resolved from the shared cache */
+  const compareItems = useMemo(
+    () =>
+      compare
+        .map((slug) => data?.find((o) => o.slug === slug))
+        .filter((o): o is OpportunityDTO => Boolean(o)),
+    [compare, data]
+  );
 
   return (
     <section id="opportunities" className="bg-nx-mist py-20 md:py-24" aria-labelledby="opp-title">
@@ -157,7 +210,9 @@ export function Opportunities() {
           ) : (
             <AnimatePresence mode="popLayout">
               <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((o, idx) => (
+                {filtered.map((o, idx) => {
+                  const selected = compare.includes(o.slug);
+                  return (
                   <motion.article
                     layout
                     key={o.id}
@@ -165,8 +220,28 @@ export function Opportunities() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="nx-card-sheen group flex h-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]"
+                    className={cn(
+                      "nx-card-sheen group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]",
+                      selected
+                        ? "border-nx-cyan-400 ring-2 ring-nx-cyan-400/60"
+                        : "border-nx-navy-100 hover:border-nx-cyan-200"
+                    )}
                   >
+                    {/* selected corner indicator — scannable compare state */}
+                    <AnimatePresence>
+                      {selected && (
+                        <motion.span
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 28 }}
+                          className="absolute right-3.5 top-3.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-nx-cyan-500 text-nx-navy-900 shadow-[0_6px_14px_-6px_rgba(38,183,216,0.9)]"
+                          aria-hidden="true"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                     <div className="flex gap-4 p-5 pb-0">
                       <div className="oval oval-ring w-[86px] shrink-0 bg-nx-navy-100">
                         <Image
@@ -174,7 +249,7 @@ export function Opportunities() {
                           alt={`${o.codeName} — ${lang === "bn" ? o.sectorBn : o.sector}`}
                           fill
                           sizes="86px"
-                          className="object-cover"
+                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
                         />
                       </div>
                       <div className="min-w-0">
@@ -275,6 +350,29 @@ export function Opportunities() {
                         </ul>
                       </div>
 
+                      {/* R5-CMP: compare toggle — adds/removes this listing from the tray */}
+                      <motion.button
+                        type="button"
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleCompare(o.slug)}
+                        aria-pressed={selected}
+                        title={selected ? t(CMP.chipAriaOn) : t(CMP.chipAria)}
+                        data-compare-toggle={o.slug}
+                        className={cn(
+                          "mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full border text-xs font-bold transition-all duration-200",
+                          selected
+                            ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_12px_24px_-14px_rgba(10,58,143,0.8)]"
+                            : "border-dashed border-nx-navy-300 bg-white text-nx-navy-600 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+                        )}
+                      >
+                        {selected ? (
+                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                        ) : (
+                          <GitCompareArrows className="h-3.5 w-3.5" aria-hidden="true" />
+                        )}
+                        {t(CMP.chip)}
+                      </motion.button>
+
                       {/* actions — open full detail dialog (R2) */}
                       <div className="mt-5 flex items-center gap-2">
                         <motion.button
@@ -299,7 +397,8 @@ export function Opportunities() {
                       </div>
                     </div>
                   </motion.article>
-                ))}
+                  );
+                })}
               </motion.div>
             </AnimatePresence>
           )}
@@ -313,6 +412,109 @@ export function Opportunities() {
           </p>
         </Reveal>
       </div>
+
+      {/* ── R5-CMP: cap toast (max 3) — status pill, auto-dismisses ── */}
+      <AnimatePresence>
+        {capToast && (
+          <motion.div
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.97 }}
+            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.97 }}
+            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+            className="pointer-events-none fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-[60] flex justify-center px-4 md:bottom-24"
+          >
+            <p
+              role="status"
+              className="flex items-center gap-2 rounded-full bg-nx-navy-900 px-4 py-2.5 text-xs font-bold text-white shadow-[0_18px_40px_-16px_rgba(6,31,74,0.65)]"
+            >
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-nx-cyan-400" aria-hidden="true" />
+              {t(CMP.maxToast)}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── R5-CMP: floating compare tray — sits above the mobile CTA bar ── */}
+      <AnimatePresence>
+        {compare.length > 0 && !compareOpen && (
+          <motion.div
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 48 }}
+            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 32 }}
+            transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
+            className="pointer-events-none fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 md:bottom-6"
+          >
+            <div
+              role="group"
+              aria-label={t(CMP.barAria)}
+              data-compare-tray
+              className="pointer-events-auto flex max-w-full items-center gap-2 rounded-full border border-nx-navy-200 bg-white py-2 pl-2.5 pr-2 shadow-[0_24px_50px_-20px_rgba(6,31,74,0.5)]"
+            >
+              <span className="nx-num shrink-0 rounded-full bg-nx-navy-700 px-2.5 py-1.5 text-[11px] font-extrabold text-white">
+                {t(CMP.selected(compare.length))}
+              </span>
+              {/* code names of the picked listings */}
+              <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
+                {compareItems.map((o) => (
+                  <span
+                    key={o.slug}
+                    className="nx-num rounded-full bg-nx-mist px-2.5 py-1.5 text-[11px] font-bold text-nx-navy-800"
+                  >
+                    {o.codeName}
+                  </span>
+                ))}
+              </span>
+              {compare.length < 2 && (
+                <span
+                  className="nx-num shrink-0 text-[11px] font-bold text-slate-500"
+                  title={t(MIN_TWO)}
+                >
+                  {lang === "bn" ? `${bnNum(1)}/${bnNum(2)}` : "1/2"}
+                </span>
+              )}
+              <span
+                className="shrink-0"
+                title={compare.length < 2 ? t(MIN_TWO) : undefined}
+              >
+                <button
+                  type="button"
+                  onClick={() => setCompareOpen(true)}
+                  disabled={compare.length < 2}
+                  className="nx-arrow-btn inline-flex items-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2 text-[13px] font-bold text-white transition-colors hover:bg-nx-navy-600 disabled:cursor-not-allowed disabled:bg-nx-navy-200 disabled:hover:bg-nx-navy-200"
+                >
+                  {t(CMP.open)}
+                  <GitCompareArrows
+                    className="hidden h-3.5 w-3.5 sm:block"
+                    aria-hidden="true"
+                  />
+                </button>
+              </span>
+              <button
+                type="button"
+                onClick={() => setCompare([])}
+                aria-label={t(CMP.clear)}
+                title={t(CMP.clear)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-nx-mist hover:text-nx-navy-800"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── R5-CMP: side-by-side comparison dialog (local state, not the global store) ── */}
+      <CompareDialog
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        items={compareItems}
+        onRemove={(slug) => {
+          const next = compare.filter((s) => s !== slug);
+          setCompare(next);
+          // dialog closes itself when the last pick is removed
+          if (next.length === 0) setCompareOpen(false);
+        }}
+      />
     </section>
   );
 }

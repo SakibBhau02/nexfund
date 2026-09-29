@@ -1,0 +1,763 @@
+     1→"use client";
+     2→
+     3→import Image from "next/image";
+     4→import { useEffect, useMemo, useState } from "react";
+     5→import type { ReactNode } from "react";
+     6→import { useQuery } from "@tanstack/react-query";
+     7→import { AnimatePresence, motion } from "framer-motion";
+     8→import {
+     9→  AlertTriangle,
+    10→  ArrowUpRight,
+    11→  BadgeCheck,
+    12→  Calendar,
+    13→  CircleCheck,
+    14→  Loader2,
+    15→  Lock,
+    16→  MapPin,
+    17→  Minus,
+    18→  ShieldCheck,
+    19→  Sparkles,
+    20→  TrendingDown,
+    21→  TrendingUp,
+    22→  Users,
+    23→  Briefcase,
+    24→  LineChart,
+    25→  Wallet,
+    26→  Info,
+    27→  Activity,
+    28→} from "lucide-react";
+    29→import type { LucideIcon } from "lucide-react";
+    30→import { cn } from "@/lib/utils";
+    31→import { useLanguage } from "@/lib/i18n";
+    32→import { useDialogStore } from "@/lib/dialog-store";
+    33→import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, SIM, SCEN, type BadgeKey, type ScenAssumption } from "@/lib/content";
+    34→import { formatTk, formatTkRange, bnNum } from "@/lib/format";
+    35→import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+    36→import { Input } from "@/components/ui/input";
+    37→import { Label } from "@/components/ui/label";
+    38→import { Textarea } from "@/components/ui/textarea";
+    39→import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+    40→import { G } from "@/components/site/glossary";
+    41→import type { OpportunityDTO } from "@/components/site/opportunities";
+    42→
+    43→type UseOfFundsItem = { item: { en: string; bn: string }; pct: number };
+    44→
+    45→export function OpportunityDialog() {
+    46→  const { lang, t } = useLanguage();
+    47→  const dialog = useDialogStore((s) => s.dialog);
+    48→  const slug = useDialogStore((s) => s.opportunitySlug);
+    49→  const close = useDialogStore((s) => s.close);
+    50→  const open = useDialogStore((s) => s.open);
+    51→  const isOpen = dialog === "opportunity";
+    52→
+    53→  /* ── Express-interest inline flow (actions ⇄ form ⇄ success) ── */
+    54→  const [xiView, setXiView] = useState<"actions" | "form" | "success">("actions");
+    55→  const [xiEmail, setXiEmail] = useState("");
+    56→  const [xiName, setXiName] = useState("");
+    57→  const [xiNote, setXiNote] = useState("");
+    58→  const [xiSending, setXiSending] = useState(false);
+    59→  const [xiError, setXiError] = useState("");
+    60→
+    61→  // Reset the flow whenever the dialog closes or switches to another listing
+    62→  useEffect(() => {
+    63→    setXiView("actions");
+    64→    setXiEmail("");
+    65→    setXiName("");
+    66→    setXiNote("");
+    67→    setXiError("");
+    68→    setXiSending(false);
+    69→  }, [isOpen, slug]);
+    70→
+    71→  const { data } = useQuery<OpportunityDTO[]>({
+    72→    queryKey: ["opportunities"],
+    73→    queryFn: async () => {
+    74→      const res = await fetch("/api/opportunities");
+    75→      if (!res.ok) throw new Error("failed");
+    76→      return res.json();
+    77→    },
+    78→    enabled: isOpen,
+    79→    staleTime: 60_000,
+    80→  });
+    81→
+    82→  const o = useMemo(() => data?.find((x) => x.slug === slug), [data, slug]);
+    83→
+    84→  const TAB_KEYS = ["overview", "model", "financials", "scenarios", "team", "funds", "risks"] as const;
+    85→  const tabIcons = [Info, Briefcase, LineChart, Activity, Users, Wallet, AlertTriangle];
+    86→
+    87→  if (!o) {
+    88→    return (
+    89→      <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
+    90→        <DialogContent className="rounded-3xl p-0 sm:max-w-[640px]">
+    91→          <div className="space-y-3 p-8 text-center">
+    92→            <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-nx-navy-100" />
+    93→            <p className="text-sm text-slate-500">
+    94→              {lang === "bn" ? "সুযোগটি লোড হচ্ছে…" : "Loading opportunity…"}
+    95→            </p>
+    96→          </div>
+    97→        </DialogContent>
+    98→      </Dialog>
+    99→    );
+   100→  }
+   101→
+   102→  const useOfFunds = (o.useOfFunds ?? []) as UseOfFundsItem[];
+   103→  const stageDots = [1, 2, 3, 4, 5];
+   104→
+   105→  const backToActions = () => {
+   106→    setXiView("actions");
+   107→    setXiError("");
+   108→  };
+   109→
+   110→  const finishSuccess = () => {
+   111→    setXiView("actions");
+   112→    setXiEmail("");
+   113→    setXiName("");
+   114→    setXiNote("");
+   115→    setXiError("");
+   116→  };
+   117→
+   118→  const submitInterest = async () => {
+   119→    const email = xiEmail.trim();
+   120→    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+   121→      setXiError(t(EXPRESS.errEmail));
+   122→      return;
+   123→    }
+   124→    setXiSending(true);
+   125→    setXiError("");
+   126→    try {
+   127→      const res = await fetch("/api/interest", {
+   128→        method: "POST",
+   129→        headers: { "Content-Type": "application/json" },
+   130→        body: JSON.stringify({
+   131→          opportunitySlug: o.slug,
+   132→          email,
+   133→          name: xiName.trim(),
+   134→          note: xiNote.trim(),
+   135→          language: lang,
+   136→        }),
+   137→      });
+   138→      if (!res.ok) throw new Error("failed");
+   139→      setXiView("success");
+   140→    } catch {
+   141→      setXiError(t(EXPRESS.errGeneric));
+   142→    } finally {
+   143→      setXiSending(false);
+   144→    }
+   145→  };
+   146→
+   147→  return (
+   148→    <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
+   149→      <DialogContent
+   150→        className="nx-scroll max-h-[90vh] gap-0 overflow-y-auto rounded-3xl p-0 sm:max-w-[680px]"
+   151→        aria-describedby={undefined}
+   152→      >
+   153→        {/* ── Header: oval + identity + illustrative badge ── */}
+   154→        <DialogHeader className="border-b border-nx-navy-100 px-6 pb-4 pt-6">
+   155→          <div className="flex items-start gap-4">
+   156→            <div className="oval oval-ring hidden w-[92px] shrink-0 bg-nx-navy-100 sm:block">
+   157→              <Image
+   158→                src={o.image}
+   159→                alt={`${o.codeName}`}
+   160→                fill
+   161→                sizes="92px"
+   162→                className="object-cover"
+   163→              />
+   164→            </div>
+   165→            <div className="min-w-0 flex-1">
+   166→              <div className="flex flex-wrap items-center gap-2">
+   167→                <DialogTitle className="nx-num text-2xl font-extrabold text-nx-navy-900">
+   168→                  {o.codeName}
+   169→                </DialogTitle>
+   170→                <Tooltip>
+   171→                  <TooltipTrigger asChild>
+   172→                    <span className="inline-flex cursor-help items-center gap-1 rounded-full border border-nx-cyan-300 bg-nx-cyan-50 px-2.5 py-0.5 text-[11px] font-bold text-nx-cyan-700">
+   173→                      <Sparkles className="h-3 w-3" aria-hidden="true" />
+   174→                      {t(OPP_DLG.illustrative)}
+   175→                    </span>
+   176→                  </TooltipTrigger>
+   177→                  <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
+   178→                    {t(OPP_DLG.illustrativeTip)}
+   179→                  </TooltipContent>
+   180→                </Tooltip>
+   181→              </div>
+   182→              <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-nx-cyan-700 uppercase">
+   183→                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+   184→                {(lang === "bn" ? o.sectorBn : o.sector) + " · " + (lang === "bn" ? o.locationBn : o.location)}
+   185→              </p>
+   186→              <p className="mt-1.5 text-sm leading-snug text-slate-600">
+   187→                {lang === "bn" ? o.headlineBn : o.headline}
+   188→              </p>
+   189→              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+   190→                <TooltipProvider delayDuration={120}>
+   191→                  {o.badges.map((b) => (
+   192→                    <Tooltip key={b}>
+   193→                      <TooltipTrigger asChild>
+   194→                        <span className="inline-flex cursor-help items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified">
+   195→                          <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+   196→                          {t(BADGES[b as BadgeKey])}
+   197→                        </span>
+   198→                      </TooltipTrigger>
+   199→                      <TooltipContent className="max-w-[220px] text-xs leading-relaxed">
+   200→                        {t(BADGE_TIPS[b as BadgeKey])}
+   201→                      </TooltipContent>
+   202→                    </Tooltip>
+   203→                  ))}
+   204→                </TooltipProvider>
+   205→              </div>
+   206→            </div>
+   207→          </div>
+   208→        </DialogHeader>
+   209→
+   210→        {/* ── Sticky key-facts strip ── */}
+   211→        <div className="sticky top-0 z-10 border-b border-nx-navy-100 bg-white/95 px-6 py-3 backdrop-blur">
+   212→          <dl className="grid grid-cols-2 gap-2 text-[12px] sm:grid-cols-4">
+   213→            <div>
+   214→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP_DLG.seekingLabel)}</dt>
+   215→              <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
+   216→                {formatTkRange(o.seekingMin, o.seekingMax, lang)}
+   217→              </dd>
+   218→            </div>
+   219→            <div>
+   220→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP_DLG.revenueLabel)}</dt>
+   221→              <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
+   222→                {lang === "bn" ? o.revenueBn : o.revenue}
+   223→              </dd>
+   224→            </div>
+   225→            <div>
+   226→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP_DLG.instrumentLabel)}</dt>
+   227→              <dd className="mt-0.5 font-semibold text-nx-navy-800">
+   228→                {lang === "bn" ? o.instrumentBn : o.instrument}
+   229→              </dd>
+   230→            </div>
+   231→            <div>
+   232→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP.verificationProgress)}</dt>
+   233→              <dd className="mt-1 flex items-center gap-1" aria-label={`${o.stage}/5`}>
+   234→                {stageDots.map((s) => (
+   235→                  <span
+   236→                    key={s}
+   237→                    className={cn(
+   238→                      "h-1.5 w-4 rounded-full",
+   239→                      s <= o.stage ? "bg-nx-cyan-500" : "bg-nx-navy-100"
+   240→                    )}
+   241→                  />
+   242→                ))}
+   243→              </dd>
+   244→            </div>
+   245→          </dl>
+   246→        </div>
+   247→
+   248→        {/* ── Tabbed content ── */}
+   249→        <Tabs tabs={OPP_DLG.tabs.map((x) => t(x))} tabKeys={TAB_KEYS} tabIcons={tabIcons}>
+   250→          {(tab) => (
+   251→            <AnimatePresence mode="wait">
+   252→              <motion.div
+   253→                key={tab}
+   254→                initial={{ opacity: 0, y: 10 }}
+   255→                animate={{ opacity: 1, y: 0 }}
+   256→                exit={{ opacity: 0, y: -10 }}
+   257→                transition={{ duration: 0.22 }}
+   258→                className="px-6 py-6"
+   259→              >
+   260→                {tab === "overview" && (
+   261→                  <div className="space-y-4">
+   262→                    <p className="leading-relaxed text-slate-600">
+   263→                      {lang === "bn" ? o.overviewBn ?? o.descriptionBn : o.overview ?? o.description}
+   264→                    </p>
+   265→                  </div>
+   266→                )}
+   267→                {tab === "model" && (
+   268→                  <p className="leading-relaxed text-slate-600">
+   269→                    {lang === "bn" ? o.modelNoteBn : o.modelNote}
+   270→                  </p>
+   271→                )}
+   272→                {tab === "financials" && (
+   273→                  <div className="rounded-2xl border border-nx-navy-100 bg-nx-mist/60 p-5">
+   274→                    <p className="leading-relaxed text-slate-600">
+   275→                      {lang === "bn" ? o.financialNoteBn : o.financialNote}
+   276→                    </p>
+   277→                    <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-slate-500">
+   278→                      <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-nx-navy-500" aria-hidden="true" />
+   279→                      {t(OPP_DLG.ndaNote)}
+   280→                    </p>
+   281→                  </div>
+   282→                )}
+   283→                {tab === "scenarios" && <ScenariosPanel o={o} />}
+   284→                {tab === "team" && (
+   285→                  <p className="leading-relaxed text-slate-600">
+   286→                    {lang === "bn" ? o.teamNoteBn : o.teamNote}
+   287→                  </p>
+   288→                )}
+   289→                {tab === "funds" && (
+   290→                  <ul className="space-y-3">
+   291→                    {useOfFunds.map((f, i) => (
+   292→                      <li key={f.item.en}>
+   293→                        <div className="flex items-center justify-between text-sm">
+   294→                          <span className="font-semibold text-nx-ink">{t(f.item)}</span>
+   295→                          <span className="nx-num font-extrabold text-nx-navy-700">
+   296→                            {lang === "bn" ? `${bnNum(f.pct)}%` : `${f.pct}%`}
+   297→                          </span>
+   298→                        </div>
+   299→                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-nx-navy-100">
+   300→                          <motion.div
+   301→                            initial={{ width: 0 }}
+   302→                            animate={{ width: `${f.pct}%` }}
+   303→                            transition={{ duration: 0.6, delay: i * 0.08, ease: [0.2, 0.8, 0.2, 1] }}
+   304→                            className={cn(
+   305→                              "h-full rounded-full",
+   306→                              f.pct >= 50 ? "bg-nx-navy-700" : f.pct >= 20 ? "bg-nx-cyan-500" : "bg-nx-cyan-300"
+   307→                            )}
+   308→                          />
+   309→                        </div>
+   310→                      </li>
+   311→                    ))}
+   312→                  </ul>
+   313→                )}
+   314→                {tab === "risks" && (
+   315→                  <div className="rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-5">
+   316→                    <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-warn uppercase">
+   317→                      <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+   318→                      {t(OPP.keyRisks)}
+   319→                    </p>
+   320→                    <ul className="mt-3 space-y-2.5">
+   321→                      {o.risks.map((r) => (
+   322→                        <li key={r.en} className="flex items-start gap-2.5 text-sm leading-relaxed text-nx-ink/90">
+   323→                          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-nx-warn" aria-hidden="true" />
+   324→                          {lang === "bn" ? r.bn : r.en}
+   325→                        </li>
+   326→                      ))}
+   327→                    </ul>
+   328→                    <p className="mt-4 border-t border-nx-warn/30 pt-3 text-xs leading-relaxed text-nx-warn/90">
+   329→                      {t(VETTING_DISCLAIMER)}
+   330→                    </p>
+   331→                  </div>
+   332→                )}
+   333→              </motion.div>
+   334→            </AnimatePresence>
+   335→          )}
+   336→        </Tabs>
+   337→
+   338→        {/* ── Advisor review ── */}
+   339→        <div className="mx-6 mb-2 rounded-2xl border border-nx-cyan-200 bg-gradient-to-br from-nx-cyan-50 to-white p-5">
+   340→          <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-cyan-700 uppercase">
+   341→            <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+   342→            {t(OPP_DLG.advisorTitle)}
+   343→          </p>
+   344→          <p className="mt-2 text-sm leading-relaxed text-nx-ink/85">
+   345→            {lang === "bn" ? o.advisorNoteBn : o.advisorNote}
+   346→          </p>
+   347→        </div>
+   348→
+   349→        {/* ── Actions ⇄ Express-interest inline flow ── */}
+   350→        <div className="sticky bottom-0 border-t border-nx-navy-100 bg-white/95 px-6 py-4 backdrop-blur">
+   351→          <AnimatePresence mode="wait">
+   352→            {xiView === "actions" && (
+   353→              <motion.div
+   354→                key="actions"
+   355→                initial={{ opacity: 0, y: 10 }}
+   356→                animate={{ opacity: 1, y: 0 }}
+   357→                exit={{ opacity: 0, y: -10 }}
+   358→                transition={{ duration: 0.22 }}
+   359→              >
+   360→                <div className="flex flex-col gap-2 sm:flex-row">
+   361→                  <button
+   362→                    onClick={() => setXiView("form")}
+   363→                    className="nx-arrow-btn inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+   364→                  >
+   365→                    {t(OPP_DLG.expressInterest)}
+   366→                    <span className="nx-arrow">
+   367→                      <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+   368→                    </span>
+   369→                  </button>
+   370→                  <button
+   371→                    onClick={() => open("contact")}
+   372→                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500"
+   373→                  >
+   374→                    <Calendar className="h-4 w-4" aria-hidden="true" />
+   375→                    {t(OPP_DLG.bookAdvisorCall)}
+   376→                  </button>
+   377→                </div>
+   378→                <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+   379→                  <Lock className="h-3 w-3" aria-hidden="true" />
+   380→                  {t(OPP_DLG.expressNote)}
+   381→                </p>
+   382→              </motion.div>
+   383→            )}
+   384→
+   385→            {xiView === "form" && (
+   386→              <motion.div
+   387→                key="form"
+   388→                initial={{ opacity: 0, y: 10 }}
+   389→                animate={{ opacity: 1, y: 0 }}
+   390→                exit={{ opacity: 0, y: -10 }}
+   391→                transition={{ duration: 0.22 }}
+   392→              >
+   393→                <p className="text-xs font-extrabold tracking-wide text-nx-navy-900 uppercase">
+   394→                  {t(EXPRESS.title)}
+   395→                </p>
+   396→                <p className="mt-1 text-xs leading-relaxed text-slate-500">{t(EXPRESS.sub)}</p>
+   397→                <form
+   398→                  className="mt-3 space-y-3"
+   399→                  noValidate
+   400→                  onSubmit={(e) => {
+   401→                    e.preventDefault();
+   402→                    void submitInterest();
+   403→                  }}
+   404→                >
+   405→                  <div className="grid gap-3 sm:grid-cols-2">
+   406→                    <div>
+   407→                      <Label htmlFor="xi-email">{t(EXPRESS.email)} *</Label>
+   408→                      <Input
+   409→                        id="xi-email"
+   410→                        type="email"
+   411→                        dir="ltr"
+   412→                        autoFocus
+   413→                        autoComplete="email"
+   414→                        value={xiEmail}
+   415→                        onChange={(e) => setXiEmail(e.target.value)}
+   416→                        aria-invalid={xiError ? true : undefined}
+   417→                        className="mt-1.5"
+   418→                      />
+   419→                    </div>
+   420→                    <div>
+   421→                      <Label htmlFor="xi-name">{t(EXPRESS.name)}</Label>
+   422→                      <Input
+   423→                        id="xi-name"
+   424→                        autoComplete="name"
+   425→                        value={xiName}
+   426→                        onChange={(e) => setXiName(e.target.value)}
+   427→                        className="mt-1.5"
+   428→                      />
+   429→                    </div>
+   430→                  </div>
+   431→                  <div>
+   432→                    <Label htmlFor="xi-note">{t(EXPRESS.note)}</Label>
+   433→                    <Textarea
+   434→                      id="xi-note"
+   435→                      rows={2}
+   436→                      value={xiNote}
+   437→                      onChange={(e) => setXiNote(e.target.value)}
+   438→                      placeholder={t(EXPRESS.notePlaceholder)}
+   439→                      className="mt-1.5 resize-none"
+   440→                    />
+   441→                  </div>
+   442→                  {xiError && (
+   443→                    <p role="alert" className="text-sm font-semibold text-nx-danger">
+   444→                      {xiError}
+   445→                    </p>
+   446→                  )}
+   447→                  <div className="flex flex-col-reverse gap-2 sm:flex-row">
+   448→                    <button
+   449→                      type="button"
+   450→                      onClick={backToActions}
+   451→                      disabled={xiSending}
+   452→                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+   453→                    >
+   454→                      {lang === "bn" ? "বাতিল" : "Cancel"}
+   455→                    </button>
+   456→                    <button
+   457→                      type="submit"
+   458→                      disabled={xiSending}
+   459→                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600 disabled:cursor-not-allowed disabled:opacity-70"
+   460→                    >
+   461→                      {xiSending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+   462→                      {xiSending ? t(EXPRESS.submitting) : t(EXPRESS.submit)}
+   463→                    </button>
+   464→                  </div>
+   465→                </form>
+   466→              </motion.div>
+   467→            )}
+   468→
+   469→            {xiView === "success" && (
+   470→              <motion.div
+   471→                key="success"
+   472→                initial={{ opacity: 0, y: 10 }}
+   473→                animate={{ opacity: 1, y: 0 }}
+   474→                exit={{ opacity: 0, y: -10 }}
+   475→                transition={{ duration: 0.22 }}
+   476→                className="text-center"
+   477→              >
+   478→                <motion.span
+   479→                  initial={{ scale: 0 }}
+   480→                  animate={{ scale: 1 }}
+   481→                  transition={{ delay: 0.1, type: "spring", bounce: 0.5 }}
+   482→                  className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-nx-verified-bg"
+   483→                >
+   484→                  <CircleCheck className="h-7 w-7 text-nx-verified" aria-hidden="true" />
+   485→                </motion.span>
+   486→                <h3 className="mt-3 text-base font-extrabold text-nx-navy-900">
+   487→                  {t(EXPRESS.successTitle)}
+   488→                </h3>
+   489→                <p className="mt-1 text-sm leading-relaxed text-slate-600">{t(EXPRESS.successBody)}</p>
+   490→                <button
+   491→                  type="button"
+   492→                  onClick={finishSuccess}
+   493→                  className="mt-4 inline-flex items-center justify-center rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+   494→                >
+   495→                  {t(EXPRESS.successAnother)}
+   496→                </button>
+   497→              </motion.div>
+   498→            )}
+   499→          </AnimatePresence>
+   500→        </div>
+   501→      </DialogContent>
+   502→    </Dialog>
+   503→  );
+   504→}
+   505→
+   506→const VETTING_DISCLAIMER = {
+   507→  en: "Verification reduces risk. It does not remove it.",
+   508→  bn: "যাচাই ঝুঁকি কমায়, কিন্তু ঝুঁকি সম্পূর্ণ দূর করে না।",
+   509→};
+   510→
+   511→/* ── R4-1: per-listing illustrative scenarios (blueprint §5.5 —
+   512→     "downside scenario chart alongside the upside") ── */
+   513→function ScenariosPanel({ o }: { o: OpportunityDTO }) {
+   514→  const { t, lang } = useLanguage();
+   515→  const close = useDialogStore((s) => s.close);
+   516→
+   517→  const listing = SCEN.listings[o.slug];
+   518→  const mode: "equity" | "revshare" = listing?.mode ?? "equity";
+   519→  const years = listing?.years ?? SCEN.equityFallback.years;
+   520→  const ticket = listing?.ticket ?? Math.round((o.seekingMin + o.seekingMax) / 2);
+   521→
+   522→  const fallback = (key: "down" | "base" | "up"): ScenAssumption => {
+   523→    const g = SCEN.equityFallback.baseGrowth;
+   524→    return {
+   525→      growth: key === "down" ? g - 15 : key === "up" ? g + 8 : g,
+   526→      multiple:
+   527→        key === "down" ? SCEN.equityFallback.down : key === "up" ? SCEN.equityFallback.up : SCEN.equityFallback.base,
+   528→      note: SIM.scenarios[key].desc,
+   529→    };
+   530→  };
+   531→  const assumptions: Record<"down" | "base" | "up", ScenAssumption> = listing
+   532→    ? { down: listing.down, base: listing.base, up: listing.up }
+   533→    : { down: fallback("down"), base: fallback("base"), up: fallback("up") };
+   534→
+   535→  const computed = (key: "down" | "base" | "up") => {
+   536→    const a = assumptions[key];
+   537→    const multiple =
+   538→      mode === "revshare" ? a.multiple : Math.pow(1 + (a.growth ?? 0) / 100, years) * a.multiple;
+   539→    return { multiple, proceeds: ticket * multiple };
+   540→  };
+   541→  const res = { down: computed("down"), base: computed("base"), up: computed("up") };
+   542→  const maxVal = Math.max(res.up.proceeds, res.base.proceeds, res.down.proceeds, ticket);
+   543→  const ticketPct = (ticket / maxVal) * 100;
+   544→
+   545→  const signedPct = (v: number) => {
+   546→    const s = v < 0 ? "−" : v > 0 ? "+" : "";
+   547→    return lang === "bn" ? `${s}${bnNum(Math.abs(v))}%` : `${s}${Math.abs(v)}%`;
+   548→  };
+   549→  const fmtMultiple = (m: number) => (lang === "bn" ? `${bnNum(m.toFixed(2))}×` : `${m.toFixed(2)}×`);
+   550→
+   551→  const meta: { key: "down" | "base" | "up"; icon: typeof TrendingDown; barClass: string; chipClass: string; lead: boolean }[] = [
+   552→    { key: "down", icon: TrendingDown, barClass: "nx-warm-to-loss", chipClass: "text-nx-warn", lead: true },
+   553→    { key: "base", icon: Minus, barClass: "bg-nx-navy-600", chipClass: "text-nx-navy-600", lead: false },
+   554→    { key: "up", icon: TrendingUp, barClass: "bg-nx-cyan-500", chipClass: "text-nx-cyan-600", lead: false },
+   555→  ];
+   556→
+   557→  const assumptionLine = (a: ScenAssumption) =>
+   558→    mode === "revshare"
+   559→      ? lang === "bn"
+   560→        ? `রিটার্ন ${fmtMultiple(a.multiple)} · ${bnNum(years)} বছর`
+   561→        : `return ${fmtMultiple(a.multiple)} · ${years} yrs`
+   562→      : lang === "bn"
+   563→        ? `বৃদ্ধি ${signedPct(a.growth ?? 0)}/বছর · এক্সিট ${fmtMultiple(a.multiple)} · ${bnNum(years)} বছর`
+   564→        : `growth ${signedPct(a.growth ?? 0)}/yr · exit ${fmtMultiple(a.multiple)} · ${years} yrs`;
+   565→
+   566→  const goToSimulator = () => {
+   567→    close();
+   568→    // wait for the dialog unmount before smooth-scrolling
+   569→    setTimeout(() => {
+   570→      document.getElementById("simulator")?.scrollIntoView({ behavior: "smooth" });
+   571→    }, 90);
+   572→  };
+   573→
+   574→  return (
+   575→    <div className="space-y-4">
+   576→      {/* chips: model · horizon · modeled ticket */}
+   577→      <div className="flex flex-wrap items-center gap-2">
+   578→        <span
+   579→          className={cn(
+   580→            "rounded-full border px-3 py-1 text-[11px] font-bold",
+   581→            mode === "revshare"
+   582→              ? "border-nx-cyan-200 bg-nx-cyan-50 text-nx-cyan-700"
+   583→              : "border-nx-navy-200 bg-nx-navy-50 text-nx-navy-800"
+   584→          )}
+   585→        >
+   586→          {t(mode === "revshare" ? SCEN.modeRevshare : SCEN.modeEquity)}
+   587→        </span>
+   588→        <span className="rounded-full border border-nx-navy-100 bg-nx-mist px-3 py-1 text-[11px] font-bold text-slate-600">
+   589→          {t(SCEN.horizon(years))}
+   590→        </span>
+   591→        <span className="nx-num rounded-full bg-nx-navy-900 px-3 py-1 text-[11px] font-extrabold text-white">
+   592→          {formatTk(ticket, lang)}
+   593→          <span className="ml-1.5 font-semibold text-white/60">{t(SCEN.ticketModeled)}</span>
+   594→        </span>
+   595→      </div>
+   596→
+   597→      {mode === "revshare" && (
+   598→        <div className="flex items-start gap-2 rounded-xl border border-nx-cyan-200 bg-nx-cyan-50 p-3.5 text-xs leading-relaxed text-nx-ink/80">
+   599→          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-nx-cyan-600" aria-hidden="true" />
+   600→          {t(SCEN.revshareNote)}
+   601→        </div>
+   602→      )}
+   603→
+   604→      <div className="space-y-3.5">
+   605→        {meta.map(({ key, icon: Icon, barClass, chipClass, lead }) => {
+   606→          const r = res[key];
+   607→          const isLoss = r.multiple < 1;
+   608→          const pctChange = Math.round((r.multiple - 1) * 100);
+   609→          const widthPct = Math.max((r.proceeds / maxVal) * 100, 2);
+   610→          return (
+   611→            <div
+   612→              key={key}
+   613→              className={cn(
+   614→                "rounded-2xl border p-4",
+   615→                lead ? "border-nx-warn/50 bg-nx-warn-bg/50" : "border-nx-navy-100 bg-white"
+   616→              )}
+   617→            >
+   618→              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+   619→                <p className="flex items-center gap-1.5 text-sm font-extrabold text-nx-navy-900">
+   620→                  <Icon className={cn("h-4 w-4", chipClass)} aria-hidden="true" />
+   621→                  {t(SIM.scenarios[key].name)}
+   622→                  {lead && (
+   623→                    <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn">
+   624→                      {lang === "bn" ? "আগে দেখুন" : "look here first"}
+   625→                    </span>
+   626→                  )}
+   627→                </p>
+   628→                <p className="nx-num text-[11px] font-semibold text-slate-500">{assumptionLine(assumptions[key])}</p>
+   629→              </div>
+   630→              <p className="mt-0.5 text-xs leading-snug text-slate-500">{t(assumptions[key].note)}</p>
+   631→
+   632→              {/* bar with break-even marker */}
+   633→              <div className="relative mt-3">
+   634→                <div className="h-8 overflow-hidden rounded-xl bg-nx-navy-50">
+   635→                  <motion.div
+   636→                    initial={{ width: 0 }}
+   637→                    animate={{ width: `${widthPct}%` }}
+   638→                    transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+   639→                    className={cn("flex h-full items-center justify-end rounded-xl pr-2.5", barClass)}
+   640→                  >
+   641→                    {widthPct > 24 && (
+   642→                      <span className="nx-num text-[11px] font-extrabold text-white">
+   643→                        {formatTk(Math.round(r.proceeds), lang)}
+   644→                      </span>
+   645→                    )}
+   646→                  </motion.div>
+   647→                </div>
+   648→                {ticketPct > 6 && ticketPct < 97 && (
+   649→                  <div
+   650→                    className="pointer-events-none absolute inset-y-0"
+   651→                    style={{ left: `${ticketPct}%` }}
+   652→                    aria-hidden="true"
+   653→                  >
+   654→                    <div className="h-full w-0 border-l-2 border-dashed border-nx-navy-900/45" />
+   655→                  </div>
+   656→                )}
+   657→              </div>
+   658→
+   659→              <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+   660→                <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">{t(SIM.exitValue)}</p>
+   661→                <p className="flex items-baseline gap-2.5">
+   662→                  <span className="nx-num text-sm font-extrabold text-nx-navy-900">
+   663→                    {formatTk(Math.round(r.proceeds), lang)}
+   664→                  </span>
+   665→                  <span
+   666→                    className={cn(
+   667→                      "nx-num rounded-full px-2 py-0.5 text-[11px] font-extrabold",
+   668→                      isLoss ? "bg-nx-danger/10 text-nx-danger" : "bg-nx-verified-bg text-nx-verified"
+   669→                    )}
+   670→                  >
+   671→                    {lang === "bn"
+   672→                      ? `${fmtMultiple(r.multiple)} · ${t(SIM.changeLabel)} ${signedPct(pctChange)} ${isLoss ? t(SIM.loss) : t(SIM.gain)}`
+   673→                      : `${fmtMultiple(r.multiple)} · ${signedPct(pctChange)} ${isLoss ? t(SIM.loss) : t(SIM.gain)} ${t(SIM.changeLabel)}`}
+   674→                  </span>
+   675→                </p>
+   676→              </div>
+   677→            </div>
+   678→          );
+   679→        })}
+   680→      </div>
+   681→
+   682→      {/* legend + honesty footnote */}
+   683→      <p className="flex items-center gap-2 text-[11px] text-slate-500">
+   684→        <span className="inline-block h-3.5 w-0 border-l-2 border-dashed border-nx-navy-900/45" aria-hidden="true" />
+   685→        {t(SCEN.breakEven)}
+   686→      </p>
+   687→      <p className="flex items-start gap-2 rounded-xl border border-nx-warn/40 bg-nx-warn-bg px-3.5 py-3 text-[11px] leading-relaxed text-nx-warn">
+   688→        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+   689→        {t(SCEN.footnote)}
+   690→      </p>
+   691→
+   692→      <button
+   693→        onClick={goToSimulator}
+   694→        className="nx-arrow-btn inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-nx-navy-200 px-4 py-2 text-xs font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 hover:text-nx-cyan-700"
+   695→      >
+   696→        {t(SCEN.tryYourOwn)}
+   697→        <span className="nx-arrow">
+   698→          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+   699→        </span>
+   700→      </button>
+   701→    </div>
+   702→  );
+   703→}
+   704→
+   705→/** Small internal tabs controller for the detail dialog */
+   706→function Tabs({
+   707→  tabs,
+   708→  tabKeys,
+   709→  tabIcons,
+   710→  children,
+   711→}: {
+   712→  tabs: string[];
+   713→  tabKeys: readonly string[];
+   714→  tabIcons: LucideIcon[];
+   715→  children: (tab: string) => ReactNode;
+   716→}) {
+   717→  const [active, setActive] = useState(tabKeys[0]);
+   718→  return (
+   719→    <div>
+   720→      <div
+   721→        role="tablist"
+   722→        aria-label="Opportunity sections"
+   723→        className="nx-scroll flex gap-1 overflow-x-auto border-b border-nx-navy-100 px-4 pt-4"
+   724→      >
+   725→        {tabs.map((label, i) => {
+   726→          const Icon = tabIcons[i];
+   727→          const key = tabKeys[i];
+   728→          const isActive = active === key;
+   729→          const isRisk = key === "risks";
+   730→          return (
+   731→            <button
+   732→              key={key}
+   733→              role="tab"
+   734→              aria-selected={isActive}
+   735→              onClick={() => setActive(key)}
+   736→              className={cn(
+   737→                "relative flex shrink-0 items-center gap-1.5 rounded-t-xl px-3.5 py-2.5 text-[13px] font-bold transition-colors",
+   738→                isActive
+   739→                  ? "text-nx-navy-900"
+   740→                  : "text-slate-500 hover:bg-nx-mist hover:text-nx-navy-700",
+   741→                isRisk && !isActive && "text-nx-warn hover:text-nx-warn"
+   742→              )}
+   743→            >
+   744→              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+   745→              {label}
+   746→              {isActive && (
+   747→                <motion.span
+   748→                  layoutId="opp-tab-underline"
+   749→                  className={cn(
+   750→                    "absolute inset-x-2 -bottom-px h-[2.5px] rounded-full",
+   751→                    isRisk ? "bg-nx-warn" : "bg-nx-cyan-500"
+   752→                  )}
+   753→                />
+   754→              )}
+   755→            </button>
+   756→          );
+   757→        })}
+   758→      </div>
+   759→      {children(active)}
+   760→    </div>
+   761→  );
+   762→}
+   763→

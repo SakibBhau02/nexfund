@@ -1,0 +1,227 @@
+     1→# NexFund Project Worklog
+     2→
+     3→Project: NexFund — Bangladesh investor–entrepreneur matchmaking platform website
+     4→Blueprint source: /home/z/my-project/upload/NexFund_Website_Deep_Dive.md
+     5→
+     6→## Constraints
+     7→- Single route `/` only (src/app/page.tsx) — all "pages" become sections with anchor navigation
+     8→- Language toggle BN ⇄ EN is client-side (React context + localStorage), since URL-based routes are not allowed
+     9→- Backend via API routes (no server actions), Prisma + SQLite
+    10→- Brand: Navy #061F4A / #0A3A8F, Cyan #26B7D8 (accent only), Oval Lens design language, "Proof before promise"
+    11→
+    12→---
+    13→Task ID: 0
+    14→Agent: main (Z.ai Code)
+    15→Task: Project planning and blueprint analysis
+    16→
+    17→Work Log:
+    18→- Read full NexFund blueprint (1036 lines): strategy, brand system, colors, typography, sitemap, page sections, interactions, bilingual spec
+    19→- Analyzed existing scaffold: Next.js 16, Tailwind 4, shadcn/ui complete, framer-motion, prisma ready
+    20→- Decided architecture: single-page app with sections (Hero Oval Lens, Two Paths, How It Works, Vetting Stepper, Opportunities, Charter, Why NexFund, Services, Insights, FAQ, CTA, Footer), interactive dialogs (Investor 3-step register, Readiness Quiz, Contact booking), client-side i18n context
+    21→- Planned image set: authentic Bangladeshi business photos (garments, agri, tech, retail, healthcare, investor meeting)
+    22→
+    23→Stage Summary:
+    24→- Foundation, image generation, frontend, backend API, QA tasks defined
+    25→- Next: Task 1 foundation (tokens/fonts/i18n/prisma) by main agent; Task 2-a images by subagent
+    26→
+    27→---
+    28→Task ID: 2-a
+    29→Agent: image-generation (general-purpose)
+    30→Task: Generate authentic Bangladeshi business images for NexFund website
+    31→
+    32→Work Log:
+    33→- hero-garments.png (864x1152, 153,702 B) — DONE, first pass. Garments factory, Dhaka, female workers in hijabs at sewing machines
+    34→- hero-agri.png (864x1152, 147,954 B) — DONE, first pass. Agri entrepreneur inspecting golden rice in processing facility
+    35→- hero-tech.png (864x1152, 146,320 B) — DONE, first pass. Young Dhaka tech startup team, laptops + code
+    36→- hero-retail.png (864x1152, 121,930 B) — DONE, first pass. Proud shop owner in organized Dhaka hardware store
+    37→- opp-garments.png (1024x1024, 120,899 B) — DONE, first pass. QC supervisor examining knitwear on rack
+    38→- opp-agri.png (1024x1024, 143,263 B) — DONE, first pass. Modern poultry/egg farm, automated feeding lines
+    39→- opp-logistics.png (1024x1024, 162,813 B) — DONE, first pass. Cold-chain warehouse, crates + refrigerated trucks
+    40→- investor-meeting.png (864x1152, 97,746 B) — DONE, first pass. Two professionals reviewing financial documents on tablet
+    41→- insight-dd.png (1152x864, 86,080 B) — DONE, first pass. Magnifying glass over financial statements, navy desk (smaller size expected: dark minimal composition compresses well)
+    42→- insight-valuation.png (1152x864, 106,983 B) — DONE, first pass. Calculator, charts, brass scale, navy/cyan tones
+    43→- insight-pitch.png (1152x864, 92,769 B) — DONE, first pass. Laptop with pitch deck, coffee, bokeh
+    44→- about-office.png (1344x768, 158,052 B) — DONE, first pass. Dhaka consultancy office at golden hour, city view
+    45→- Verified all 12 via `ls -la`, `file`, and PIL decode check: correct dimensions, valid image data, healthy pixel variance (std 54-77, i.e. real photographic content, no blank/broken files)
+    46→- Note: CLI writes JPEG-encoded data with .png extension (standard z-ai CLI behavior); browsers/Next.js Image handle this fine via content sniffing / re-encoding
+    47→
+    48→Stage Summary:
+    49→- Deliverables (all in /home/z/my-project/public/images/): hero-garments.png, hero-agri.png, hero-tech.png, hero-retail.png (864x1152 portrait, for oval hero frames); opp-garments.png, opp-agri.png, opp-logistics.png (1024x1024); investor-meeting.png (864x1152); insight-dd.png, insight-valuation.png, insight-pitch.png (1152x864 landscape); about-office.png (1344x768 wide)
+    50→- Failures: none — all 12 generated successfully on first attempt, no retries needed
+    51→- Fallback plan (unused): if any image had failed, retry 1-2x with adjusted prompt wording; last resort would be reusing closest sector image
+    52→
+    53→---
+    54→Task ID: 1, 3, 3-b, 4, 5 (main agent)
+    55→Agent: main (Z.ai Code)
+    56→Task: Build the complete NexFund website from the blueprint (foundation, frontend, backend, QA)
+    57→
+    58→Work Log:
+    59→- Foundation (Task 1): globals.css with full NexFund token system (navy #061F4A→#0A3A8F scale, cyan #26B7D8, oval-lens utilities, nx-fade cross-fade keyframes, Bangla typography rules per §2.3, custom scrollbars, reduced-motion support); layout.tsx with Manrope+Inter+Anek Bangla+Hind Siliguri via next/font; metadata BN+EN
+    60→- i18n: useSyncExternalStore-based LanguageProvider (localStorage persistence, cross-tab sync, html lang sync, no hydration mismatch — lint-clean). Default bn per blueprint; t() picks from {en,bn} pairs
+    61→- Content library src/lib/content.ts: full bilingual copy transcribed from blueprint (hero, two paths, how it works, 5-stage vetting, charter, 4 differentiators, 5 services, 3 insights with AEO short-answer boxes, 6 FAQs, dialogs microcopy, quiz 10 questions, footer + risk disclosure)
+    62→- Prisma schema: Investor, QuizResult, ContactInquiry, Opportunity, NewsletterSubscriber (SQLite); seeded 3 anonymized demo opportunities (RMG-201 garments ৳1.5-2.5cr stage 4, AGF-105 poultry ৳60-90lakh stage 3, CCL-308 cold-chain ৳2-4cr stage 5) each with always-visible 3 key risks + verification badges
+    63→- Frontend (Task 3): single-page composition in page.tsx (only / route allowed) — Header (sticky shrink-on-scroll, scroll-spy, BN⇄EN toggle, mobile full-screen navy menu w/ WhatsApp), dismissible trust ribbon, Hero (Oval Portal Stack: 3 rising ovals with 21s cross-fade carousels, floating verified deal card, cyan path SVG draw), Two Paths cards, How It Works (Crossing Paths SVG scroll animation + 4 steps + "what we don't do" box), Vetting (interactive 5-stage auto-advancing stepper w/ tab panel + progress dots + disclaimer), Opportunities (TanStack Query fetch, skeleton loading, sector filter chips w/ layout animation, badge tooltips, expandable summary, risks always visible, lakh/crore formatting + Bangla numerals), Charter (7 commitments sticky heading), Why NexFund, Services (5 advisory cards), Insights (3 article cards w/ short-answer boxes), FAQ accordion, navy Final CTA w/ rising path, Footer (4 columns + always-visible risk disclosure strip + legal dialogs: privacy/terms/risk), mobile sticky WhatsApp+Book-a-Call bar
+    64→- Dialogs (Task 3-b): InvestorDialog 3-step wizard (account→profile→verification+consent, inline validation, success timeline); QuizDialog (intro bars animation, 10 questions w/ progress, SVG gauge score 0-100, gaps/strengths lists, email checklist capture, retake); ContactDialog (role/name/phone/email/slot/message + success state)
+    65→- Backend (Task 4): API routes with zod validation — GET /api/opportunities (JSON-parse risks/badges), POST /api/investors (upsert by email, BD phone regex), POST /api/quiz, POST /api/contact, POST /api/newsletter
+    66→- QA (Task 5): agent-browser end-to-end — investor 3-step flow submitted & DB-verified (all fields persisted); quiz full 10-question flow, gauge result + email capture DB-verified (score 100); contact dialog flow DB-verified; language toggle cross-fade works both ways; vetting stepper + FAQ accordion + mobile menu + hamburger verified; mobile 375px no horizontal overflow; cards equal height (548px, aligned buttons)
+    67→- Bug fixes during QA: (1) founder CTAs wrongly opened investor dialog → now open quiz (hero + final CTA); (2) INVESTOR_DLG missing import crashed quiz result → fixed; (3) i18n setState-in-effect lint error → rewrote with useSyncExternalStore
+    68→- VLM design review round: fixed Bangla deal-card overlap (repositioned), risk panel visual weight (stronger border/bg), metadata truncation; verified Bangla H1 = 1.30 line-height per blueprint §2.3. Final hero check: PASS
+    69→- Lint: clean (0 errors). Dev server: / and /api/opportunities both 200 OK
+    70→
+    71→Stage Summary:
+    72→- Complete working bilingual (BN⇄EN) NexFund single-page site with 11 sections, 3 interactive dialogs, 5 API routes, 5-table database, 12 generated brand images
+    73→- All core flows verified end-to-end in browser with DB persistence
+    74→- QA screenshots in /home/z/my-project/qa/
+    75→- Unresolved/minor: ribbon/sessionStorage is dev-only nicety; opportunity "View Summary" uses details popover (works, could become full detail modal later); testimonials/numbers intentionally absent pre-launch per blueprint trust rules
+    76→
+    77→Next-phase recommendations (for webDevReview agents):
+    78→1. More styling detail: micro-interactions on sector chips, animated number counters when REAL numbers exist (never fake), glossary tooltips for equity/valuation terms (§7 #14)
+    79→2. More features: newsletter form in footer (API exists, UI missing), sample opportunity summary page (§5.3 #4 — big conversion lever), "Match Me" mini-quiz for investors (§7 #5), scenario simulator (§7 #7)
+    80→3. SEO: FAQPage schema JSON-LD, Organization schema, llms.txt
+    81→4. i18n: hreflang is impossible on single route; consider ?lang= param canonicalization later
+    82→
+    83→---
+    84→Task ID: R2 (webDevReview cron round 2)
+    85→Agent: webDevReview (Z.ai Code)
+    86→Task: Scheduled 15-min review — QA current state, then add features + styling detail
+    87→
+    88→Work Log:
+    89→- QA pass on current state: / and /api/opportunities 200 OK, no browser/console errors, EN⇄BN toggle, investor/quiz dialogs, all 7 sections, no overflow — all green
+    90→- R2-2 Opportunity Detail Dialog (blueprint §5.5, biggest conversion lever): extended Prisma Opportunity model with overview/teamNote/financialNote/useOfFunds(JSON)/advisorNote/modelNote (+Bn variants); destructive re-seed with rich bilingual content for all 3 listings; API returns enriched fields; new dialogs/opportunity-dialog.tsx with 6 tabs (Overview/Model/Financials/Team/Use of Funds/Key Risks), animated use-of-funds allocation bars, sticky key-facts strip (seeking/revenue/instrument/verification dots), "What our advisors noticed" panel, Express Interest + Book Advisor Call actions, "Illustrative listing" honesty badge w/ tooltip, NDA-gate notes; card "View Summary" now opens the dialog (replaced details popover)
+    91→- R2-3 Match Me mini-quiz (§7 #5): new match-me.tsx card below opportunities — 4 questions (sector/ticket/horizon/risk) → explainable client-side matching against LIVE anonymized listings (cautious users only see stage-5 listings), shows matching count + codeNames + sector chips + register CTA + honest disclaimer; spring micro-interactions on option chips
+    92→- R2-4 Footer newsletter form: brand column now has "The Deal Room, monthly" capture posting to existing /api/newsletter; verified end-to-end (deals@sakib.example persisted, success state swaps form)
+    93→- R2-5 Styling details: new G glossary component (dotted-underline + bilingual tooltip for Equity/Valuation/Due Diligence/Revenue Share/Ticket) wired into opportunity-card instruments + Services card titles; sector filter chips rebuilt with whileTap spring + hover lift + active shadow; dialog tab underline layoutId animation; risk tab uses warn-colored underline
+    94→- R2-6 SEO/AGO: FAQPage + FinancialService(Organization) JSON-LD in server-side layout.tsx (both languages in answers); public/llms.txt created
+    95→- Infra fix: dev server was holding stale Prisma singleton after schema push (globalThis cache) → restarted dev process, enriched API confirmed
+    96→- QA of all new features via agent-browser: detail dialog (6 tabs, funds bars ৬২%, risks disclaimer, advisor note, express CTA), Match Me full flow (agri/mid/medium/cautious → result + register CTA), newsletter DB-verified, glossary tooltip verified via pointer events, mobile 375px: no overflow, tabs scrollable horizontally, sticky actions reachable
+    97→- VLM review of new UI: flagged card-height inconsistency — disproven by direct measurement (all cards exactly 548px/aligned); headline truncation is intentional line-clamp-2
+    98→- Lint: clean. No console/page errors.
+    99→
+   100→Stage Summary:
+   101→- 3 significant new features (opportunity detail dialog w/ enriched data, Match Me quiz, newsletter capture), glossary tooltips + chip micro-interactions, JSON-LD + llms.txt
+   102→- All verified end-to-end in browser with DB persistence where applicable
+   103→- QA screenshots: qa/08-opp-detail.png, 09-opp-detail-mobile.png, 10-matchme.png
+   104→
+   105→Unresolved / next-phase recommendations:
+   106→1. Sample Opportunity Summary as a dedicated shareable "page-like" experience is now covered by the detail dialog; remaining: PDF-style export view (low priority)
+   107→2. Scenario simulator (§7 #7, base/upside/downside sliders) — good next feature for the Tools concept
+   108→3. Glossary could extend to Insights article cards + FAQ answers
+   109→4. Real-voice testimonial/case-study section when actual data exists (never fake)
+   110→5. Consider preserving investor "express interest" records per opportunity (new table) once matching workflow goes live
+   111→
+   112→---
+   113→Task ID: r3-3
+   114→Agent: full-stack-developer
+   115→Task: Wire express-interest capture form into opportunity detail dialog
+   116→
+   117→Work Log:
+   118→- Read worklog, opportunity-dialog.tsx, contact-dialog.tsx (input/label/textarea + success-state patterns), EXPRESS copy in content.ts, /api/interest route, i18n hook, dialog-store
+   119→- Edited ONLY src/components/site/dialogs/opportunity-dialog.tsx:
+   120→  - Added imports: useEffect, CircleCheck + Loader2 (lucide), EXPRESS (content), Input/Label/Textarea (shadcn); removed now-unused openInvestor selector
+   121→  - New state: xiView ("actions"|"form"|"success"), xiEmail/xiName/xiNote, xiSending, xiError; reset effect on [isOpen, slug] so reopening/closing/switching listing always starts fresh
+   122→  - "Express Interest" button now switches the sticky action area to an inline form (no dialog close, no investor dialog); "Book Advisor Call" untouched (still open("contact"))
+   123→  - Form: EXPRESS.title + EXPRESS.sub copy, Email* (required, autoFocus, aria-invalid on error, autoComplete=email, dir=ltr), Name (optional), Note (textarea w/ EXPRESS.notePlaceholder); noValidate + custom validation (/^[^\s@]+@[^\s@]+\.[^\s@]+$/); inline error via role="alert" text-nx-danger (errEmail / errGeneric); Cancel (বাতিল/Cancel ternary) keeps drafts and returns to actions; Submit posts {opportunitySlug: o.slug, email, name, note, language: lang} to /api/interest with Loader2 animate-spin + EXPRESS.submitting + disabled state
+   124→  - Success view: spring CircleCheck in nx-verified-bg circle, EXPRESS.successTitle/successBody, "Done — back to listing" (finishSuccess) clears the form and returns to default actions
+   125→  - All three views animated with AnimatePresence mode="wait" + motion.div fade/slide (0.22s, same pattern as tab content); default view keeps the Lock/expressNote line; submit button styled rounded-full bg-nx-navy-700 px-5 py-3 like existing primary
+   126→- INFRA FIX (dev server only, no code): first browser submit hit 500 — dev server (started 17:50) held a stale globalThis Prisma singleton from BEFORE prisma generate ran at 17:59, so db.opportunityInterest was undefined (same issue R2 hit). On-disk client was fresh; killed stale server (PIDs 6013-6029) and relaunched detached via `( setsid bun run dev >/dev/null 2>&1 </dev/null & )` double-fork so it survives across tool calls (plain nohup/setsid got reaped by sandbox; double-fork escapes the per-call process-tree cleanup). Server healthy since 18:08
+   127→- QA via agent-browser (8 screenshots in qa/r3-05-express-*.png): 1-dialog-actions, 2-form (EN), 3-invalid-email inline error, 4-success (EN), 5-back-to-actions, 6-bn-form, 7-bn-success, 8-mobile-375px-form (no horizontal overflow)
+   128→- Verified flows: View Summary → dialog; Express Interest → inline form (email input autofocused); invalid email → role=alert "Enter a valid email address." + aria-invalid=true; valid submit → 201 → success heading "Interest recorded ✓" + advisor-reach-out body; Done → default actions restored; Cancel → actions (draft preserved); Book Advisor Call → contact dialog opens (unchanged); full BN flow (আগ্রহ জানান → ইমেইল/নাম/বাতিল/আগ্রহ পাঠান → আগ্রহ রেকর্ড হয়েছে ✓ → লিস্টিংয়ে ফিরুন); mobile 375px stacked layout, scrollWidth check "no-overflow"; zero browser console/page errors
+   129→- API spot-checks with curl: 201 {ok:true,id} valid; 400 zod issues on bad email; 404 on unknown slug
+   130→- DB persistence via prisma client script: OpportunityInterest rows — {codeName RMG-201, email test.interest@sakib.example, name "Test Investor", note, language "en", status "new", slug rmg-201-denim-knitwear}, {curl.check@sakib.example, "en"}, {test.bn@sakib.example, "bn"} — all persisted correctly
+   131→- bun run lint: 0 errors. dev.log post-restart: only 201/400/404 /api/interest entries, no errors
+   132→
+   133→Stage Summary:
+   134→- Express-interest capture now runs fully inline inside the opportunity dialog (actions ⇄ form ⇄ success, animated, bilingual, accessible) and persists to OpportunityInterest via existing POST /api/interest
+   135→- Deviations: had to restart the dev server (infra, stale Prisma singleton predating prisma generate — no source files touched for this); relaunched detached so it persists; no changes to content.ts, prisma schema, or API routes
+   136→- Known nuance: aria-invalid is set on the email input whenever any submit error shows (email-format or generic server error); error copy is per EXPRESS
+   137→
+   138→---
+   139→Task ID: R3 (webDevReview cron round 3) — main agent + full-stack-developer subagent
+   140→Agent: main (Z.ai Code) + full-stack-developer (r3-3)
+   141→Task: Scheduled review — QA current state, then add Scenario Simulator, Express-Interest persistence, glossary extension, styling polish
+   142→
+   143→Work Log:
+   144→- QA pass on entry: dev.log clean (all 200s), lint 0 errors, agent-browser sweep — all 10 sections + footer present, opportunity detail dialog (6 BN tabs), BN⇄EN toggle, no horizontal overflow, no console errors, mobile CTA bar present. Verdict: stable → proceed with new features.
+   145→- R3-2a Backend: new Prisma model OpportunityInterest (opportunitySlug, codeName, email, name?, note?, language, status new/reviewed/introduced/declined, @@index) → bun run db:push; new API route POST /api/interest with zod validation + featured-listing existence check (404 if unknown slug, 400 invalid, 201 created).
+   146→- R3-2b Content (content.ts): SIM block (simulator copy: eyebrow/title/sub, illustrative-pill, 4 control labels, impliedValuation, yearsUnit with Bangla digits, 3 scenario name+desc, exitValue/multipleLabel/changeLabel/loss/gain, reset, footnote w/ dilution-fees-taxes honesty, saveTitle/saveSub/saveCta/saved/saveErr); EXPRESS block (interest form: title/sub/email/name/note+placeholder/submit/submitting/successTitle/successBody/successAnother/errEmail/errGeneric); GLOSSARY +7 terms (exit, multiple, data room, nda, capital loss, exit multiple) + GLOSSARY_LABELS display map (all bilingual); FAQ items got terms[] field (due diligence / capital loss / ticket / data room) + termsLabel.
+   147→- R3-3 (subagent, full-stack-developer): opportunity-dialog.tsx "Express Interest" no longer opens generic investor dialog — inline 3-state flow in sticky action area (actions ↔ form ↔ success, AnimatePresence): email (required, autoFocus, aria-invalid) + name + note fields, inline role=alert errors, Loader2 spinner while posting, CircleCheck success state, cancel keeps draft, state resets on dialog close/slug change. Verified: 8 screenshots, DB rows (RMG-201 ×3 test emails), 201/400/404 API paths, BN+EN flows, mobile 375px no overflow. (Note: subagent had to restart dev server — stale Prisma singleton after generate, same as R2.)
+   148→- R3-2 Scenario Simulator (main agent, new component scenario-simulator.tsx, blueprint §7 #7 + §0.4): section id="simulator" bg-nx-mist between MatchMe and Charter. Explainable model: exit proceeds = ticket × (1+growth)^years × exitMultiple; scenarios down (growth −25pp floor −35, multiple 0.65), base (as-is, 1.0), up (+12pp cap 45, 1.3); DOWNSIDE listed first with warn emphasis + "look here first" tag (blueprint: downside default-visible). 4 shadcn sliders (ticket 25–400 lakh, stake 5–40%, growth −10..+35%, years 2–8) with live nx-num value chips; implied entry valuation = ticket/stake panel with G-tooltips (valuation, exit multiple); 3 animated result bars (warm-to-loss gradient / navy / cyan) with dashed break-even marker at ticket level, value inside bar, multiple × and ±% gain/loss chips (danger red for loss, verified green for gain); per-scenario assumption line (growth %/yr · exit multiple) for explainability; honesty pill "Illustrative only" in heading + warn footnote (total loss possible, ignores dilution/fees/taxes); "Save this scenario" email capture → POST /api/newsletter source="simulator" with success swap. Custom CSS utilities in globals.css: .nx-warm-to-loss (warn→danger gradient), .nx-progress-gradient.
+   149→- R3-4 Glossary extension: FAQ answers now render term chips ("Terms explained:" row w/ BookMarked icon) using G + GLOSSARY_LABELS; Insights category badges for DD + valuation articles wrapped in G (For Investors stays plain).
+   150→- R3-5 Styling: ScrollProgress (framer useScroll + spring scaleX, navy→cyan 3px gradient bar, fixed top z-80) + BackToTop (appears >600px scroll, smooth scroll top, bottom-24 above mobile CTA bar / md:bottom-6, bilingual aria-label) — both wired into page.tsx.
+   151→- QA of all R3 features via agent-browser: simulator math verified against hand calc (defaults: 0.32×/−68%, 1.76×/+76%, 3.81×/+281%; growth→+30%: 0.83×/3.71×/7.51× — all match model); slider drag via pointer events recalculates live; save flow → "On its way ✓" + DB row (source=simulator); express-interest main-agent spot check → success state + DB row; FAQ chips render BN ("ডিউ ডিলিজেন্স") + EN; tooltip content verified via trusted hover; Insights badges: DD + Valuation glossary buttons, third plain; scroll progress scaleX tracks position (0.285 at test scroll); back-to-top no overlap with mobile CTA bar (716 < 745); mobile 375px: simulator stacks, 4 sliders + save form reachable, no overflow; clean reload: 0 console errors, title correct.
+   152→- Lint: 0 errors. Screenshots: qa/r3-06..r3-12 (simulator BN/EN/mobile, progress+backtop, express form, insights-en, faq-terms-en).
+   153→
+   154→Stage Summary:
+   155→- 3 new user-facing features: Scenario Simulator (biggest — downside-first illustrative equity model with sliders, animated bars, break-even marker, explainable assumptions, email save), Express-Interest persistence per listing (DB-backed, advisor-review workflow foundation §7 #19), glossary extension to FAQ + Insights
+   156→- 2 styling additions: reading-progress bar + back-to-top
+   157→- New API: POST /api/interest; new table: OpportunityInterest; /api/newsletter reused with source="simulator"
+   158→- All flows verified end-to-end in browser + DB; lint clean; no console errors; mobile-safe
+   159→
+   160→Unresolved / next-phase recommendations:
+   161→1. Downside-scenario mini-chart inside opportunity detail dialog (§5.5 "Downside scenario chart ← upside-এর পাশাপাশি") — simulator math could be reused per-listing
+   162→2. Simulator: preset scenario buttons ("conservative/balanced/ambitious") + share-permalink of slider state (URL hash)
+   163→3. FAQ schema JSON-LD already exists — consider HowTo/FAQ enrichment with glossary definitions for AEO
+   164→4. Real admin view for OpportunityInterest records once matching workflow goes live (currently DB-only)
+   165→5. Optional: subtle count-up animation on simulator numbers when values change (respect prefers-reduced-motion)
+   166→
+   167→---
+   168→Task ID: R4-3
+   169→Agent: full-stack-developer
+   170→Task: Insights article reader dialog — replace the registration teaser with a real in-page bilingual article reader
+   171→
+   172→Work Log:
+   173→- Read context: worklog (R2/R3), services-insights.tsx, dialog-store.ts, opportunity-dialog.tsx (reference only), content.ts (INSIGHTS + GLOSSARY + EXPRESS), i18n.tsx, page.tsx, glossary.tsx, faq-cta.tsx (termsLabel pattern)
+   174→- content.ts — APPEND ONLY at very end (via atomic shell append; zero existing lines touched, EXPRESS block intact): READER microcopy block (updatedLabel, keyTakeawaysTitle, termsLabel, nextStepsTitle/Sub, registerCta, bookCallCta, scrollProgressAria, notFound) + ARTICLES data block typed Record<string,{updated, sections:{h,body,list?}[], takeaways, terms}>. All three existing slugs written as REAL advisor-voice articles (7 sections each, numbered theme headings, 1-2-paragraph bodies with \n\n splits, 3-6-item bullet lists, 4-5 takeaways, 4-5 GLOSSARY term keys): sme-due-diligence-checklist (12-point in 4 themes: RJSC/trade license/TIN-BIN/shareholder register, audited+bank-statements-vs-claims+debt schedule, customer concentration/supplier terms/physical checks, use-of-funds/written agreements+references, "What documents to ask for first" w/ data room + NDA, final honesty note), valuation-basics-for-founders (risk pricing, comparable deals, earnings quality vs revenue vanity w/ lakh/crore examples, simple multiples anchors, dilution-two-rounds-ahead, defensible-valuation close w/ exit logic), red-flags-in-investment-offers (scrutiny frame, guaranteed returns, urgency, paper-trail list, fees+downside-case list, unregistered sellers/skipped legal review w/ BSEC, walk-away test). Bangla written natural/fluent; BN numerals inside bn strings; ISO updated dates
+   175→- dialog-store.ts: added "insight" to DialogKind, insightSlug?, openInsight(slug); open()/close() reset both slugs; openInvestor/openOpportunity/openInsight now symmetrically clear the other slug (behavior-neutral — unused slug when kind differs)
+   176→- NEW src/components/site/dialogs/insight-dialog.tsx: shadcn Dialog, nx-scroll max-h-[90vh] rounded-3xl p-0 sm:max-w-[720px]; sticky top-0 3px nx-progress-gradient reading-progress bar tracking DialogContent onScroll (scrollTop/(scrollHeight-clientHeight)), scaleX + aria-valuenow mutated imperatively via refs (zero re-renders on scroll), gradient bar aria-hidden, wrapper role=progressbar w/ READER.scrollProgressAria; hero strip (next/image fill h-44 + navy gradient + category/minutes/updated chips, updated in bnNum for BN); DialogTitle + reused cyan Short-answer box (a.short); body sections "01" cyan nx-num (bnNum in BN) + navy extrabold h3, leading-relaxed text-slate-600 paragraphs (multi-paragraph via \n\n split), cyan-dot bullet lists matching site patterns; glossary chips row (G + GLOSSARY_LABELS, BookMarked label) near takeaways; Key-takeaways box (rounded-2xl bg-nx-mist border nx-navy-100, CircleCheck nx-verified icons); non-sticky Next-steps card w/ READER.nextStepsSub honesty line + primary navy pill → openInvestor("investor") + bordered pill → open("contact"); single framer-motion entrance keyed nothing (content swaps in place on lang toggle, sections never re-animate); unknown slug → FileQuestion not-found state; frosted-white styling overrides for the close X over the dark hero via [&_[data-slot=dialog-close]] variants
+   177→- services-insights.tsx: "Read the guide" now calls openInsight(a.slug) w/ aria-haspopup="dialog" (BookOpen + hover kept, added group-hover ArrowUpRight nudge); whole article card clickable (onClick → openInsight, cursor-pointer; button remains the keyboard control); wrong bottom note replaced with honest bilingual line "Every guide is free to read — in both languages." / "প্রতিটি গাইড দুই ভাষাতেই বিনামূল্যে পড়ুন।" (upgraded from slate-400 to slate-500 font-semibold)
+   178→- page.tsx: <InsightDialog /> mounted next to <OpportunityDialog />
+   179→- Untouched per constraints: globals.css, opportunity-dialog.tsx, scenario-simulator.tsx, opportunities.tsx, match-me.tsx, prisma/, api routes. Dev server NOT restarted (hot reload picked everything up)
+   180→
+   181→QA (agent-browser isolated session "insight", 4 screenshots in qa/):
+   182→- Dialog opens from all 3 cards (button click, card-body click ×2) — each shows its own 7-section article + correct title/hero
+   183→- BN full render verified (default): all 7 DD headings, body text, হালনাগাদ chip, ডিল রুমে রেজিস্টার করুন / কল বুক করুন; 16 cyan bullet dots, 5 CircleCheck takeaways, 4 glossary chips (ডিউ ডিলিজেন্স/ডেটা রুম/NDA/ক্যাপিটাল লস), tooltip verified on hover (EN + BN aria labels)
+   184→- Language swap WHILE OPEN (storage event): title/h3/CTAs swapped to EN in place, scroll position preserved (1050), no remount animation; EN re-verified on valuation + red-flags articles ("The walk-away test" last section)
+   185→- Progress bar: scaleX(0) on open → 0.47 at scrollTop 900 (aria-valuenow 47, label পড়ার অগ্রগতি) → 1.0/100 at bottom; resets to 0 on close+reopen
+   186→- CTAs: Register for the Deal Room → investor dialog ("Register as Investor" wizard); Book a Call → contact dialog ("Let's talk — no pressure.")
+   187→- Bottom honest note verified in both languages; aria-haspopup present on read buttons
+   188→- Mobile 375×812: page horizontal overflow = 0, dialog width 343px, scrollable, both CTAs reachable, progress reset on open
+   189→- Console: no errors, no page errors (only Fast Refresh logs); clean reload 200 OK
+   190→- bun run lint: 0 errors. bunx tsc --noEmit: no errors in src/ (only pre-existing example/skill files)
+   191→
+   192→Stage Summary:
+   193→- Insights section is now genuinely functional: 3 full, real bilingual guide articles (≈3,400 lines of copy incl. Bangla) readable in-page via an accessible reader dialog with reading-progress, glossary terms, key takeaways and honest next-step CTAs — replacing the misleading "register to read" teaser
+   194→- Files changed: content.ts (append-only), dialog-store.ts, services-insights.tsx, page.tsx, + new insight-dialog.tsx
+   195→- Deviations: (1) content appended via atomic shell `>>` (not write_file) to guarantee append-only semantics against concurrent edits by the other R4 agent — verified boundary clean; (2) openInvestor/openOpportunity now also clear the counterpart slug in the store (symmetry hardening, no behavior change); (3) progressbar exposed as role=progressbar with live aria-valuenow (gradient bar itself aria-hidden) — uses READER.scrollProgressAria as specified
+   196→- QA screenshots: qa/r4-insight-1-article-bn.png, r4-insight-2-article-en.png, r4-insight-3-glossary-takeaways.png, r4-insight-4-mobile-375.png
+   197→
+   198→---
+   199→Task ID: R4 (webDevReview cron round 4) — main agent + full-stack-developer subagent
+   200→Agent: main (Z.ai Code) + full-stack-developer (R4-3)
+   201→Task: Scheduled review — QA current state, then add per-listing scenarios, simulator presets + share-link, insights reader, styling polish
+   202→
+   203→Work Log:
+   204→- QA pass on entry: dev server healthy (/ and /api/opportunities 200, prisma queries normal), lint clean, agent-browser sweep — all 10 sections, opportunity dialog 6 tabs, no overflow desktop/mobile, zero console/page errors. Verdict: STABLE → feature round.
+   205→- R4-1 Per-listing Scenarios tab (blueprint §5.5 top unresolved item "downside scenario chart alongside the upside"): opportunity detail dialog now has a 7th tab "Scenarios" (Activity icon, between Financials and Team). New ScenariosPanel computes from SCEN.listings content data (keyed by slug, with generic equity fallback using the listing's midpoint ticket): RMG-201 equity exit-model (ticket ৳2cr, 5y: down growth −5%/exit 0.60× → ৳93লাখ 0.46× −54%; base +10%/1.0× → ৳3.2cr 1.61×; up +18%/1.25× → ৳5.7cr 2.86×), AGF-105 revshare payback-model (৳75লাখ, 4y: 0.75×/1.50×/2.10× → ৳56লাখ/৳1.1cr/৳1.6cr with revshareNote explainer box), CCL-308 equity (৳3cr, 5y: 0.61×/2.49×/3.95×). UI: mode/horizon/ticket chips, downside-first warn-styled cards w/ "look here first" tag, listing-specific bilingual scenario notes, per-scenario assumption lines, animated bars + dashed break-even marker, multiple/±gain-loss chips, break-even legend, honesty footnote, "Try your own numbers →" closes dialog + smooth-scrolls to simulator.
+   206→- R4-2 Simulator presets + share-permalink (§7 #7 follow-up): 3 quick-start preset chips (Conservative 75/8/6/7 · Balanced 100/10/12/5 · Ambitious 200/20/20/4, bilingual, spring whileTap, active state w/ aria-pressed + cyan glow, title tooltips); Share button copies `${origin}${pathname}#sim=ticket,stake,growth,years` via clipboard API w/ execCommand fallback → "Link copied ✓" verified state; on mount the simulator hydrates slider state from #sim= hash (rAF-deferred to avoid hydration mismatch + set-state-in-effect lint), clamps out-of-range values (9999,99,99,99 → 400/40/35/8 verified), shows "Loaded a shared scenario ✓" pill for 6s.
+   207→- R4-3 (subagent full-stack-developer): full Insights article reader dialog — see R4-3 section above. 3 real bilingual articles (7 sections each + takeaways + glossary chips), reading-progress bar, hero strip, next-steps CTAs; replaced the misleading "register to read" teaser.
+   208→- R4-4 Styling polish: new AnimatedNumber component (rAF count-up tween, eased cubic-out, prefers-reduced-motion bypass — lint-clean) wired into simulator implied-valuation + per-scenario exit values; SimSlider value chips pulse (motion.span key on valueText, scale 1.2→1); .nx-card-sheen hover sheen-sweep utility on opportunity cards (disabled under reduced-motion); slider thumbs scale 1.18 while grabbed ([data-slot=slider-thumb]:active transition); focus-visible baseline extended to [role=tab] and [role=slider]; honest bilingual EN⇄BN content for all new copy (SCEN block ~120 lines, SIM additions).
+   209→- BUG FIX found during QA: scroll-progress bar (R3) was full-width fixed z-[80] WITHOUT pointer-events-none — intercepted clicks along the top strip (language toggle blocked when header scrolled). Fixed: pointer-events-none added. 
+   210→- Infra: subagent used isolated agent-browser session "insight" to avoid clobbering main session during parallel work; content.ts shared file was pre-settled (main agent added SCEN/SIM blocks first, subagent appended READER/ARTICLES at EOF via atomic shell append) — zero merge conflicts. Dev server never restarted (no DB/schema changes this round).
+   211→- QA of all R4 features via agent-browser: scenarios math hand-verified for all 3 listings (equity compounding + revshare multiples all match to the displayed lakh/crore rounding); BN + EN rendering of scenarios tab (Bangla numerals ৳৯৩ লক্ষ, ০.৪৬×, টিকেটের তুলনায় −৫৪% ক্ষতি); "Try your own numbers" scroll (dialog closes, simulator lands at scroll-padding offset 96px); presets apply + aria-pressed + recalc (ambitious: 0.53×/2.07×/3.95× hand-verified); share → "লিংক কপি হয়েছে ✓"; hash round-trip on full reload (75/8/6/7 applied + pill shown; clamp test passed); insight reader re-verified in main session (7 sections, মূল কথা takeaways, progressbar 47 at 40% scroll); mobile 375px: scenarios tab no horizontal overflow, dialog 343px; fresh load: zero console/page errors; lint 0 errors.
+   212→- Screenshots: qa/r4-01-scenarios-rmg-en.png, r4-02-scenarios-agf.png, r4-03-scenarios-ccl.png, r4-04-scenarios-rmg-bn.png, r4-05-sim-presets-share-bn.png, r4-06-scenarios-mobile.png, r4-07-insight-reader-bn.png, r4-08-simulator-final.png (+ 4 subagent r4-insight-*.png)
+   213→
+   214→Stage Summary:
+   215→- 4 new user-facing features: per-listing downside/base/upside Scenarios tab (blueprint §5.5 — every listing now shows its own illustrative downside-first outcomes), simulator quick-start presets + shareable permalinks, full bilingual Insights article reader (3 genuine guides), animated count-up numbers
+   216→- 1 real bug fixed (progress-bar click interception); styling micro-interactions added (chip pulse, card sheen, slider thumb grab scale, extended focus-visible)
+   217→- New content: ~140 lines SCEN/SIM copy + ~3400 lines ARTICLES/READER copy (subagent), all bilingual
+   218→- Files changed: content.ts, opportunity-dialog.tsx, scenario-simulator.tsx, opportunities.tsx, scroll-progress.tsx, globals.css, + new animated-number.tsx (main); dialog-store.ts, services-insights.tsx, page.tsx, + new insight-dialog.tsx (subagent)
+   219→- No DB/schema/API changes this round; dev server never restarted; lint clean; zero console errors; mobile-safe
+   220→
+   221→Unresolved / next-phase recommendations:
+   222→1. Scenario data lives in content.ts (keyed by slug) — once real listings launch, consider moving per-listing scenario assumptions into the Opportunity model/DB alongside the other enriched fields
+   223→2. Glossary tooltip on mobile relies on tap; consider a long-press/tap-to-open pattern audit across G usages
+   224→3. Insight articles could get social-share links + "copy article link" (#insight=<slug> hash similar to simulator)
+   225→4. Admin review workflow for OpportunityInterest rows remains DB-only (needs auth before any UI)
+   226→5. Consider count-up on the simulator multiple/± chips (currently only money values animate)
+   227→

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UIEvent } from "react";
 import { motion } from "framer-motion";
 import {
@@ -11,10 +11,12 @@ import {
   CircleCheck,
   Clock,
   FileQuestion,
+  Share2,
+  Check,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS } from "@/lib/content";
+import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE } from "@/lib/content";
 import { bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { G } from "@/components/site/glossary";
@@ -30,7 +32,63 @@ export function InsightDialog() {
   const close = useDialogStore((s) => s.close);
   const open = useDialogStore((s) => s.open);
   const openInvestor = useDialogStore((s) => s.openInvestor);
+  const openInsight = useDialogStore((s) => s.openInsight);
   const isOpen = dialog === "insight";
+
+  /* R5: deep-link — #insight=<slug> opens the article directly (permalink) */
+  useEffect(() => {
+    const m = /^#insight=([a-z0-9-]+)$/i.exec(window.location.hash);
+    if (!m || !ARTICLES[m[1]]) return;
+    // apply post-hydration via rAF so hydration markup stays consistent (simulator pattern)
+    const raf = requestAnimationFrame(() => openInsight(m[1]));
+    return () => cancelAnimationFrame(raf);
+  }, [openInsight]);
+
+  /* R5: share — native share sheet where available, clipboard fallback */
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
+  const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (shareTimer.current) clearTimeout(shareTimer.current);
+    },
+    []
+  );
+
+  const share = async () => {
+    if (!slug) return;
+    const url = `${window.location.origin}${window.location.pathname}#insight=${slug}`;
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: document.title, url });
+        return; // share sheet handled it — no local state change needed
+      } catch {
+        // user dismissed the sheet, or share failed → fall through to clipboard
+      }
+    }
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      ok = true;
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+    setShareState(ok ? "copied" : "failed");
+    if (shareTimer.current) clearTimeout(shareTimer.current);
+    shareTimer.current = setTimeout(() => setShareState("idle"), 2600);
+  };
 
   /* Reading progress — updated imperatively (no re-renders on scroll) */
   const progressWrapRef = useRef<HTMLDivElement>(null);
@@ -126,6 +184,24 @@ export function InsightDialog() {
               <span className="nx-num inline-flex items-center rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">
                 {t(READER.updatedLabel)} {updated}
               </span>
+              {/* R5: share permalink — native sheet on mobile, clipboard elsewhere */}
+              <button
+                type="button"
+                onClick={share}
+                aria-live="polite"
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                {shareState === "copied" ? (
+                  <Check className="h-3 w-3" aria-hidden="true" />
+                ) : (
+                  <Share2 className="h-3 w-3" aria-hidden="true" />
+                )}
+                {shareState === "copied"
+                  ? t(SHARE.linkCopied)
+                  : shareState === "failed"
+                    ? t(SHARE.copyFailed)
+                    : t(SHARE.shareArticle)}
+              </button>
             </div>
           </div>
 
