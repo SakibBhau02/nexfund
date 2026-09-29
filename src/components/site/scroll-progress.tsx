@@ -17,7 +17,7 @@ export function ScrollProgress() {
     <motion.div
       aria-hidden="true"
       style={{ scaleX }}
-      className="nx-progress-gradient fixed inset-x-0 top-0 z-[80] h-[3px]"
+      className="nx-progress-gradient pointer-events-none fixed inset-x-0 top-0 z-[80] h-[3px]"
     />
   );
 }

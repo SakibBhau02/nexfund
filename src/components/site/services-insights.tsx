@@ -76,7 +76,7 @@ export function Services() {
 
 export function Insights() {
   const { t, lang } = useLanguage();
-  const openInvestor = useDialogStore((s) => s.openInvestor);
+  const openInsight = useDialogStore((s) => s.openInsight);
 
   // R3: glossary term per article category (§7 #14)
   const catGlossary: Record<string, string> = {
@@ -94,7 +94,10 @@ export function Insights() {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {INSIGHTS.articles.map((a, i) => (
             <Reveal key={a.slug} delay={0.06 * i}>
-              <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_28px_56px_-24px_rgba(10,58,143,0.32)]">
+              <article
+                onClick={() => openInsight(a.slug)}
+                className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_28px_56px_-24px_rgba(10,58,143,0.32)]"
+              >
                 <div className="relative h-44 overflow-hidden">
                   <Image
                     src={a.image}
@@ -129,11 +132,16 @@ export function Insights() {
                       {t(INSIGHTS.readTime(a.minutes))}
                     </span>
                     <button
-                      onClick={() => openInvestor("investor")}
+                      onClick={() => openInsight(a.slug)}
+                      aria-haspopup="dialog"
                       className="inline-flex items-center gap-1 text-sm font-bold text-nx-navy-700 transition-colors hover:text-nx-cyan-600"
                     >
                       <BookOpen className="h-4 w-4" aria-hidden="true" />
                       {t(INSIGHTS.readMore)}
+                      <ArrowUpRight
+                        className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
                     </button>
                   </div>
                 </div>
@@ -141,10 +149,10 @@ export function Insights() {
             </Reveal>
           ))}
         </div>
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs font-semibold text-slate-500">
           {lang === "bn"
-            ? "পূর্ণাঙ্গ আর্টিক্ল সাধারণ পাঠকদের জন্য রেজিস্ট্রেশনের পরে পাঠানো হয়।"
-            : "Full guides are sent to registered readers."}
+            ? "প্রতিটি গাইড দুই ভাষাতেই বিনামূল্যে পড়ুন।"
+            : "Every guide is free to read — in both languages."}
         </p>
       </div>
     </section>

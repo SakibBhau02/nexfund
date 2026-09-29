@@ -165,7 +165,7 @@ export function Opportunities() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="group flex h-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]"
+                    className="nx-card-sheen group flex h-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]"
                   >
                     <div className="flex gap-4 p-5 pb-0">
                       <div className="oval oval-ring w-[86px] shrink-0 bg-nx-navy-100">

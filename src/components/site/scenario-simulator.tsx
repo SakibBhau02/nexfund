@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   RotateCcw,
   Send,
+  Share2,
+  Check,
   TrendingDown,
   TrendingUp,
   Minus,
@@ -20,6 +22,7 @@ import { Reveal } from "./reveal";
 import { G } from "./glossary";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { AnimatedNumber } from "./animated-number";
 
 /**
  * Scenario Simulator (blueprint §7 #7): sliders → illustrative minority-equity
@@ -64,6 +67,36 @@ export function ScenarioSimulator() {
   const [saveEmail, setSaveEmail] = useState("");
   const [saving, setSaving] = useState<"idle" | "busy" | "done" | "error">("idle");
 
+  /* R4-2: share-permalink — hydrate slider state from #sim=ticket,stake,growth,years */
+  const [sharedLoaded, setSharedLoaded] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const m = /^#sim=(\d+),(\d+),(-?\d+),(\d+)$/.exec(window.location.hash);
+    if (!m) return;
+    const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+    // apply post-hydration via rAF so hydration markup (defaults) stays consistent
+    const raf = requestAnimationFrame(() => {
+      setTicket(clamp(Number(m[1]), 25, 400));
+      setStake(clamp(Number(m[2]), 5, 40));
+      setGrowth(clamp(Number(m[3]), -10, 35));
+      setYears(clamp(Number(m[4]), 2, 8));
+      setSharedLoaded(true);
+    });
+    const t1 = setTimeout(() => setSharedLoaded(false), 6000);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t1);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    };
+  }, []);
+
   const results = useMemo(
     () => ({
       down: compute(ticket, growth, years, "down"),
@@ -84,6 +117,36 @@ export function ScenarioSimulator() {
     setStake(DEFAULTS.stake);
     setGrowth(DEFAULTS.growth);
     setYears(DEFAULTS.years);
+  };
+
+  /* R4-2: copy a permalink carrying the current slider state */
+  const share = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#sim=${ticket},${stake},${growth},${years}`;
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      ok = true;
+    } catch {
+      // clipboard-write permission can be blocked — fall back to execCommand
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+    if (ok) {
+      setCopied(true);
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+      copiedTimer.current = setTimeout(() => setCopied(false), 2600);
+    }
   };
 
   const saveScenario = async () => {
@@ -139,6 +202,45 @@ export function ScenarioSimulator() {
                   {lang === "bn" ? "ইনপুট" : "Inputs"}
                 </p>
 
+                {/* R4-2: quick-start presets */}
+                <div className="mt-4">
+                  <p className="text-[11px] font-bold tracking-[0.14em] text-slate-400 uppercase">
+                    {t(SIM.presetsLabel)}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {SIM.presets.map((p) => {
+                      const active =
+                        ticket === p.values.ticket &&
+                        stake === p.values.stake &&
+                        growth === p.values.growth &&
+                        years === p.values.years;
+                      return (
+                        <motion.button
+                          key={p.key}
+                          type="button"
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            setTicket(p.values.ticket);
+                            setStake(p.values.stake);
+                            setGrowth(p.values.growth);
+                            setYears(p.values.years);
+                          }}
+                          title={t(p.desc)}
+                          aria-pressed={active}
+                          className={cn(
+                            "rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-200",
+                            active
+                              ? "border-nx-cyan-500 bg-nx-cyan-50 text-nx-cyan-700 shadow-[0_4px_14px_-6px_rgba(38,183,216,0.55)]"
+                              : "border-nx-navy-200 text-nx-navy-700 hover:-translate-y-0.5 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+                          )}
+                        >
+                          {t(p.name)}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="mt-6 space-y-7">
                   <SimSlider
                     label={t(SIM.controls.ticket)}
@@ -188,7 +290,10 @@ export function ScenarioSimulator() {
                     {t(SIM.impliedValuation)}
                   </p>
                   <p className="nx-num mt-1 text-lg font-extrabold text-nx-navy-900">
-                    {formatTk(Math.round(impliedValuation), lang)}
+                    <AnimatedNumber
+                      value={Math.round(impliedValuation)}
+                      format={(v) => formatTk(Math.round(v), lang)}
+                    />
                   </p>
                   <p className="mt-1 text-[11px] leading-snug text-slate-500">
                     <G term="valuation">{lang === "bn" ? "ভ্যালুয়েশন" : "Valuation"}</G>
@@ -197,17 +302,50 @@ export function ScenarioSimulator() {
                   </p>
                 </div>
 
-                <button
-                  onClick={reset}
-                  className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 px-4 py-2 text-xs font-bold text-nx-navy-800 transition-colors hover:border-nx-cyan-500 hover:text-nx-cyan-700"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                  {t(SIM.reset)}
-                </button>
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={reset}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 px-4 py-2 text-xs font-bold text-nx-navy-800 transition-colors hover:border-nx-cyan-500 hover:text-nx-cyan-700"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                    {t(SIM.reset)}
+                  </button>
+                  <button
+                    onClick={share}
+                    title={t(SIM.shareHint)}
+                    aria-live="polite"
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-colors",
+                      copied
+                        ? "border-nx-verified/50 bg-nx-verified-bg text-nx-verified"
+                        : "border-nx-navy-200 text-nx-navy-800 hover:border-nx-cyan-500 hover:text-nx-cyan-700"
+                    )}
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    ) : (
+                      <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    )}
+                    {copied ? t(SIM.copied) : t(SIM.shareLabel)}
+                  </button>
+                </div>
               </div>
 
               {/* ── Results ── */}
               <div className="p-6 md:p-8">
+                <AnimatePresence>
+                  {sharedLoaded && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      className="mb-4 flex w-fit items-center gap-1.5 rounded-full border border-nx-verified/40 bg-nx-verified-bg px-3.5 py-1.5 text-xs font-bold text-nx-verified"
+                    >
+                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t(SIM.sharedApplied)}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
                 <div className="space-y-5">
                   {scenarioMeta.map(({ key, icon: Icon, barClass, chipClass, lead }) => {
                     const res = results[key];
@@ -279,7 +417,10 @@ export function ScenarioSimulator() {
                           </p>
                           <p className="flex items-baseline gap-2.5">
                             <span className="nx-num text-base font-extrabold text-nx-navy-900">
-                              {formatTk(Math.round(res.proceeds), lang)}
+                              <AnimatedNumber
+                                value={res.proceeds}
+                                format={(v) => formatTk(Math.round(v), lang)}
+                              />
                             </span>
                             <span
                               className={cn(
@@ -389,7 +530,16 @@ function SimSlider({
       <div className="flex items-baseline justify-between gap-3">
         <label className="text-sm font-bold text-nx-navy-800">{label}</label>
         <span className="nx-num rounded-full bg-nx-navy-50 px-3 py-1 text-xs font-extrabold text-nx-navy-900">
-          {valueText}
+          {/* R4 polish: chip pulses on every value change */}
+          <motion.span
+            key={valueText}
+            initial={{ scale: 1.2 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+            className="inline-block"
+          >
+            {valueText}
+          </motion.span>
         </span>
       </div>
       <Slider

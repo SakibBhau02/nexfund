@@ -856,6 +856,7 @@ export const OPP_DLG = {
     { en: "Overview", bn: "সংক্ষিপ্ত বিবরণ" },
     { en: "Business Model", bn: "ব্যবসার মডেল" },
     { en: "Financials", bn: "আর্থিক অবস্থা" },
+    { en: "Scenarios", bn: "সিনারিও" },
     { en: "Team", bn: "টিম" },
     { en: "Use of Funds", bn: "তহবিলের ব্যবহার" },
     { en: "Key Risks", bn: "প্রধান ঝুঁকি" },
@@ -1069,7 +1070,141 @@ export const SIM = {
     en: "Couldn't save — check the email and try again.",
     bn: "সেভ হয়নি — ইমেইল দেখে আবার চেষ্টা করুন।",
   } as L,
+  /* R4-2: quick-start presets */
+  presetsLabel: { en: "Quick starts", bn: "কুইক স্টার্ট" } as L,
+  presets: [
+    {
+      key: "conservative",
+      name: { en: "Conservative", bn: "সংরক্ষণশীল" } as L,
+      desc: { en: "Smaller ticket, slower growth, longer hold.", bn: "ছোট টিকেট, ধীর বৃদ্ধি, দীর্ঘ ধারণ।" } as L,
+      values: { ticket: 75, stake: 8, growth: 6, years: 7 },
+    },
+    {
+      key: "balanced",
+      name: { en: "Balanced", bn: "ভারসাম্যপূর্ণ" } as L,
+      desc: { en: "The default starting point most investors model.", bn: "বেশিরভাগ বিনিয়োগকারী যেখান থেকে শুরু করেন।" } as L,
+      values: { ticket: 100, stake: 10, growth: 12, years: 5 },
+    },
+    {
+      key: "ambitious",
+      name: { en: "Ambitious", bn: "উচ্চাকাঙ্ক্ষী" } as L,
+      desc: { en: "Larger ticket, faster growth, shorter hold.", bn: "বড় টিকেট, দ্রুত বৃদ্ধি, ছোট ধারণ।" } as L,
+      values: { ticket: 200, stake: 20, growth: 20, years: 4 },
+    },
+  ] as {
+    key: string;
+    name: L;
+    desc: L;
+    values: { ticket: number; stake: number; growth: number; years: number };
+  }[],
+  /* R4-2: share-permalink of slider state */
+  shareLabel: { en: "Share this scenario", bn: "সিনারিও শেয়ার করুন" } as L,
+  shareHint: {
+    en: "Copies a link with your current inputs — send it to a friend or advisor.",
+    bn: "বর্তমান ইনপুটসহ একটি লিংক কপি হয় — বন্ধু বা অ্যাডভাইজারকে পাঠান।",
+  } as L,
+  copied: { en: "Link copied ✓", bn: "লিংক কপি হয়েছে ✓" } as L,
+  sharedApplied: { en: "Loaded a shared scenario ✓", bn: "শেয়ার করা সিনারিও লোড হয়েছে ✓" } as L,
 };
+
+/* ── Per-listing illustrative scenarios in opportunity dialog (blueprint §5.5, R4) ── */
+export type ScenMode = "equity" | "revshare";
+export type ScenAssumption = {
+  /** annual growth in % (equity mode) — unused in revshare */
+  growth?: number;
+  /** exit multiple (equity) or return multiple (revshare) */
+  multiple: number;
+  note: L;
+};
+export const SCEN = {
+  eyebrow: { en: "Illustrative scenarios", bn: "নমুনা সিনারিও" } as L,
+  ticketModeled: { en: "modeled on the midpoint ticket", bn: "মধ্যম টিকেট ধরে হিসাব" } as L,
+  modeEquity: { en: "Equity — exit model", bn: "ইক্যুইটি — এক্সিট মডেল" } as L,
+  modeRevshare: { en: "Revenue share — payback model", bn: "রেভিনিউ শেয়ার — পেব্যাক মডেল" } as L,
+  horizon: (y: number): L => ({
+    en: `${y}-year view`,
+    bn: `${bnDigit(y)} বছরের দৃশ্য`,
+  }),
+  revshareNote: {
+    en: "Revenue-share deals return a fixed multiple of your ticket, not an exit multiple — proceeds depend on the business keeping up its payments.",
+    bn: "রেভিনিউ-শেয়ার ডিলে টিকেটের একটি নির্দিষ্ট গুণিতক ফেরত আসে, এক্সিট মাল্টিপল নয় — ফেরত নির্ভর করে ব্যবসা পেমেন্ট ধরে রাখতে পারে কি নায়।",
+  } as L,
+  breakEven: { en: "dashed line = break-even (your ticket back)", bn: "ড্যাশড রেখা = ব্রেক-ইভেন (টিকেট ফেরত)" } as L,
+  footnote: {
+    en: "Assumptions are ours for illustration only — not the company's forecast and not advice. Private investments can lose all capital; this simple model ignores dilution, fees and taxes.",
+    bn: "অনুমানগুলো শুধুই নমুনা হিসেবে আমাদের — কোম্পানির পূর্বাভাস বা পরামর্শ নয়। প্রাইভেট বিনিয়োগে সম্পূর্ণ মূলধন হারানো সম্ভব; এই সরল মডেল ডিলিউশন, ফি ও কর ধরে না।",
+  } as L,
+  tryYourOwn: { en: "Try your own numbers", bn: "নিজের সংখ্যা দিয়ে দেখুন" } as L,
+  equityFallback: { years: 5, down: 0.6, base: 1.0, up: 1.25, baseGrowth: 10 } as const,
+  listings: {
+    "rmg-201-denim-knitwear": {
+      mode: "equity" as ScenMode,
+      years: 5,
+      ticket: 200,
+      down: {
+        growth: -5,
+        multiple: 0.6,
+        note: { en: "Western demand softens and buyer concentration bites; margins compress.", bn: "পশ্চিমা চাহিদা কমে ও অল্প কিছু বায়ারের ওপর নির্ভরতা চেপে ধরে; মার্জিন সংকুচিত হয়।" } as L,
+      } as ScenAssumption,
+      base: {
+        growth: 10,
+        multiple: 1.0,
+        note: { en: "Order book holds; the new line runs close to plan; the multiple holds.", bn: "অর্ডার বই ধরে থাকে; নতুন লাইন পরিকল্পনার কাছাকাছি চলে; মাল্টিপল অটুট থাকে।" } as L,
+      } as ScenAssumption,
+      up: {
+        growth: 18,
+        multiple: 1.25,
+        note: { en: "Certified capacity wins new buyers; premium pricing lifts margins.", bn: "সার্টিফায়েড ক্যাপাসিটি নতুন বায়ার আনে; প্রিমিয়াম দামে মার্জিন বাড়ে।" } as L,
+      } as ScenAssumption,
+    },
+    "agf-105-poultry-eggs": {
+      mode: "revshare" as ScenMode,
+      years: 4,
+      ticket: 75,
+      down: {
+        multiple: 0.75,
+        note: { en: "Feed costs spike or a disease outbreak disrupts supply; payments slow.", bn: "খাদ্যব্যয় বাড়ে বা রোগের প্রাদুর্ভাবে সরবরাহ ব্যাহত হয়; পেমেন্ট ধীর হয়ে যায়।" } as L,
+      } as ScenAssumption,
+      base: {
+        multiple: 1.5,
+        note: { en: "The farm hits contracted volumes; the fixed share pays on schedule.", bn: "ফার্ম চুক্তিভিত্তিক ভলিউমে পৌঁছায়; নির্দিষ্ট শেয়ার সময়মতো পরিশোধ হয়।" } as L,
+      } as ScenAssumption,
+      up: {
+        multiple: 2.1,
+        note: { en: "Retail and bakery contracts expand; the share pays out early.", bn: "রিটেইল ও বেকারি চুক্তি বাড়ে; শেয়ার নির্ধারিত সময়ের আগেই পরিশোধ হয়।" } as L,
+      } as ScenAssumption,
+    },
+    "ccl-308-cold-chain": {
+      mode: "equity" as ScenMode,
+      years: 5,
+      ticket: 300,
+      down: {
+        growth: 2,
+        multiple: 0.55,
+        note: { en: "Power costs and utilization disappoint; expansion stalls.", bn: "বিদ্যুৎ ব্যয় ও ব্যবহারের হার হতাশ করে; সম্প্রসারণ আটকে যায়।" } as L,
+      } as ScenAssumption,
+      base: {
+        growth: 20,
+        multiple: 1.0,
+        note: { en: "Pharma and grocery contracts fill the new capacity on schedule.", bn: "ফার্মা ও গ্রোসারি চুক্তি নতুন ক্যাপাসিটি সময়মতো পূরণ করে।" } as L,
+      } as ScenAssumption,
+      up: {
+        growth: 28,
+        multiple: 1.15,
+        note: { en: "Cold-chain demand compounds; the network commands a premium multiple.", bn: "কোল্ড-চেইন চাহিদা যৌগিক হারে বাড়ে; নেটওয়ার্ক প্রিমিয়াম মাল্টিপল পায়।" } as L,
+      } as ScenAssumption,
+    },
+  } as Record<
+    string,
+    { mode: ScenMode; years: number; ticket: number; down: ScenAssumption; base: ScenAssumption; up: ScenAssumption }
+  >,
+};
+
+/** Bangla digit helper for content-level interpolation */
+function bnDigit(n: number): string {
+  const map = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return String(n).replace(/[0-9]/g, (d) => map[Number(d)]);
+}
 
 /* ── Express-interest form in opportunity dialog (blueprint §7 #19, R3) ── */
 export const EXPRESS = {
@@ -1098,4 +1233,351 @@ export const EXPRESS = {
     en: "Something went wrong — please try again.",
     bn: "কিছু একটা সমস্যা হয়েছে — আবার চেষ্টা করুন।",
   } as L,
+};
+
+/* ── Insight article reader (R4-3) ── */
+export const READER = {
+  updatedLabel: { en: "Updated", bn: "হালনাগাদ" } as L,
+  keyTakeawaysTitle: { en: "Key takeaways", bn: "মূল কথা" } as L,
+  termsLabel: { en: "Terms explained", bn: "শব্দের ব্যাখ্যা" } as L,
+  nextStepsTitle: { en: "Next steps", bn: "পরবর্তী পদক্ষেপ" } as L,
+  nextStepsSub: {
+    en: "This guide is free to read — no registration needed. When you're ready for live, vetted opportunities, the Deal Room is one step away.",
+    bn: "এই গাইড পড়তে কোনো রেজিস্ট্রেশন লাগে না। যাচাই-করা সরাসরি সুযোগ দেখতে যখন প্রস্তুত হবেন, ডিল রুম তখন এক ধাপ দূরে।",
+  } as L,
+  registerCta: { en: "Register for the Deal Room", bn: "ডিল রুমে রেজিস্টার করুন" } as L,
+  bookCallCta: { en: "Book a Call", bn: "কল বুক করুন" } as L,
+  scrollProgressAria: { en: "Reading progress", bn: "পড়ার অগ্রগতি" } as L,
+  notFound: {
+    en: "This guide could not be found. Close it and open it again from the Insights section.",
+    bn: "গাইডটি খুঁজে পাওয়া যায়নি। বন্ধ করে ইনসাইটস থেকে আবার খুলুন।",
+  } as L,
+};
+
+/** One numbered section inside an article (list = optional bullet items). */
+export type ArticleSection = { h: L; body: L; list?: L[] };
+
+/**
+ * Full bilingual article bodies behind the three Insights cards (R4-3).
+ * Keys are the INSIGHTS.articles slugs. `updated` is an ISO date.
+ */
+export const ARTICLES: Record<
+  string,
+  { updated: string; sections: ArticleSection[]; takeaways: L[]; terms: string[] }
+> = {
+  "sme-due-diligence-checklist": {
+    updated: "2026-09-08",
+    sections: [
+      {
+        h: { en: "Why a checklist, not a feeling", bn: "অনুভূতি নয়, চেকলিস্ট কেন" } as L,
+        body: {
+          en: "Most SME investments in Bangladesh don't go wrong because the idea was bad. They go wrong because nobody checked the basics — the company wasn't properly registered, the owner wasn't who they claimed to be, or the bank statements told a different story than the pitch deck. A founder's confidence is not evidence. This is the checklist we run before any business enters our Deal Room: twelve checks, grouped into four themes, in the order we actually do them.\n\nWork through it in order. The first theme is cheap to verify and filters out impostors fast. The later themes take longer, but they tell you whether the business can actually absorb your money — and what it plans to do with it.",
+          bn: "বাংলাদেশে বেশিরভাগ এসএমই বিনিয়োগ ব্যর্থ হয় আইডিয়া খারাপ থাকার কারণে নয়। ব্যর্থ হয় কারণ কেউ মৌলিক বিষয়গুলোই যাচাই করেনি — কোম্পানির নিবন্ধন ঠিক ছিল না, মালিক যে দাবি করছিলেন তিনি-ই ছিলেন না, বা ব্যাংক স্টেটমেন্ট পিচ ডেকের গল্পের সাথে মিলছিল না। ফাউন্ডারের আত্মবিশ্বাস প্রমাণ নয়। ডিল রুমে ঢোকানোর আগে আমরা যে চেকলিস্ট চালাই এটাই: বারোটি যাচাই, চারটি থিমে সাজানো, যে ক্রমে আমরা কাজ করি।\n\nক্রম মেনেই এগোন। প্রথম থিমটি যাচাই করা সস্তা, আর ভুয়া দাবি সেখানেই দ্রুত বাদ পড়ে। পরের থিমগুলোতে সময় লাগে, কিন্তু সেখানেই বোঝা যায় ব্যবসাটি সত্যিই আপনার টাকা হজম করতে পারবে কি না — আর সেই টাকায় কী করতে চায়।",
+        } as L,
+      },
+      {
+        h: { en: "Identity & ownership — points 1 to 4", bn: "পরিচয় ও মালিকানা — পয়েন্ট ১–৪" } as L,
+        body: {
+          en: "Before you look at any numbers, confirm the business legally exists and find out who actually owns it. In Bangladesh that means three documents and one register. Each is a five-minute check.",
+          bn: "কোনো সংখ্যায় তাকানোর আগে নিশ্চিত করুন ব্যবসাটি আইনগতভাবে আছে, আর আসলে কে মালিক। বাংলাদেশে তার জন্য লাগে তিনটি নথি আর একটি রেজিস্টার — প্রতিটিই পাঁচ মিনিটের যাচাই।",
+        } as L,
+        list: [
+          {
+            en: "RJSC incorporation papers — registered with the Register of Joint Stock Companies and Firms. The company name on the papers must match the name on the bank account they want you to send money to.",
+            bn: "আরজেএসসি নিবন্ধনপত্র — রেজিস্টার অব জয়েন্ট স্টক কোম্পানিজ অ্যান্ড ফার্মসে নিবন্ধিত। নথির কোম্পানির নাম আর যে ব্যাংক হিসাবে টাকা চাওয়া হবে তার নাম এক হতে হবে।",
+          } as L,
+          {
+            en: "Trade license — issued by the City Corporation or local authority, renewed for the current year. An expired license is a small thing that signals bigger neglect.",
+            bn: "ট্রেড লাইসেন্স — সিটি কর্পোরেশন বা স্থানীয় কর্তৃপক্ষ প্রদত্ত, চলতি বছরে নবায়নকৃত। মেয়াদোত্তীর্ণ লাইসেন্স ছোট বিষয়, কিন্তু বড় অবহেলার ইঙ্গিত।",
+          } as L,
+          {
+            en: "TIN and BIN — the entity's Tax Identification Number and its Business Identification Number for VAT. Ask whether VAT returns are actually being filed; a BIN nobody files under is a quiet warning.",
+            bn: "টিআইএন ও বিআইএন — প্রতিষ্ঠানের কর শনাক্তকরণ নম্বর এবং ভ্যাটের বিজনেস আইডেন্টিফিকেশন নম্বর। জিজ্ঞেস করুন ভ্যাট রিটার্ন আদৌ জমা হচ্ছে কি না; যে বিআইএন-এর অধীনে কেউ কিছু জমা দেয় না, সেটি নীরব সতর্কবার্তা।",
+          } as L,
+          {
+            en: "Shareholder register — the current owners with percentages. Who really controls the company? Side arrangements (“my uncle actually holds 30%”) must surface now, not after your money is in.",
+            bn: "শেয়ারহোল্ডার রেজিস্টার — বর্তমান মালিকদের তালিকা, শতকরা অংশসহ। কোম্পানি আসলে কে নিয়ন্ত্রণ করেন? পার্শ্বচুক্তি (“আসলে আমার চাচা ৩০% রাখেন”) এখনই বেরিয়ে আসা চাই, টাকা ঢোকানোর পরে নয়।",
+          } as L,
+        ],
+      },
+      {
+        h: { en: "Financials — points 5 to 7", bn: "আর্থিক বিবরণী — পয়েন্ট ৫–৭" } as L,
+        body: {
+          en: "SME financials in Bangladesh are often informal, so the standard is not a Big Four audit. The standard is simpler and much harder to fake: consistency with the bank statements.",
+          bn: "বাংলাদেশে এসএমই-এর হিসাব প্রায়ই অনানুষ্ঠানিক, তাই মানদণ্ড বড় ফার্মের অডিট নয়। মানদণ্ড সহজ কিন্তু ভাঁড়ানো অনেক কঠিন: ব্যাংক স্টেটমেন্টের সাথে মিল আছে কি না।",
+        } as L,
+        list: [
+          {
+            en: "Audited or reviewed statements — at least the last two years, prepared by a named practitioner you can actually contact.",
+            bn: "অডিটেড বা রিভিউড বিবরণী — অন্তত গত দুই বছরের, যে হিসাবরক্ষকের নাম দেওয়া আছে তাঁর সাথে সত্যিই যোগাযোগ করা যায়।",
+          } as L,
+          {
+            en: "Bank statements against claimed revenue — the single most useful check in this whole list. Deposits that don't match the claimed sales, heavy unexplained cash withdrawals, or round-number transfers between personal accounts tell a different story than the deck does.",
+            bn: "দাবি করা আয়ের বিপরীতে ব্যাংক স্টেটমেন্ট — পুরো তালিকার সবচেয়ে কার্যকর যাচাই। বিক্রয়ের দাবির সাথে জমা না মিললে, ব্যাখ্যাহীন নগদ উত্তোলন বেশি হলে, বা ব্যক্তিগত হিসাবের মধ্যে গোল অঙ্কের লেনদেন চললে — স্টেটমেন্ট ডেকের চেয়ে ভিন্ন গল্প বলে।",
+          } as L,
+          {
+            en: "Debt schedule — every loan: from whom, at what rate, secured against what, and whether repayments are current. Quiet term loans from NGOs, microfinance institutions or family members surface here — and they stand ahead of you in the queue if things go wrong.",
+            bn: "দায়ের তালিকা — প্রতিটি ঋণ: কার কাছ থেকে, কী হারে, কী জামানতে, কিস্তি চলছে কি না। এনজিও, মাইক্রোফাইন্যান্স প্রতিষ্ঠান বা পরিবারের কাছ থেকে নেওয়া চুপচাপ ঋণ এখানেই বেরিয়ে আসে — আর বিপদে পড়লে এই ঋণগুলো লাইনে আপনার আগেই দাঁড়িয়ে থাকে।",
+          } as L,
+        ],
+      },
+      {
+        h: { en: "Operations — points 8 to 10", bn: "পরিচালনা — পয়েন্ট ৮–১০" } as L,
+        body: {
+          en: "These checks ask whether the business works day to day — and whether it depends on one fragile relationship to survive.",
+          bn: "এই যাচাইগুলো দেখে ব্যবসাটি দিন প্রতিদিন চলে কি না — আর টিকে থাকতে একটি ভঙ্গুর সম্পর্কের ওপর নির্ভর করে কি না।",
+        } as L,
+        list: [
+          {
+            en: "Customer concentration — if one buyer is more than half of revenue, you're not investing in a business; you're investing in that relationship. What happens to it if the founder steps back?",
+            bn: "গ্রাহক ঘনত্ব — একজন ক্রেতা যদি আয়ের অর্ধেকের বেশি হয়, তবে আপনি ব্যবসায় বিনিয়োগ করছেন না; সেই সম্পর্কে করছেন। ফাউন্ডার পিছনে সরলে সেই সম্পর্কের কী হবে?",
+          } as L,
+          {
+            en: "Supplier terms — advance payment or credit? Single-source imported inputs? What happens if the main supplier raises prices or stops supplying? Fragile inputs cap how much money the business can usefully absorb.",
+            bn: "সরবরাহকারীর শর্ত — আগে টাকা, নাকি বাকিতে মাল? ইনপুট কি একটাই উৎস থেকে আমদানি হয়? প্রধান সরবরাহকারী দাম বাড়ালে বা মাল বন্ধ করলে কী হবে? ভঙ্গুর ইনপুট ঠিক করে দেয় ব্যবসাটি কাজে লাগাতে পারবে কত টাকা — তার সর্বোচ্চ সীমা।",
+          } as L,
+          {
+            en: "Inventory and physical checks — count what can be counted. Visit the factory, the godown, the shop floor, unannounced if you can. Photos in a deck age quickly; a physical visit does not.",
+            bn: "মজুত ও সরাসরি পরিদর্শন — যা গোনা যায়, গুনে দেখুন। কারখানা, গুদাম, দোকানের ফ্লোর — সম্ভব হলে আগে জানিয়ে না গিয়েই। ডেকের ছবি তাড়াতাড়ি পুরনো হয়ে যায়; নিজে ঘুরে দেখা হয় না।",
+          } as L,
+        ],
+      },
+      {
+        h: { en: "The deal itself — points 11 and 12", bn: "ডিল নিজেই — পয়েন্ট ১১–১২" } as L,
+        body: {
+          en: "The last two checks are about the future rather than the past: what the money is for, and whether the words around it will hold.",
+          bn: "শেষ দুটি যাচাই অতীত নয়, ভবিষ্যতের বিষয়ে: টাকাটা কী কাজে লাগবে, আর কথার চারপাশের বাঁধন টিকবে কি না।",
+        } as L,
+        list: [
+          {
+            en: "Use of funds — where exactly the money goes, in what order, tied to which milestones. “Working capital” is not an answer; a month-by-month plan is.",
+            bn: "তহবিলের ব্যবহার — টাকা ঠিক কোথায় যাবে, কোন ক্রমে, কোন মাইলফলকগুলোর সাথে বাঁধা। “ওয়ার্কিং ক্যাপিটাল” উত্তর নয়; মাস ধরে সাজানো পরিকল্পনা উত্তর।",
+          } as L,
+          {
+            en: "Written agreements and references — every term in writing and signed, and conversations with at least two people who have dealt with the founder before: a supplier, a former employee, a previous investor. Phone calls, not letters of introduction.",
+            bn: "লিখিত চুক্তি ও রেফারেন্স — প্রতিটি শর্ত লিখিত ও স্বাক্ষরিত, আর ফাউন্ডারের সাথে আগে কাজ করা অন্তত দুজনের সাথে সরাসরি কথা: একজন সরবরাহকারী, একজন সাবেক কর্মী, বা আগের কোনো বিনিয়োগকারী। পরিচিতির চিঠি নয়, ফোনকল।",
+          } as L,
+        ],
+      },
+      {
+        h: { en: "What documents to ask for first", bn: "প্রথমে কোন নথিগুলো চাইবেন" } as L,
+        body: {
+          en: "Don't request everything on day one — a founder running a real business can't produce fifty files overnight, and shouldn't have to. Ask for a small first batch and watch how the request is handled:\n\nA serious founder will organize these into a data room and won't balk at signing an NDA first — that's standard professional practice, not an insult. Endless delays, phone photos of documents, or “we'll show you everything after you commit” are answers in themselves.",
+          bn: "প্রথম দিনেই সব কিছু চাইবেন না — সত্যিকারের ব্যবসা চালানো ফাউন্ডার রাতারাতি পঞ্চাশটা ফাইল হাজির করতে পারেন না, পারার কথাও নয়। ছোট একটা প্রথম ব্যাচ চান, আর খেয়াল করুন অনুরোধটা কীভাবে সামলানো হয়:\n\nগুরুত্বশীল ফাউন্ডার এগুলো গুছিয়ে ডেটা রুম বানাবেন এবং আগে এনডিএ সই করতে দ্বিধা করবেন না — এটা পেশাদারি প্রথা, অপমান নয়। অহরহ দেরি, নথির ফোনে-তোলা ছবি, বা “কমিট করার পরে সব দেখাব” — এগুলো নিজেই এক একটা উত্তর।",
+        } as L,
+        list: [
+          { en: "RJSC incorporation papers, trade license, TIN and BIN certificates", bn: "আরজেএসসি নিবন্ধনপত্র, ট্রেড লাইসেন্স, টিআইএন ও বিআইএন সনদ" } as L,
+          { en: "Bank statements for the last 12 months — all accounts, all pages, collected from the bank directly", bn: "গত ১২ মাসের ব্যাংক স্টেটমেন্ট — সব হিসাব, সব পাতা, সরাসরি ব্যাংক থেকে সংগ্রহ করা" } as L,
+          { en: "The shareholder register and copies of any loan agreements", bn: "শেয়ারহোল্ডার রেজিস্টার এবং ঋণসংক্রান্ত চুক্তিপত্রের কপি" } as L,
+          { en: "The use-of-funds plan, month by month", bn: "মাস ধরে সাজানো তহবিল ব্যবহারের পরিকল্পনা" } as L,
+        ],
+      },
+      {
+        h: { en: "A final word", bn: "শেষ কথা" } as L,
+        body: {
+          en: "No checklist makes an investment safe. Businesses fail with perfect paperwork. The honest purpose of due diligence is narrower: to replace the founder's story with evidence, so that the risk you take is the one you chose — not the one you never saw. If a check can't be completed, that isn't automatically a reason to walk away. It's a reason to price the risk, ask for protections, or slow down before any money moves.",
+          bn: "কোনো চেকলিস্টই বিনিয়োগকে নিরাপদ করে না। নিখুঁত কাগজপত্র নিয়েও ব্যবসা ডুবে যায়। ডিউ ডিলিজেন্সের সৎ উদ্দেশ্য আরও সরু: ফাউন্ডারের গল্পের জায়গায় প্রমাণ বসানো, যাতে যে ঝুঁকি আপনি নিচ্ছেন সেটা আপনার বেছে নেওয়া ঝুঁকি হয় — চোখের আড়ালে থাকা নয়। কোনো যাচাই সম্পন্ন হতে না পারলে সেটা এমনিই বাদ দেওয়ার কারণ নয়। সেটা ঝুঁকির দাম ধরার, সুরক্ষা চাওয়ার, বা টাকা চলার আগে ধীর হওয়ার কারণ।",
+        } as L,
+      },
+    ],
+    takeaways: [
+      {
+        en: "Identity checks are cheap and fast — RJSC, trade license, TIN/BIN and the shareholder register filter out impostors before any money is discussed.",
+        bn: "পরিচয়ের যাচাই সস্তা ও দ্রুত — আরজেএসসি, ট্রেড লাইসেন্স, টিআইএন/বিআইএন ও শেয়ারহোল্ডার রেজিস্টার টাকার প্রসঙ্গ আসার আগেই ভুয়া দাবি ছেঁকে ফেলে।",
+      } as L,
+      {
+        en: "Bank statements beat pitch decks — match deposits to claimed revenue before you believe any number.",
+        bn: "পিচ ডেকের চেয়ে ব্যাংক স্টেটমেন্ট বিশ্বাসযোগ্য — কোনো সংখ্যায় বিশ্বাস করার আগে জমাকে আয়ের দাবির সাথে মেলান।",
+      } as L,
+      {
+        en: "Ask for the debt schedule — hidden loans stand ahead of you in the queue when things go wrong.",
+        bn: "দায়ের তালিকা চান — বিপদে পড়লে লুকানো ঋণ লাইনে আপনার আগেই দাঁড়িয়ে থাকে।",
+      } as L,
+      {
+        en: "Concentration is the quiet killer — one dominant customer or supplier deserves its own risk price.",
+        bn: "ঘনত্বই নীরব ঘাতক — একটাই প্রধান গ্রাহক বা সরবরাহকারীর জন্য আলাদা ঝুঁকির দাম রাখুন।",
+      } as L,
+      {
+        en: "A tidy data room and a signed NDA are the marks of a founder who has done this before.",
+        bn: "গোছানো ডেটা রুম আর সই করা এনডিএ — আগে এমন কাজ করেছেন, সেই ফাউন্ডারের চিহ্ন।",
+      } as L,
+    ],
+    terms: ["due diligence", "data room", "nda", "capital loss"],
+  },
+
+  "valuation-basics-for-founders": {
+    updated: "2026-09-15",
+    sections: [
+      {
+        h: { en: "What valuation actually is", bn: "ভ্যালুয়েশন আসলে কী" } as L,
+        body: {
+          en: "Valuation is not the value of your dream. It is the price of a slice of your business today, agreed between two people who want opposite things — you want the slice to be expensive, the investor wants it cheap. That tension is normal and healthy. What matters is what stands behind the number once the negotiation is over.",
+          bn: "ভ্যালুয়েশন আপনার স্বপ্নের দাম নয়। এটা আপনার ব্যবসার একটা টুকরোর আজকের দাম — দুজন মানুষের মধ্যে সম্মত, যাঁরা চান উল্টো জিনিস: আপনি চান টুকরোটা দামি হোক, বিনিয়োগকারী চান সস্তা হোক। এই টানাপোড়েন স্বাভাবিক এবং স্বাস্থ্যকর। আসল প্রশ্ন একটাই — আলোচনা শেষে সংখ্যাটার পেছনে কী দাঁড়িয়ে আছে।",
+        } as L,
+      },
+      {
+        h: { en: "Investors price risk, not stories", bn: "বিনিয়োগকারীরা ঝুঁকির দাম বাঁধেন, গল্পের নয়" } as L,
+        body: {
+          en: "When an investor reads your numbers, one question runs underneath everything: what can go wrong here, and what happens to my money when it does? Every risk they see — an unproven team, one dominant customer, imported inputs, thin margins, no clear exit — either lowers the price or demands a protection in the agreement. You can't argue a discount away with passion. You remove it with evidence.",
+          bn: "বিনিয়োগকারী আপনার সংখ্যাগুলো পড়লে ভেতরে ভেতরে একটাই প্রশ্ন চলে: এখানে কী ভুল হতে পারে, আর হলে আমার টাকার কী হবে? তাঁর চোখে পড়া প্রতিটি ঝুঁকি — অপরীক্ষিত টিম, একটাই বড় গ্রাহক, আমদানি-নির্ভর ইনপুট, পাতলা মার্জিন, অস্পষ্ট এক্সিট — হয় দাম কমায়, নয়তো চুক্তিতে সুরক্ষা চায়। আবেগ দিয়ে কোনো ছাড় ঘুচিয়ে ফেলা যায় না। প্রমাণ দিয়ে সরাতে হয়।",
+        } as L,
+      },
+      {
+        h: { en: "Comparable deals set the frame", bn: "তুলনাযোগ্য ডিলই দাঁড় করায় কাঠামো" } as L,
+        body: {
+          en: "Nobody values a business in a vacuum. The honest anchor is what similar businesses — same sector, similar size, similar earnings — recently raised money at or sold for. In Bangladesh, public comparables are scarce, so investors triangulate from listed-company figures, private deals they have personally seen, and plain benchmarks of experience. When a number lands on the table, ask which deals it is being compared to. If the answer is vague, the number is arbitrary — and arbitrary cuts both ways.",
+          bn: "কেউ শূন্য থেকে ব্যবসার দাম ধরে না। সৎ নোঙর হলো: একই খাতের, কাছাকাছি আকার ও আয়ের ব্যবসা সম্প্রতি কোন দামে টাকা তুলেছে বা বিক্রি হয়েছে। বাংলাদেশে প্রকাশ্য তুলনা পাওয়া কঠিন, তাই বিনিয়োগকারীরা লিস্টেড কোম্পানির সংখ্যা, নিজে দেখা প্রাইভেট ডিল আর অভিজ্ঞতার ভাঙানোকে মিলিয়ে আন্দাজ করেন। টেবিলে দাম এলে জিজ্ঞেস করুন, কোন কোন ডিলের সাথে তুলনা করা হচ্ছে। উত্তর অস্পষ্ট হলে দামটা ইচ্ছেমতো — আর ইচ্ছেমতো দাম দুই দিকেই কাটে।",
+        } as L,
+      },
+      {
+        h: { en: "Earnings quality beats revenue vanity", bn: "আয়ের গুণ জেতে, রাজস্বের অহংকার হারে" } as L,
+        body: {
+          en: "“We did two crore in sales” is a vanity number until you show what stayed behind. Investors look at gross margin after real costs; at net profit that survives honest accounting — your own salary counted, family members on the payroll counted; and at cash actually collected, because in Bangladeshi SMEs a lot of revenue sold on credit is revenue only on paper. A business with 80 lakh in revenue and 12 lakh of clean profit is usually worth more than one with 3 crore in revenue and nothing left. And if you're growing losses, have a story about exactly when they stop.",
+          bn: "“আমরা দুই কোটি বিক্রি করেছি” — কী থেকে গেল সেটা না দেখালে এটা অলংকারের সংখ্যা। বিনিয়োগকারী দেখেন প্রকৃত খরচ বাদ দিয়ে গ্রস মার্জিন; সৎ হিসাবে টেকে এমন নিট মুনাফা — আপনার বেতন ধরা, পে-রোলে থাকা পরিবারের সদস্যদের ধরা; আর সত্যিই যে টাকা নগদে এসেছে — কারণ বাংলাদেশের এসএমই-তে বাকিতে বিক্রির বড় অংশ কাগজে-কাগজেই থেকে যায়। ৮০ লক্ষ আয়ে ১২ লক্ষ পরিষ্কার মুনাফা সাধারণত ৩ কোটি আয়ে শূন্য অবশিষ্টের চেয়ে বেশি মূল্যের। আর লোকসান নিয়ে বাড়ছেন? ঠিক কখন থামবে — সেই গল্পটা আগেই তৈরি রাখুন।",
+        } as L,
+      },
+      {
+        h: { en: "Simple anchors for SMEs", bn: "এসএমই-এর জন্য সহজ নোঙর" } as L,
+        body: {
+          en: "For small private businesses, investors rarely pay for potential. The common anchors: a multiple of sustainable earnings — modest single digits for most traditional SMEs, higher only for genuinely scalable models; a multiple of revenue, but only where margins and growth justify it; and the blunt question, “if this business stopped growing today, what would its cash flow be worth?” If your asking valuation implies an earnings multiple several times what the stock market pays for similar listed businesses, expect a very short conversation.",
+          bn: "ছোট প্রাইভেট ব্যবসায় বিনিয়োগকারীরা সম্ভাবনার দাম কদাচিৎ দেন। সাধারণ নোঙর: টেকসই আয়ের গুণিতক — প্রচলিত এসএমই-এর জন্য বিনয়ী এক-অঙ্কের সংখ্যা, বাড়তি শুধু সত্যিকারের স্কেলযোগ্য মডেলে; রাজস্বের গুণিতক — কিন্তু কেবল যেখানে মার্জিন ও প্রবৃদ্ধি তা বহন করতে পারে; আর খোঁচা-দেওয়া প্রশ্নটি — “আজ যদি বৃদ্ধি থেমে যায়, এই ব্যবসার ক্যাশ প্রবাহের দাম কত?” আপনার চাওয়া ভ্যালুয়েশন যদি ইঙ্গিত করে এমন একটা আয়-গুণিতকের, যা শেয়ারবাজার অনুরূপ লিস্টেড ব্যবসার জন্য দেয় — তার কয়েক গুণ — তবে সেই আলাপ খুব ছোট হবে।",
+        } as L,
+      },
+      {
+        h: { en: "Dilution — the round after this one", bn: "ডাইলিউশন — এই রাউন্ডের পরের রাউন্ড" } as L,
+        body: {
+          en: "If an investor takes 20% today and you raise again next year, the new round dilutes both of you — but you're the one who ends up with less control. Founders who negotiate only today's percentage often hand over the company by round three without ever deciding to. Before you sign anything, model two rounds ahead: who holds what, who controls the board, which veto rights have stacked up. Then negotiate this round with that picture in front of you.",
+          bn: "আজ বিনিয়োগকারী ২০% নিলেন, আর আপনি আগামী বছর আবার টাকা তুললে নতুন রাউন্ড দুজনকেই ডাইলিউট করে — কিন্তু নিয়ন্ত্রণ কমে পড়ে আপনার হাতেই। যাঁরা শুধু আজকের শতকরা নিয়ে আলোচনা করেন, তাঁরা প্রায়ই তৃতীয় রাউন্ডে কোম্পানির চাবি বুঝতে-না-বুঝতেই হস্তান্তর করে ফেলেন। সই করার আগে দুই রাউন্ড পরের হিসাব করুন: কে কত অংশ ধরে আছে, বোর্ড কে নিয়ন্ত্রণ করে, কতগুলো ভেটো রাইট জমেছে। তারপর ওই ছবিটা সামনে রেখে এই রাউন্ডের আলোচনা করুন।",
+        } as L,
+      },
+      {
+        h: { en: "What makes a valuation defensible", bn: "কোন ভ্যালুয়েশন রক্ষা করা যায়" } as L,
+        body: {
+          en: "A defensible valuation survives the comparables question. It is consistent with the quality of your earnings. It leaves the investor a credible return after a realistic downside case — not just the case where everything works. And it doesn't depend on one irreplaceable person, because investors price that person's departure whether you do or not. If your number only works when everything goes right, it isn't a valuation. It's a hope with a price tag on it.\n\nAnd remember what you're actually selling. An equity investor isn't buying your past; they're buying a share of future profits and a believable exit. No believable exit — no price, however beautiful the story.",
+          bn: "রক্ষাযোগ্য ভ্যালুয়েশন তুলনার প্রশ্ন সইতে পারে। আপনার আয়ের গুণের সাথে সামঞ্জস্য রাখে। বাস্তবসম্মত ডাউনসাইড হিসাবের পরেও — কেবল সব-ঠিক-থাকলে দশার পরে নয় — বিনিয়োগকারীর জন্য বিশ্বাসযোগ্য রিটার্ন রেখে দেয়। আর একজন অপরিহার্য মানুষের ওপর ভর করে না, কারণ আপনি ধরেন আর না ধরেন, বিনিয়োগকারী সেই মানুষটির চলে যাওয়ার দাম হিসাবেই রাখেন। যে সংখ্যা শুধু সব ঠিক গেলে খায়, সেটা ভ্যালুয়েশন নয়। সেটা দাম-লেখা একটা আশা।\n\nআর মনে রাখুন আপনি আসলে কী বিক্রি করছেন। ইক্যুইটি বিনিয়োগকারী আপনার অতীত কেনেন না; কেনেন ভবিষ্যতের মুনাফার একটা অংশ আর একটা বিশ্বাসযোগ্য এক্সিট। বিশ্বাসযোগ্য এক্সিট নেই — দাম নেই, গল্প যত সুন্দরই হোক।",
+        } as L,
+      },
+    ],
+    takeaways: [
+      {
+        en: "Investors price risk — every risk you remove with evidence moves the price up more than any pitch can.",
+        bn: "বিনিয়োগকারীরা ঝুঁকির দাম বাঁধেন — প্রমাণ দিয়ে সরানো প্রতিটি ঝুঁকি যেকোনো পিচের চেয়ে বেশি দাম বাড়ায়।",
+      } as L,
+      {
+        en: "Ask which comparable deals frame your number — vague comparables mean an arbitrary price.",
+        bn: "জিজ্ঞেস করুন কোন ডিলগুলোর তুলনায় আপনার দাম ধরা — অস্পষ্ট তুলনা মানে যেকোনো-মতো দাম।",
+      } as L,
+      {
+        en: "Profit that survives honest accounting beats a big revenue figure — show what stays, not what flows.",
+        bn: "সৎ হিসাবে টেকা মুনাফা বড় রাজস্বের সংখ্যাকে হারায় — কী বয়ে গেল তা নয়, কী থেকে গেল সেটা দেখান।",
+      } as L,
+      {
+        en: "Model two rounds of dilution before you sign one.",
+        bn: "একটি রাউন্ডে সই করার আগে দুই রাউন্ডের ডাইলিউশন হিসাব করুন।",
+      } as L,
+    ],
+    terms: ["valuation", "equity", "exit multiple", "multiple", "revenue share"],
+  },
+
+  "red-flags-in-investment-offers": {
+    updated: "2026-09-21",
+    sections: [
+      {
+        h: { en: "Good offers survive scrutiny", bn: "ভালো অফার যাচাই সইতে পারে" } as L,
+        body: {
+          en: "A legitimate investment offer is improved by questions, not damaged by them. Anyone selling an investment should welcome verification — references, documents, a lawyer reading the agreement — because a clean deal makes the sale easier. The flags below aren't proof of fraud. Each one is a reason to slow down and check. One flag is a question. Several together are an answer.",
+          bn: "বৈধ বিনিয়োগ অফার প্রশ্নে আরও পরিণত হয়, ভেঙে পড়ে না। যিনিই বিনিয়োগ বিক্রি করছেন, তিনি যাচাইকে স্বাগত জানাবেন — রেফারেন্স, নথি, চুক্তি পড়ছেন এমন একজন আইনজীবী — কারণ পরিষ্কার ডিল বিক্রিই সহজ করে। নিচের ফ্ল্যাগগুলো প্রতারণার প্রমাণ নয়। প্রতিটি একটা করে থামার ও যাচাইয়ের কারণ। একটা ফ্ল্যাগ একটা প্রশ্ন; একসাথে কয়েকটা — মিলেই একটা উত্তর।",
+        } as L,
+      },
+      {
+        h: { en: "Guaranteed returns", bn: "নিশ্চিত মুনাফার প্রতিশ্রুতি" } as L,
+        body: {
+          en: "“Guaranteed 24% per year, completely safe” — no. Private investment is risk capital. Returns depend on the business performing and an exit actually happening, and both can fail. In Bangladesh, guaranteed-return language is the signature of savings schemes and pyramid structures, not of equity investment. The stronger the guarantee, the faster you should reach for the door. Even instruments that feel safer, like revenue share, carry the quiet risk that the revenue simply stops.",
+          bn: "“বছরে নিশ্চিত ২৪%, সম্পূর্ণ নিরাপদ” — না। প্রাইভেট বিনিয়োগ ঝুঁকিপূর্ণ পুঁজি। রিটার্ন নির্ভর করে ব্যবসা চলবে কি না আর এক্সিট সত্যি হবে কি না — দুটোই ব্যর্থ হতে পারে। বাংলাদেশে নিশ্চিত-মুনাফার ভাষা সঞ্চয় কৌশল আর পিরামিড কাঠামোর স্বাক্ষর, ইক্যুইটি বিনিয়োগের নয়। গ্যারান্টি যত জোরালো, দরজার দিকে তত দ্রুত পা বাড়ান। রেভিনিউ শেয়ারের মতো নিরাপদ-মনে-হওয়া ব্যবস্থাতেও নীরব ঝুঁকি আছে — রাজস্ব এমনিই থেমে যেতে পারে।",
+        } as L,
+      },
+      {
+        h: { en: "Urgency and pressure", bn: "তাড়াহুড়া ও চাপ" } as L,
+        body: {
+          en: "“Only two days left.” “Three others are signing tonight.” Genuine deals survive a week of diligence; hollow ones die inside it. Urgency exists to stop you from doing exactly the things that would expose the problem — calling the references, reading the documents, consulting a lawyer. If a deadline is real, ask for it in writing with the reason attached. Then watch what happens to it under questions.",
+          bn: "“মাত্র দুই দিন বাকি।” “আজ রাতে আরও তিনজন সই করছেন।” সত্যিকারের ডিল এক সপ্তাহের যাচাই সইতে পারে; ফাঁপা ডিল তার ভেতরেই মরে। তাড়াহুড়ার কাজই হলো আপনাকে ঠিক সেই কাজগুলো থেকে আটকানো, যেগুলো সমস্যা বের করে আনত — রেফারেন্সে ফোন, নথি পড়া, আইনজীবীর পরামর্শ। সময়সীমা সত্যি হলে লিখিতভাবে, কারণসহ চান। তারপর দেখুন প্রশ্নের মুখে সেটা টেকে কি না।",
+        } as L,
+      },
+      {
+        h: { en: "Paper-trail problems", bn: "কাগজের পথে গোলমেলে চিহ্ন" } as L,
+        body: {
+          en: "Documents are the body language of a deal. Watch how they behave:",
+          bn: "নথি একটা ডিলের শারীরিক ভাষা। খেয়াল করুন এরা কেমন আচরণ করে:",
+        } as L,
+        list: [
+          {
+            en: "Missing or endlessly delayed documents — registration papers, audited statements, bank statements. “We'll share everything after you commit” is backwards. Documents come before money, every time.",
+            bn: "নথি নেই বা অন্তহীন দেরি হয় — নিবন্ধনপত্র, অডিটেড বিবরণী, ব্যাংক স্টেটমেন্ট। “কমিট করলে সব দেখাব” — কথাটা উল্টো। টাকার আগে নথি, প্রতিবারই।",
+          } as L,
+          {
+            en: "Unverifiable claims — a big foreign buyer “about to sign” whom nobody can name, references who can't be reached, awards that don't exist anywhere online. If a claim matters to the deal, it must be checkable.",
+            bn: "যাচাই-অযোগ্য দাবি — “সই করতে বসে আছে” এমন বড় বিদেশি ক্রেতা, যার নাম কেউ বলতে পারে না; যোগাযোগ করা যায় না এমন রেফারেন্স; অনলাইনে কোথাও নেই এমন পুরস্কার। দাবিটা ডিলের জন্য গুরুত্বপূর্ণ হলে সেটা যাচাইযোগ্যই হতে হবে।",
+          } as L,
+          {
+            en: "NDA misuse — a real NDA protects specific sensitive details. It is not a blanket excuse to hide the entire business from verification.",
+            bn: "এনডিএ-এর অপব্যবহার — আসল এনডিএ নির্দিষ্ট সংবেদনশীল তথ্য রক্ষা করে; পুরো ব্যবসাকে যাচাইয়ের বাইরে রাখার কম্বল নয়।",
+          } as L,
+        ],
+      },
+      {
+        h: { en: "Money questions", bn: "টাকার প্রশ্নগুলো" } as L,
+        body: {
+          en: "Two questions expose more hollow deals than any others: where do the fees go, and where is the downside case? Walking through the downside isn't pessimism — it's the whole job of investing.",
+          bn: "দুটো প্রশ্ন বাকি সবকিছুর চেয়ে বেশি ফাঁপা ডিল ধরে: ফি কোথায় যায়, আর ডাউনসাইডের হিসাবটা কোথায়? ডাউনসাইড ভেবে দেখা হতাশাবাদ নয় — বিনিয়োগের পুরো কাজটাই তা-ই।",
+        } as L,
+        list: [
+          {
+            en: "Unclear fees — success fees, “processing charges”, commissions quietly carved out of your capital. Ask for every fee in writing, in one list, before the money moves. A seller who resists that list is telling you something.",
+            bn: "অস্পষ্ট ফি — সাকসেস ফি, “প্রসেসিং চার্জ”, আপনার মূলধন থেকে চুপিসাড়ে কাটা কমিশন। টাকা চলার আগে সব ফি লিখিতভাবে, একটাই তালিকায় চান। যে বিক্রেতা তালিকাটা এড়াতে চান, তিনি নিজেই কিছু একটা বলে দিচ্ছেন।",
+          } as L,
+          {
+            en: "No downside case — if the seller can only describe what happens when things go well, they're describing half the investment. Ask for the failure case in numbers: what comes back to you, in what order, after creditors. “It won't fail” is not a downside case — it's a refusal.",
+            bn: "ডাউনসাইডের হিসাব নেই — বিক্রেতা যদি শুধু সব-ভালো-হলে-কী-হবে বর্ণনা করতে পারেন, তিনি বিনিয়োগের অর্ধেকটা বর্ণনা করছেন। সংখ্যায় ব্যর্থতার হিসাব চান: পাওনাদারদের পরে আপনার কী ফেরত আসে, কোন ক্রমে। “ব্যর্থ হবে না” কোনো ডাউনসাইড হিসাব নয় — সেটা অস্বীকৃতি।",
+          } as L,
+        ],
+      },
+      {
+        h: { en: "Unregistered sellers and skipped review", bn: "অনিবন্ধিত বিক্রেতা ও বাদ-পড়া আইনি যাচাই" } as L,
+        body: {
+          en: "Check who is doing the selling. Someone soliciting funds from the public in Bangladesh may need BSEC registration or an exemption, depending on the structure — and “the rules don't apply to private deals” is exactly what unregistered sellers say. Ask for the registration, or the legal basis of the exemption, in writing. And when you hear “you don't need a lawyer for this, it's a simple deal” — the deals that most need legal review are precisely the ones described as simple. A one-page agreement drafted by the seller's relative isn't documentation; it's a trap with signature lines. A few thousand taka of legal review is the cheapest insurance in finance.",
+          bn: "দেখে নিন বিক্রি করছেন কে। বাংলাদেশে জনগণের কাছ থেকে তহবিল সংগ্রহকারীর কাঠামো অনুযায়ী বিএসইসি নিবন্ধন বা ছাড় লাগতে পারে — আর “প্রাইভেট ডিলে নিয়ম খাটে না” — এই কথাটা অনিবন্ধিত বিক্রেতারাই বলেন। নিবন্ধন, বা ছাড়ের আইনি ভিত্তি, লিখিতভাবে চান। আর যদি শুনেন “এতো সিম্পল ডিল, ল-ইয়ার লাগবে না” — আইনি যাচাই সবচেয়ে বেশি যে ডিলগুলোর দরকার, ঠিক সেগুলোকেই সিম্পল বলা হয়। বিক্রেতার আত্মীয়ের লেখা এক-পাতার চুক্তি কোনো ডকুমেন্টেশন নয়; সই-করার ঘরওয়ালা একটা ফাঁদ। আইনজীবীর কয়েক হাজার টাকার রিভিউ ফাইন্যান্সের সবচেয়ে সস্তা বিমা।",
+        } as L,
+      },
+      {
+        h: { en: "The walk-away test", bn: "সরে দাঁড়ানোর পরীক্ষা" } as L,
+        body: {
+          en: "Before committing, ask yourself one question: if everything this person says turns out to be false, what would I have left? If the answer is nothing — no collateral, no enforceable contract, no verifiable asset — then you're not making an investment. You're making a gift and hoping for interest. Walking away costs you a missed opportunity at worst. Proceeding on an unverified promise can cost the entire ticket. Proof before promise — it protects both sides of the table.",
+          bn: "চূড়ান্ত করার আগে নিজেকে একটাই প্রশ্ন করুন: এই মানুষটি যা বলছেন তার সবই যদি মিথ্যা প্রমাণ হয়, আমার হাতে কী থাকবে? উত্তর যদি হয় “কিছুই না” — কোনো জামানত নেই, প্রয়োগযোগ্য চুক্তি নেই, যাচাই-করা সম্পদ নেই — তবে আপনি বিনিয়োগ করছেন না; উপহার দিচ্ছেন, আর সুদের আশা করছেন। সরে দাঁড়ানোর সর্বোচ্চ ক্ষতি একটা ছুটে-যাওয়া সুযোগ। যাচাই-না-হওয়া প্রতিশ্রুতিতে এগোনোর ক্ষতি হতে পারে পুরো টিকেটটাই। প্রতিশ্রুতির আগে প্রমাণ — টেবিলের দুই পাশের মানুষকেই রক্ষা করে।",
+        } as L,
+      },
+    ],
+    takeaways: [
+      {
+        en: "A guaranteed return on a private investment is a contradiction — treat it as a hard stop, not a feature.",
+        bn: "প্রাইভেট বিনিয়োগে নিশ্চিত রিটার্ন একটা স্ববিরোধী কথা — সুবিধা নয়, পুরোপুরি থামার সংকেত হিসেবে নিন।",
+      } as L,
+      {
+        en: "Urgency exists to prevent verification; a real deadline survives questions — ask for it in writing.",
+        bn: "তাড়াহুড়ার কাজই যাচাই ঠেকানো; সত্যিকারের সময়সীমা প্রশ্ন সইতে পারে — লিখিতভাবে চান।",
+      } as L,
+      {
+        en: "Documents before money, and every fee in one written list.",
+        bn: "টাকার আগে নথি, আর সব ফি একটাই লিখিত তালিকায়।",
+      } as L,
+      {
+        en: "Demand the downside case in numbers — a seller who can't show it is showing you half the deal.",
+        bn: "সংখ্যায় ডাউনসাইডের হিসাব চান — যিনি দেখাতে পারেন না, তিনি ডিলের অর্ধেকটাই দেখাচ্ছেন।",
+      } as L,
+      {
+        en: "If it can't survive a lawyer reading it, it can't survive your money in it.",
+        bn: "আইনজীবীর পড়া যদি সইতে না পারে, আপনার টাকাও তা সইতে পারবে না।",
+      } as L,
+    ],
+    terms: ["capital loss", "due diligence", "ticket", "exit"],
+  },
 };

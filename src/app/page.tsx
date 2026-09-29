@@ -23,6 +23,7 @@ import { InvestorDialog } from "@/components/site/dialogs/investor-dialog";
 import { QuizDialog } from "@/components/site/dialogs/quiz-dialog";
 import { ContactDialog } from "@/components/site/dialogs/contact-dialog";
 import { OpportunityDialog } from "@/components/site/dialogs/opportunity-dialog";
+import { InsightDialog } from "@/components/site/dialogs/insight-dialog";
 
 function Page() {
   const { lang } = useLanguage();
@@ -73,6 +74,7 @@ function Page() {
       <QuizDialog />
       <ContactDialog />
       <OpportunityDialog />
+      <InsightDialog />
     </div>
   );
 }

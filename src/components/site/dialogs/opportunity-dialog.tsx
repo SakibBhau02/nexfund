@@ -14,20 +14,24 @@ import {
   Loader2,
   Lock,
   MapPin,
+  Minus,
   ShieldCheck,
   Sparkles,
+  TrendingDown,
+  TrendingUp,
   Users,
   Briefcase,
   LineChart,
   Wallet,
   Info,
+  Activity,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, type BadgeKey } from "@/lib/content";
-import { formatTkRange, bnNum } from "@/lib/format";
+import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, SIM, SCEN, type BadgeKey, type ScenAssumption } from "@/lib/content";
+import { formatTk, formatTkRange, bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,8 +81,8 @@ export function OpportunityDialog() {
 
   const o = useMemo(() => data?.find((x) => x.slug === slug), [data, slug]);
 
-  const TAB_KEYS = ["overview", "model", "financials", "team", "funds", "risks"] as const;
-  const tabIcons = [Info, Briefcase, LineChart, Users, Wallet, AlertTriangle];
+  const TAB_KEYS = ["overview", "model", "financials", "scenarios", "team", "funds", "risks"] as const;
+  const tabIcons = [Info, Briefcase, LineChart, Activity, Users, Wallet, AlertTriangle];
 
   if (!o) {
     return (
@@ -276,6 +280,7 @@ export function OpportunityDialog() {
                     </p>
                   </div>
                 )}
+                {tab === "scenarios" && <ScenariosPanel o={o} />}
                 {tab === "team" && (
                   <p className="leading-relaxed text-slate-600">
                     {lang === "bn" ? o.teamNoteBn : o.teamNote}
@@ -502,6 +507,200 @@ const VETTING_DISCLAIMER = {
   en: "Verification reduces risk. It does not remove it.",
   bn: "যাচাই ঝুঁকি কমায়, কিন্তু ঝুঁকি সম্পূর্ণ দূর করে না।",
 };
+
+/* ── R4-1: per-listing illustrative scenarios (blueprint §5.5 —
+     "downside scenario chart alongside the upside") ── */
+function ScenariosPanel({ o }: { o: OpportunityDTO }) {
+  const { t, lang } = useLanguage();
+  const close = useDialogStore((s) => s.close);
+
+  const listing = SCEN.listings[o.slug];
+  const mode: "equity" | "revshare" = listing?.mode ?? "equity";
+  const years = listing?.years ?? SCEN.equityFallback.years;
+  const ticket = listing?.ticket ?? Math.round((o.seekingMin + o.seekingMax) / 2);
+
+  const fallback = (key: "down" | "base" | "up"): ScenAssumption => {
+    const g = SCEN.equityFallback.baseGrowth;
+    return {
+      growth: key === "down" ? g - 15 : key === "up" ? g + 8 : g,
+      multiple:
+        key === "down" ? SCEN.equityFallback.down : key === "up" ? SCEN.equityFallback.up : SCEN.equityFallback.base,
+      note: SIM.scenarios[key].desc,
+    };
+  };
+  const assumptions: Record<"down" | "base" | "up", ScenAssumption> = listing
+    ? { down: listing.down, base: listing.base, up: listing.up }
+    : { down: fallback("down"), base: fallback("base"), up: fallback("up") };
+
+  const computed = (key: "down" | "base" | "up") => {
+    const a = assumptions[key];
+    const multiple =
+      mode === "revshare" ? a.multiple : Math.pow(1 + (a.growth ?? 0) / 100, years) * a.multiple;
+    return { multiple, proceeds: ticket * multiple };
+  };
+  const res = { down: computed("down"), base: computed("base"), up: computed("up") };
+  const maxVal = Math.max(res.up.proceeds, res.base.proceeds, res.down.proceeds, ticket);
+  const ticketPct = (ticket / maxVal) * 100;
+
+  const signedPct = (v: number) => {
+    const s = v < 0 ? "−" : v > 0 ? "+" : "";
+    return lang === "bn" ? `${s}${bnNum(Math.abs(v))}%` : `${s}${Math.abs(v)}%`;
+  };
+  const fmtMultiple = (m: number) => (lang === "bn" ? `${bnNum(m.toFixed(2))}×` : `${m.toFixed(2)}×`);
+
+  const meta: { key: "down" | "base" | "up"; icon: typeof TrendingDown; barClass: string; chipClass: string; lead: boolean }[] = [
+    { key: "down", icon: TrendingDown, barClass: "nx-warm-to-loss", chipClass: "text-nx-warn", lead: true },
+    { key: "base", icon: Minus, barClass: "bg-nx-navy-600", chipClass: "text-nx-navy-600", lead: false },
+    { key: "up", icon: TrendingUp, barClass: "bg-nx-cyan-500", chipClass: "text-nx-cyan-600", lead: false },
+  ];
+
+  const assumptionLine = (a: ScenAssumption) =>
+    mode === "revshare"
+      ? lang === "bn"
+        ? `রিটার্ন ${fmtMultiple(a.multiple)} · ${bnNum(years)} বছর`
+        : `return ${fmtMultiple(a.multiple)} · ${years} yrs`
+      : lang === "bn"
+        ? `বৃদ্ধি ${signedPct(a.growth ?? 0)}/বছর · এক্সিট ${fmtMultiple(a.multiple)} · ${bnNum(years)} বছর`
+        : `growth ${signedPct(a.growth ?? 0)}/yr · exit ${fmtMultiple(a.multiple)} · ${years} yrs`;
+
+  const goToSimulator = () => {
+    close();
+    // wait for the dialog unmount before smooth-scrolling
+    setTimeout(() => {
+      document.getElementById("simulator")?.scrollIntoView({ behavior: "smooth" });
+    }, 90);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* chips: model · horizon · modeled ticket */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          className={cn(
+            "rounded-full border px-3 py-1 text-[11px] font-bold",
+            mode === "revshare"
+              ? "border-nx-cyan-200 bg-nx-cyan-50 text-nx-cyan-700"
+              : "border-nx-navy-200 bg-nx-navy-50 text-nx-navy-800"
+          )}
+        >
+          {t(mode === "revshare" ? SCEN.modeRevshare : SCEN.modeEquity)}
+        </span>
+        <span className="rounded-full border border-nx-navy-100 bg-nx-mist px-3 py-1 text-[11px] font-bold text-slate-600">
+          {t(SCEN.horizon(years))}
+        </span>
+        <span className="nx-num rounded-full bg-nx-navy-900 px-3 py-1 text-[11px] font-extrabold text-white">
+          {formatTk(ticket, lang)}
+          <span className="ml-1.5 font-semibold text-white/60">{t(SCEN.ticketModeled)}</span>
+        </span>
+      </div>
+
+      {mode === "revshare" && (
+        <div className="flex items-start gap-2 rounded-xl border border-nx-cyan-200 bg-nx-cyan-50 p-3.5 text-xs leading-relaxed text-nx-ink/80">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-nx-cyan-600" aria-hidden="true" />
+          {t(SCEN.revshareNote)}
+        </div>
+      )}
+
+      <div className="space-y-3.5">
+        {meta.map(({ key, icon: Icon, barClass, chipClass, lead }) => {
+          const r = res[key];
+          const isLoss = r.multiple < 1;
+          const pctChange = Math.round((r.multiple - 1) * 100);
+          const widthPct = Math.max((r.proceeds / maxVal) * 100, 2);
+          return (
+            <div
+              key={key}
+              className={cn(
+                "rounded-2xl border p-4",
+                lead ? "border-nx-warn/50 bg-nx-warn-bg/50" : "border-nx-navy-100 bg-white"
+              )}
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <p className="flex items-center gap-1.5 text-sm font-extrabold text-nx-navy-900">
+                  <Icon className={cn("h-4 w-4", chipClass)} aria-hidden="true" />
+                  {t(SIM.scenarios[key].name)}
+                  {lead && (
+                    <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn">
+                      {lang === "bn" ? "আগে দেখুন" : "look here first"}
+                    </span>
+                  )}
+                </p>
+                <p className="nx-num text-[11px] font-semibold text-slate-500">{assumptionLine(assumptions[key])}</p>
+              </div>
+              <p className="mt-0.5 text-xs leading-snug text-slate-500">{t(assumptions[key].note)}</p>
+
+              {/* bar with break-even marker */}
+              <div className="relative mt-3">
+                <div className="h-8 overflow-hidden rounded-xl bg-nx-navy-50">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${widthPct}%` }}
+                    transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+                    className={cn("flex h-full items-center justify-end rounded-xl pr-2.5", barClass)}
+                  >
+                    {widthPct > 24 && (
+                      <span className="nx-num text-[11px] font-extrabold text-white">
+                        {formatTk(Math.round(r.proceeds), lang)}
+                      </span>
+                    )}
+                  </motion.div>
+                </div>
+                {ticketPct > 6 && ticketPct < 97 && (
+                  <div
+                    className="pointer-events-none absolute inset-y-0"
+                    style={{ left: `${ticketPct}%` }}
+                    aria-hidden="true"
+                  >
+                    <div className="h-full w-0 border-l-2 border-dashed border-nx-navy-900/45" />
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">{t(SIM.exitValue)}</p>
+                <p className="flex items-baseline gap-2.5">
+                  <span className="nx-num text-sm font-extrabold text-nx-navy-900">
+                    {formatTk(Math.round(r.proceeds), lang)}
+                  </span>
+                  <span
+                    className={cn(
+                      "nx-num rounded-full px-2 py-0.5 text-[11px] font-extrabold",
+                      isLoss ? "bg-nx-danger/10 text-nx-danger" : "bg-nx-verified-bg text-nx-verified"
+                    )}
+                  >
+                    {lang === "bn"
+                      ? `${fmtMultiple(r.multiple)} · ${t(SIM.changeLabel)} ${signedPct(pctChange)} ${isLoss ? t(SIM.loss) : t(SIM.gain)}`
+                      : `${fmtMultiple(r.multiple)} · ${signedPct(pctChange)} ${isLoss ? t(SIM.loss) : t(SIM.gain)} ${t(SIM.changeLabel)}`}
+                  </span>
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* legend + honesty footnote */}
+      <p className="flex items-center gap-2 text-[11px] text-slate-500">
+        <span className="inline-block h-3.5 w-0 border-l-2 border-dashed border-nx-navy-900/45" aria-hidden="true" />
+        {t(SCEN.breakEven)}
+      </p>
+      <p className="flex items-start gap-2 rounded-xl border border-nx-warn/40 bg-nx-warn-bg px-3.5 py-3 text-[11px] leading-relaxed text-nx-warn">
+        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        {t(SCEN.footnote)}
+      </p>
+
+      <button
+        onClick={goToSimulator}
+        className="nx-arrow-btn inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-nx-navy-200 px-4 py-2 text-xs font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 hover:text-nx-cyan-700"
+      >
+        {t(SCEN.tryYourOwn)}
+        <span className="nx-arrow">
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </span>
+      </button>
+    </div>
+  );
+}
 
 /** Small internal tabs controller for the detail dialog */
 function Tabs({

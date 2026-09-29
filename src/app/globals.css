@@ -245,17 +245,41 @@ html[lang="en"] body { line-height: 1.6; }
 .nx-num { font-variant-numeric: tabular-nums; }
 
 /* Focus ring visible & on-brand */
-a:focus-visible, button:focus-visible, [role="button"]:focus-visible {
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
+[role="tab"]:focus-visible, [role="slider"]:focus-visible {
   outline: 2px solid #26B7D8;
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* R4: slider thumb grows while grabbed */
+[data-slot="slider-thumb"] {
+  transition: transform 0.15s var(--ease-nx);
+}
+[data-slot="slider-thumb"]:active {
+  transform: scale(1.18);
+}
+
+/* R4: sheen sweep on hover for feature cards */
+.nx-card-sheen { position: relative; overflow: hidden; }
+.nx-card-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.45) 50%, transparent 58%);
+  transform: translateX(-130%);
+  transition: transform 0.75s var(--ease-nx);
+  pointer-events: none;
+  z-index: 1;
+}
+.nx-card-sheen:hover::after { transform: translateX(130%); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .oval img.nx-slide { animation: none; opacity: 0; }
   .oval img.nx-slide:first-child { opacity: 1; }
   .nx-float { animation: none; }
+  .nx-card-sheen::after { display: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
