@@ -1,0 +1,1036 @@
+     1→# NexFund — Website Deep Dive & Design Blueprint
+     2→
+     3→**Strategy → Brand System → Sitemap → UI/UX → Copy (BN + EN) → Interactions → Build Plan**
+     4→
+     5→| | |
+     6→|---|---|
+     7→| **Prepared for** | Sakib — NexFund (Zoolyum × Nexily IT) |
+     8→| **Version / Date** | v1.0 · 29 September 2026 |
+     9→| **Brand name in text** | **NexFund** (এক শব্দ, বাংলায়: **নেক্সফান্ড**). লোগোতে "NEX" + "FUND" stacked থাকলেও লিখিত কপিতে সবসময় *NexFund* |
+    10→| **Language** | Strategy: বাংলা + English terms · Website copy: **BN + EN দুটোই** |
+    11→
+    12→**Legend:** 🟢 MVP (Launch) · 🟡 Phase 2 · 🔵 Phase 3 · `[PLACEHOLDER]` = আসল ডেটা/তথ্য দিয়ে বদলাতে হবে · ⚠️ = launch-এর আগে আইনজীবীর সাথে verify করতে হবে
+    13→
+    14→> ⚠️ **Note:** এই ডকুমেন্ট strategy ও design blueprint — আইনি বা আর্থিক পরামর্শ নয়। Investor–business matchmaking ও financial promotion-এর নিয়মকানুন বাংলাদেশে regulated হতে পারে; Section 13 দেখুন।
+    15→
+    16→---
+    17→
+    18→## 0. Executive Summary (এক পাতায় পুরো ছবি)
+    19→
+    20→| প্রশ্ন | উত্তর |
+    21→|---|---|
+    22→| **Website-এর আসল কাজ কী?** | সুন্দর দেখানো না — **দুই পক্ষের perceived risk কমানো**। Investor-এর ভয়: প্রতারণা, ভুল তথ্য, টাকা আটকে যাওয়া। Entrepreneur-এর ভয়: সময় নষ্ট, hidden fee, control হারানো। |
+    23→| **Big Idea** | **"Proof before promise." — প্রতিশ্রুতির আগে প্রমাণ।** সব design, copy, feature এই এক লাইনকে সাপোর্ট করবে। |
+    24→| **Design Idea** | লোগোর **X = দুটি পথের মিলনবিন্দু** (Investor ↗ + Entrepreneur ↗ → একটি অ্যারো উপরে)। ওয়েবসাইটের পুরো visual language এই "Crossing Paths" গল্প থেকে আসবে। তোমার **oval hero** = "Lens" — যার ভেতর দিয়ে আসল বাংলাদেশি ব্যবসা দেখা যায়। |
+    25→| **Primary Conversion Goal** | Investor registration → opportunity view → consultation booking |
+    26→| **Secondary Goal** | Entrepreneur readiness quiz → application |
+    27→| **North Star Metric** | **Qualified introductions per month** (যে investor–business meeting সত্যিই হয়েছে) |
+    28→| **Build Approach** | **Concierge MVP** — সামনে premium website, পেছনে manual matching। ২০টা সফল match-এর পর automation। |
+    29→| **Timeline (indicative)** | ~১২ সপ্তাহ (ছোট টিম) |
+    30→
+    31→### 0.1 The Real Problem (আসল সমস্যা)
+    32→তোমাদের competitor অন্য কোনো website না। তোমাদের competitor হলো **"ভাইয়ের রেফারেন্স + Facebook গ্রুপ + নিজের চেনা লোক"** — অর্থাৎ informal trust network। Website-কে সেই trust-এর চেয়ে *বেশি যাচাইযোগ্য* মনে হতে হবে।
+    33→
+    34→### 0.2 The Non-Obvious Insight
+    35→বাংলাদেশে বিনিয়োগকারীরা অযাচাইকৃত স্কিম নিয়ে স্বাভাবিকভাবেই সতর্ক। তাই "আমরা বিশ্বস্ত" লিখলে উল্টো সন্দেহ বাড়ে। **Trust claim করা যায় না — দেখাতে হয়।** যেমন: vetting প্রক্রিয়া প্রকাশ্যে দেখানো, ফি আগে বলা, ঝুঁকি opportunity-র পাশেই দেখানো, এমনকি "এই ডিলটা আপনার জন্য নয়" বলার সাহস।
+    36→
+    37→### 0.3 The Constraint Nobody's Addressing
+    38→Website না — **supply-side quality**। ৫–১০টা সত্যিকারের যাচাইকৃত, সুন্দরভাবে ডকুমেন্টেড ব্যবসা ছাড়া সবচেয়ে ভালো website-ও খালি দোকান। Launch-এর আগে **কমপক্ষে ৩–৫টা** listing-ready ব্যবসা প্রস্তুত রাখো।
+    39→
+    40→### 0.4 The Asymmetric Bet
+    41→**Downside scenario সবসময় upside-এর সমান গুরুত্বে দেখানো** (calculator, opportunity card, কপি — সবখানে)। সবাই শুধু return দেখায়; তুমি ঝুঁকিও দেখালে ব্র্যান্ড আলাদা হয়ে যাবে এবং regulatory ঝুঁকিও কমে।
+    42→
+    43→---
+    44→
+    45→## 1. Strategic Foundation
+    46→
+    47→### 1.1 Positioning Statement
+    48→> **For** growth-minded investors and serious entrepreneurs in Bangladesh, **NexFund** is the financial consultancy and matchmaking platform that connects verified businesses with informed capital — **because** every opportunity is vetted, documented, and explained (with its risks) before it reaches you.
+    49→
+    50→**বাংলায়:** *বাংলাদেশের প্রবৃদ্ধিমুখী বিনিয়োগকারী ও গুরুত্বপূর্ণ উদ্যোক্তাদের জন্য নেক্সফান্ড এমন একটি ফাইন্যান্সিয়াল কনসাল্টেন্সি ও ম্যাচমেকিং প্ল্যাটফর্ম, যেখানে প্রতিটি সুযোগ আপনার কাছে পৌঁছানোর আগে যাচাই, ডকুমেন্টেড এবং ঝুঁকিসহ ব্যাখ্যা করা হয়।*
+    51→
+    52→### 1.2 Audiences (Hypothesis — ১০টা interview দিয়ে validate করো)
+    53→
+    54→| Persona | কারা | মূল লক্ষ্য | মূল ভয় | Website-এ কী দেখতে চাইবে | Primary CTA |
+    55→|---|---|---|---|---|---|
+    56→| **I-1 The Cautious Professional** | ডাক্তার, ইঞ্জিনিয়ার, ব্যাংকার, চাকরিজীবী — উদ্বৃত্ত সঞ্চয় আছে | সঞ্চয়কে ব্যবসায় কাজে লাগানো | প্রতারণা, তথ্যের অভাব | Vetting প্রক্রিয়া, ফি, ঝুঁকি, টিমের মুখ | Register as Investor |
+    57→| **I-2 The Business-Owner Diversifier** | সফল ব্যবসায়ী, নতুন খাতে ছড়াতে চায় | Higher-return, নতুন সুযোগ | সময়ের অভাব, খারাপ ডিল | Financials snapshot, data room | Explore Opportunities |
+    58→| **I-3 The NRB** | প্রবাসী বাংলাদেশি | দেশে নির্ভরযোগ্য বিনিয়োগ | দূরত্ব, যাচাই করতে না পারা | English/বাংলা সহায়তা, remote meeting, স্বচ্ছতা ⚠️ | Book a Call |
+    59→| **E-1 Growth-Stage SME Owner** | ৫+ বছরের লাভজনক ব্যবসা | সম্প্রসারণের মূলধন | Control হারানো, hidden fee | Readiness score, ফি, process | Check Readiness |
+    60→| **E-2 Startup Founder** | Early-stage founder | Seed / angel capital | Investor খুঁজে না পাওয়া | Pitch support, investor-fit | Apply |
+    61→| **Secondary** | আইনজীবী, অ্যাকাউন্ট্যান্ট, incubator, ব্যাংক, মিডিয়া | Referral / partnership | ঝুঁকি ও reputation | Partner page, Trust Center | Partner With Us |
+    62→
+    63→### 1.3 Competitive Lens (২ ঘণ্টার audit checklist)
+    64→নির্দিষ্ট competitor-এর তথ্য এখানে বানিয়ে লিখছি না — তুমি বা তোমার টিম এগুলো চেক করো:
+    65→
+    66→1. **লোকাল equity/angel/crowdfunding প্ল্যাটফর্ম ও VC** — তারা প্রথম ফোল্ডে কী promise করে? ঝুঁকি দেখায় কি?
+    67→2. **Informal নেটওয়ার্ক** (Facebook গ্রুপ, রেফারেন্স) — কেন মানুষ ওখানে যায়? (উত্তর: চেনা মুখ = trust)
+    68→3. **ব্যাংক / NBFI (debt option)** — entrepreneur-এর বিকল্প কী?
+    69→4. **আন্তর্জাতিক প্ল্যাটফর্ম** — UX-এর কোন pattern ধার করা যায়?
+    70→
+    71→**Audit-এর ৫টা প্রশ্ন:** Bangla version আছে কি? ফি স্পষ্ট কি? Vetting প্রক্রিয়া দেখায় কি? ঝুঁকি দেখায় কি? Mobile-এ কেমন?
+    72→**সম্ভাব্য Gap (verify করো):** *Bangla-first + advisory-led + প্রকাশ্য vetting + ঝুঁকির স্বচ্ছতা* — এই চারটি একসাথে যে দখল করবে সে আলাদা হবে।
+    73→
+    74→### 1.4 Brand Personality
+    75→| | |
+    76→|---|---|
+    77→| **3 Adjectives** | **Credible** (বিশ্বাসযোগ্য) · **Clear** (স্বচ্ছ) · **Forward-moving** (অগ্রগামী) |
+    78→| **Archetype** | **The Sage** (জ্ঞান ও সত্য) + Guide-এর উষ্ণতা |
+    79→| **"This brand is like…"** | একজন বিশ্বস্ত সিনিয়র সিএ যে আপনার সাথে চায়ের টেবিলে বসে সৎভাবে বলে দেয় — "এই ডিলটা নাও" বা "এটা ছেড়ে দাও" |
+    80→| **Brand should feel like** | *Stripe-এর স্বচ্ছতা × একটি ভালো প্রাইভেট ব্যাংকের গাম্ভীর্য × বাংলাদেশের উষ্ণতা* |
+    81→
+    82→**Voice Spectrum**
+    83→| Formal ←→ Conversational | **৩/৫** (professional কিন্তু আন্তরিক) |
+    84→|---|---|
+    85→| Serious ←→ Playful | **২/৫** |
+    86→| Authoritative ←→ Collaborative | **৩/৫** |
+    87→| Complex ←→ Simple | **১/৫** (সবসময় সহজ) |
+    88→| Safe ←→ Bold | **৪/৫** (ঝুঁকি খোলাখুলি বলার সাহস) |
+    89→
+    90→**Voice Do / Don't**
+    91→| ❌ Don't | ✅ Do |
+    92→|---|---|
+    93→| "Guaranteed high returns" / "নিশ্চিত মুনাফা" | "Every investment carries risk. Here's how we help you see it clearly." / "প্রতিটি বিনিয়োগেই ঝুঁকি আছে। আমরা সেটা স্পষ্ট দেখতে সাহায্য করি।" |
+    94→| "Trusted by thousands" (প্রমাণ ছাড়া) | "Here's exactly how we vet — step by step." |
+    95→| জটিল পরিভাষা | সহজ ভাষা + প্রয়োজনে ছোট glossary tooltip |
+    96→
+    97→### 1.5 Tagline Options
+    98→| # | English | বাংলা | Type |
+    99→|---|---|---|---|
+   100→| 1 | **Fund what's next.** | **আগামীর উদ্যোগে বিনিয়োগ।** | Aspiration (NexFund-এর নামের সাথে pun) — *Recommended primary* |
+   101→| 2 | **Proof before promise.** | **প্রতিশ্রুতির আগে প্রমাণ।** | Contrast — *Recommended trust line (সব জায়গায় সাপোর্টিং লাইন)* |
+   102→| 3 | Where capital meets conviction. | যেখানে পুঁজি মেলে প্রত্যয়ে। | Premium/Bold |
+   103→| 4 | Invest with your eyes open. | চোখ খুলে বিনিয়োগ করুন। | Risk-honest, bold pick |
+   104→
+   105→**Brand Statement:** *NexFund connects informed investors with verified, growth-ready businesses across Bangladesh — with the due diligence, documentation, and advisory that turn capital into confident decisions.*
+   106→
+   107→---
+   108→
+   109→## 2. Brand & Visual Identity System
+   110→
+   111→### 2.1 লোগো রিড ও সুপারিশ
+   112→**যা কাজ করছে:** Bold, wide wordmark = স্থিতিশীলতা। "X"-এর ভেতরের cyan zigzag-arrow = growth + intersection (দুই পক্ষের মিলন)। Navy + Cyan = finance-এর জন্য সঠিক trust palette।
+   113→
+   114→**যা ওয়েবসাইটের জন্য যোগ করতে হবে (Logo Kit):**
+   115→1. **Horizontal lockup** — "NEXFUND" এক লাইনে (header-এর জন্য; stacked version header-এ অনেক জায়গা খায়)
+   116→2. **Icon-only** — শুধু X-arrow (favicon, app icon, social avatar, loading animation)
+   117→3. **Reversed** — সাদা + cyan, navy background-এর জন্য
+   118→4. **Mono** — এক রঙ (ছাপা, ওয়াটারমার্ক)
+   119→5. **Bangla lockup** — "নেক্সফান্ড" wordmark (বাংলা মার্কেটিং materials)
+   120→6. **Clear-space ও min-size নিয়ম** — icon সর্বনিম্ন 16px, wordmark সর্বনিম্ন 96px width
+   121→
+   122→### 2.2 Color System
+   123→> Hex মানগুলো লোগো থেকে আনুমানিক — **Vector ফাইল থেকে eyedropper দিয়ে আসল মান নাও**।
+   124→
+   125→| Token | Hex (approx.) | ব্যবহার |
+   126→|---|---|---|
+   127→| `--nx-navy-900` | `#061F4A` | Dark sections, footer, hero overlay |
+   128→| `--nx-navy-700` | `#0A3A8F` | **Primary brand**, headings, primary buttons |
+   129→| `--nx-navy-500` | `#2F5FBF` | Links, hover |
+   130→| `--nx-cyan-500` | `#26B7D8` | **Accent**, arrows, highlights, active states |
+   131→| `--nx-cyan-100` | `#E3F6FB` | Soft backgrounds, badges |
+   132→| `--nx-ink` | `#0E1726` | Body text |
+   133→| `--nx-slate-600` | `#475569` | Secondary text |
+   134→| `--nx-mist-50` | `#F5F8FC` | Section background |
+   135→| `--nx-white` | `#FFFFFF` | Base |
+   136→| `--nx-success` | `#12805C` | Verified badges |
+   137→| `--nx-warning` | `#B7791F` | Risk notes |
+   138→| `--nx-danger` | `#C53030` | Errors |
+   139→
+   140→**⚠️ Contrast rule:** Cyan (`#26B7D8`) সাদা background-এ ছোট লেখায় **পড়া কঠিন** (accessibility fail)। Cyan শুধু graphics/icons/arrow বা **dark navy background-এ** ব্যবহার করো। সাদা background-এ text মানে navy/ink।
+   141→
+   142→**Usage ratio:** ৬০% White/Mist · ২৫% Navy · ১০% Ink/Slate · ৫% Cyan (Cyan যত কম, তত শক্তিশালী — CTA ও গ্রোথ সিগন্যালে সংরক্ষিত)।
+   143→
+   144→### 2.3 Typography
+   145→
+   146→| Role | English | বাংলা | Note |
+   147→|---|---|---|---|
+   148→| **Display / H1–H2** | **Manrope** 700–800 (বা Sora) | **Anek Bangla** 600–700 | লোগোর wide, geometric ফিলের সাথে মেলে |
+   149→| **Body / UI** | **Inter** 400–500 | **Hind Siliguri** 400–500 (fallback: Noto Sans Bengali) | পড়ার আরাম |
+   150→| **Numbers / Data** | Inter Tabular | Hind Siliguri | Table-এ tabular figures |
+   151→
+   152→**Bangla typography নিয়ম (গুরুত্বপূর্ণ):**
+   153→- Line-height: Bangla **1.65–1.8**, English **1.5** (বাংলার মাত্রা/ফলা কাটা পড়ে না)
+   154→- Bangla-য় `letter-spacing` **নেগেটিভ দেবে না**, `text-transform: uppercase` **ব্যবহার করবে না**
+   155→- Bangla লেখা সাধারণত ইংরেজির চেয়ে ১০–২০% বেশি জায়গা নেয় → button/card **flex** করে design করো, fixed-width নয়
+   156→- `<html lang="bn">` / `lang="en"` সঠিক দাও (screen reader ও SEO)
+   157→- Font subset + `font-display: swap`; Bangla font weight ২টার বেশি লোড করো না (mobile performance)
+   158→
+   159→**Scale (desktop / mobile):** H1 56/36 · H2 40/28 · H3 28/22 · Body 17/16 · Small 14/13
+   160→
+   161→### 2.4 Shape, Grid, Motion — "The Oval Lens" ও "Crossing Paths"
+   162→
+   163→| উপাদান | সংজ্ঞা |
+   164→|---|---|
+   165→| **Oval Lens** (তোমার আইডিয়া) | ছবির frame = **tall ellipse** (aspect 4:5, `border-radius: 50%`) বা pill। অ্যাপ জুড়ে signature shape — hero, About, opportunity thumbnail, testimonial avatar |
+   166→| **Cyan Ring** | Oval-এর বাইরে ২px পাতলা cyan রিং, ৮px offset — "lens focus" ইফেক্ট |
+   167→| **Path Line** | ১.৫px cyan curved line যা section-এর মাঝে দুই ধারা থেকে এসে **X-এ মিলে ↗ উপরে উঠে** — scroll-এ আঁকা হয় |
+   168→| **Radius** | Cards 16px · Buttons 999px (pill) · Inputs 12px |
+   169→| **Grid** | 12-col, max-width 1200px, gutter 24px · mobile 4-col, margin 20px |
+   170→| **Spacing** | 4/8 pt scale; section vertical padding 96px desktop / 64px mobile |
+   171→| **Elevation** | শুধু ২ লেভেল: `card` (subtle) ও `raised` (hover) — finance সাইটে ভারী shadow নয় |
+   172→| **Motion** | 200–400ms, `cubic-bezier(.2,.8,.2,1)`; motion মানে অর্থ (ওপরে ওঠা = growth); `prefers-reduced-motion` সম্মান করো |
+   173→
+   174→### 2.5 Imagery Direction
+   175→- **আসল বাংলাদেশি ব্যবসা**: গার্মেন্ট/ম্যানুফ্যাকচারিং, কৃষি-খাদ্য প্রক্রিয়াকরণ, টেক টিম, রিটেইল/দোকান, হেলথকেয়ার, শিক্ষা। **Generic western stock photo নয়** — এটা trust-এর সবচেয়ে বড় শত্রু।
+   176→- **ফটোশুট পরিকল্পনা:** ৫টি partner ব্যবসায় ১ দিনের শুট (লিখিত সম্মতিসহ)। প্রতিটি থেকে ৩ ধরনের শট: *মানুষ (মালিক/টিম)* · *কাজ (প্রক্রিয়া)* · *বিস্তারিত (হাত, মেশিন, পণ্য)*।
+   177→- **Treatment:** হালকা navy duotone overlay (৮–১২%) সব ছবিতে ধারাবাহিকতা দেয়; মুখ পরিষ্কার রাখো।
+   178→- **Investor ছবি:** মিটিং, ডকুমেন্ট রিভিউ, ট্যাবলেটে ডেটা — "সিদ্ধান্ত নেওয়ার মুহূর্ত"।
+   179→- **Icons:** 1.5px outline, rounded caps (Lucide/Phosphor স্টাইল), কোণা ১টি cyan accent।
+   180→- **Alt text:** BN ও EN দুটোতেই।
+   181→- **Video:** hero-তে অটোপ্লে ভিডিও নয় (mobile data + performance)। ১০–১৫ সেকেন্ডের silent loop শুধু desktop-এ, `Save-Data` ও slow network-এ বন্ধ।
+   182→
+   183→---
+   184→
+   185→## 3. Sitemap (Information Architecture)
+   186→
+   187→```
+   188→NexFund
+   189→├── Home (/)
+   190→├── How It Works (/how-it-works)
+   191→├── For Investors (/investors)
+   192→│   ├── Investor Guide (/investors/guide)
+   193→│   └── Register (/investors/register)
+   194→├── Raise Capital (/raise-capital)          ← "For Entrepreneurs"
+   195→│   ├── Readiness Quiz (/raise-capital/readiness)
+   196→│   ├── Apply (/raise-capital/apply)
+   197→│   └── Investor-Ready Program (/raise-capital/program)
+   198→├── Opportunities (/opportunities)
+   199→│   └── Opportunity Detail (/opportunities/[slug])
+   200→├── Trust Center (/trust)
+   201→│   ├── Our Vetting Standard (/trust/vetting)
+   202→│   ├── The NexFund Charter (/trust/charter)
+   203→│   ├── Fees & Transparency (/trust/fees)
+   204→│   ├── Risk Disclosure (/trust/risk)
+   205→│   └── Security & Data Privacy (/trust/security)
+   206→├── Services (/services)
+   207→│   ├── Investor Readiness
+   208→│   ├── Business Valuation
+   209→│   ├── Financial Modeling & Projections
+   210→│   ├── Pitch Deck & Data Room
+   211→│   └── Deal Assessment Support
+   212→├── Insights (/insights)   [Articles · Guides · Deal Room Report]
+   213→├── Tools (/tools)         [Readiness Score · Valuation Range · Scenario Simulator]
+   214→├── About (/about)         [Story · Team · Advisors · Partners]
+   215→├── FAQ (/faq)
+   216→├── Contact / Book a Consultation (/contact)
+   217→├── Legal: Privacy · Terms · Cookies · Disclaimer
+   218→└── Account (Phase 2): Investor Dashboard · Entrepreneur Dashboard · Data Room
+   219→```
+   220→
+   221→| Page | Purpose | Primary CTA | Priority |
+   222→|---|---|---|---|
+   223→| Home | ২ audience-কে ৫ সেকেন্ডে পথ দেখানো + trust | Register / Raise Capital | 🟢 |
+   224→| How It Works | প্রক্রিয়া স্বচ্ছ করা | Get Started | 🟢 |
+   225→| For Investors | Investor conversion (প্রধান) | Register as Investor | 🟢 |
+   226→| Raise Capital | Entrepreneur acquisition | Check Readiness | 🟢 |
+   227→| Opportunities | Proof of supply | Register to View Details | 🟢 |
+   228→| Trust Center | সবচেয়ে গুরুত্বপূর্ণ differentiator | Read How We Vet | 🟢 |
+   229→| Services | Consultancy revenue | Book a Consultation | 🟢 |
+   230→| Insights | SEO/AEO/AGO + authority | Download Checklist | 🟢 |
+   231→| About | মুখ দেখানো, গল্প | Meet the Team → Book a Call | 🟢 |
+   232→| FAQ | AEO + objection handling | Contact | 🟢 |
+   233→| Contact | Lead capture | Book Call | 🟢 |
+   234→| Tools | Lead magnet + engagement | Save My Result (email) | 🟡 |
+   235→| Account/Data Room | Deal execution | — | 🟡 |
+   236→
+   237→---
+   238→
+   239→## 4. Global UX Components
+   240→
+   241→### 4.1 Header
+   242→- **Left:** Horizontal logo (click = Home)
+   243→- **Center nav (desktop):** Investors · Raise Capital · Opportunities · How It Works · Trust · Insights · About
+   244→- **Right:** **Language switch (বাং | EN)** · "Book a Call" (secondary button) · "Get Started" (primary pill)
+   245→- **Sticky on scroll**, ছোট হয়ে যায় (72px → 56px), সামান্য blur background
+   246→- **Mobile:** hamburger → full-screen navy menu; শীর্ষে language toggle; নিচে WhatsApp CTA
+   247→
+   248→### 4.2 Language Switch (BN ⇄ EN) — UX spec
+   249→- Header-এ **segmented toggle** `বাং | EN` (দুটো লেবেল নিজ নিজ ভাষায়)
+   250→- **একই পেজে থাকো**, scroll position ধরে রাখো; cross-fade 200ms
+   251→- প্রথম ভিজিটে `Accept-Language` দেখে সাজেস্ট (**জোর করে redirect নয়**, ক্রলার বাদ)
+   252→- পছন্দ cookie-তে সংরক্ষণ; URL: `/bn/...` ও `/en/...`
+   253→- সব ফর্ম, error, email, PDF — উভয় ভাষায় (Section 10)
+   254→
+   255→### 4.3 Footer
+   256→৪ কলাম: **Brand + tagline + লোগো** · **Platform** (Investors, Raise Capital, Opportunities) · **Trust** (Vetting, Fees, Risk, Security) · **Company** (About, Insights, Contact, Legal)। নিচে: social links, ঠিকানা/ফোন/ইমেইল, **Risk Disclosure strip** (সবসময় দৃশ্যমান):
+   257→
+   258→> **EN:** Investing involves risk, including possible loss of capital. NexFund does not guarantee returns. Past performance is not indicative of future results. Please read our Risk Disclosure.
+   259→> **BN:** বিনিয়োগে ঝুঁকি আছে, মূলধন হারানোর সম্ভাবনাসহ। নেক্সফান্ড কোনো মুনাফার নিশ্চয়তা দেয় না। অতীতের ফলাফল ভবিষ্যতের নিশ্চয়তা নয়। অনুগ্রহ করে আমাদের ঝুঁকি বিবরণী পড়ুন।
+   260→
+   261→### 4.4 Persistent Elements
+   262→- **Mobile sticky bottom bar:** [WhatsApp] [Book a Call] — বাংলাদেশে WhatsApp/Messenger ভিত্তিক যোগাযোগ স্বাভাবিক
+   263→- **Trust ribbon** (পাতলা, ডিসমিসযোগ্য): "Proof before promise — see how we vet →"
+   264→- **Cookie consent** (ছোট, GA4/GTM consent mode সহ)
+   265→- **Breadcrumbs** (Schema-সহ) ভেতরের পেজে
+   266→
+   267→---
+   268→
+   269→## 5. Page-by-Page Blueprint (Layout + Copy)
+   270→
+   271→> **Copy সম্পর্কে:** যেখানে `[PLACEHOLDER]` আছে সেখানে আসল তথ্য দাও। ⚠️ = দাবি তখনই লিখবে যখন সেটা আসলেই সত্য।
+   272→
+   273→---
+   274→
+   275→### 5.1 HOME (`/`)
+   276→
+   277→#### Hero — ৩টি বিকল্প
+   278→
+   279→| Option | Concept | কেন |
+   280→|---|---|---|
+   281→| **A. Oval Portal Stack** ⭐ *সুপারিশকৃত* | ৩–৫টি oval (ছোট → বড়, বাঁ থেকে ডানে উঠে যাচ্ছে — লোগোর অ্যারোর মতো)। প্রতিটি oval-এ আলাদা আসল ব্যবসার ছবি ধীরে cross-fade। এক oval-এ ভাসমান "deal card" (verified badge সহ)। পেছনে cyan curved path ↗ | তোমার আইডিয়া + লোগোর গল্প + "আসল ব্যবসা" প্রমাণ |
+   282→| **B. Split Path** | পর্দা দুই ভাগ: বাঁয়ে Investor, ডানে Entrepreneur; মাঝে X-এ মিলন। hover-এ প্রতিটি পাশ প্রসারিত | দুই audience দ্রুত সেগমেন্ট |
+   283→| **C. Data Orbit** | কেন্দ্রে বড় oval, চারপাশে ঘুরন্ত ছোট oval (খাত: গার্মেন্ট, কৃষি, টেক…) | খাত-বৈচিত্র্য দেখায়, কিন্তু কম "মানবিক" |
+   284→
+   285→**সুপারিশ: Option A** + মোবাইলে ভার্টিক্যাল স্ট্যাক (২টি oval + টেক্সট)।
+   286→
+   287→#### Hero Wireframe (Desktop)
+   288→```
+   289→┌────────────────────────────────────────────────────────────────────────┐
+   290→│ [NEX FUND ▸]  Investors  Raise Capital  Opportunities  How  Trust  …   │
+   291→│                                          [বাং|EN]  (Book a Call) [Start]│
+   292→├────────────────────────────────────────────────────────────────────────┤
+   293→│                                                                        │
+   294→│  ▸ PROOF BEFORE PROMISE                        ⬭  large oval (photo A) │
+   295→│                                             ⬭      ⬭ small oval        │
+   296→│  Fund what's next                        medium   (floating deal card  │
+   297→│  in Bangladesh.                          (photo B)  ✔ Verified · Stage │
+   298→│                                                      3 of 5)           │
+   299→│  Subcopy (2 lines)                        ╲___  cyan path ↗            │
+   300→│                                                                        │
+   301→│  [ I'm an Investor → ]  [ I'm Raising Capital ]                        │
+   302→│  ✔ 5-stage vetting  ✔ Fees disclosed upfront  ✔ বাংলা ও English         │
+   303→└────────────────────────────────────────────────────────────────────────┘
+   304→```
+   305→
+   306→#### Hero Copy
+   307→| | English | বাংলা |
+   308→|---|---|---|
+   309→| **Eyebrow** | PROOF BEFORE PROMISE | প্রতিশ্রুতির আগে প্রমাণ |
+   310→| **H1** | **Fund what's next in Bangladesh.** | **আগামীর উদ্যোগে বিনিয়োগ করুন।** |
+   311→| **Subcopy** | NexFund connects serious investors with verified, growth-ready businesses — with the due diligence, documentation, and advisory to make every decision an informed one. | নেক্সফান্ড যাচাইকৃত ও প্রবৃদ্ধিমুখী ব্যবসার সাথে অভিজ্ঞ বিনিয়োগকারীদের সংযোগ ঘটায় — পূর্ণাঙ্গ যাচাই, ডকুমেন্টেশন ও পরামর্শসহ, যাতে প্রতিটি সিদ্ধান্ত হয় তথ্যনির্ভর। |
+   312→| **CTA 1** | I'm an Investor | আমি বিনিয়োগকারী |
+   313→| **CTA 2** | I'm Raising Capital | আমি মূলধন খুঁজছি |
+   314→| **Micro-trust** | 5-stage vetting · Fees disclosed upfront · Bangla & English support | ৫-ধাপ যাচাই · ফি আগেই জানানো · বাংলা ও ইংরেজিতে সহায়তা |
+   315→
+   316→> ⚠️ "5-stage vetting" শুধু তখনই লিখবে যখন প্রক্রিয়াটি বাস্তবে চালু।
+   317→
+   318→#### Section 2 — Two Paths (Segmentation)
+   319→দুটি বড় কার্ড, প্রতিটিতে oval ছবি:
+   320→
+   321→| | Investors | Entrepreneurs |
+   322→|---|---|---|
+   323→| **EN Title** | For Investors | For Entrepreneurs |
+   324→| **EN Copy** | See real businesses, real documents, real risks — before you commit a single taka. | Get investor-ready. Get in front of the right capital. |
+   325→| **BN Title** | বিনিয়োগকারীদের জন্য | উদ্যোক্তাদের জন্য |
+   326→| **BN Copy** | প্রতিটি টাকা দেওয়ার আগে দেখুন আসল ব্যবসা, আসল নথি, আসল ঝুঁকি। | বিনিয়োগের জন্য প্রস্তুত হোন। সঠিক পুঁজির সামনে দাঁড়ান। |
+   327→| **CTA** | Explore Opportunities / সুযোগগুলো দেখুন | Check Your Readiness / প্রস্তুতি যাচাই করুন |
+   328→
+   329→#### Section 3 — How It Works (Crossing Paths animation)
+   330→স্ক্রল করলে দুটি cyan রেখা দুই দিক থেকে এসে **X-এ মিলে ↗ উঠে যায়**; চারটি ধাপ পরপর জ্বলে ওঠে।
+   331→
+   332→| Step | EN | বাংলা |
+   333→|---|---|---|
+   334→| **1. Apply** | Tell us about yourself or your business in about 10 minutes. | প্রায় ১০ মিনিটে আপনার বা আপনার ব্যবসার তথ্য দিন। |
+   335→| **2. Verify** | Our team reviews identity, legal documents, financials, and operations. | আমাদের টিম পরিচয়, আইনি নথি, আর্থিক তথ্য ও কার্যক্রম যাচাই করে। |
+   336→| **3. Match** | We introduce you only to strong fits — by sector, ticket size, and time horizon. | খাত, বিনিয়োগের পরিমাণ ও সময়সীমা মিলিয়ে শুধু উপযুক্তদের সাথে পরিচয় করিয়ে দিই। |
+   337→| **4. Grow** | We support term discussions and documentation, so both sides move with clarity. | শর্ত আলোচনা ও ডকুমেন্টেশনে পাশে থাকি, যাতে দুই পক্ষই স্পষ্টতার সাথে এগোয়। |
+   338→
+   339→#### Section 4 — The Vetting Standard (Signature Section) ⭐
+   340→**Interactive accordion/stepper** — ৫ ধাপ, প্রতিটিতে "What we check" ও "What you'll see"।
+   341→
+   342→**Section Headline:** *We show our work.* / **আমরা আমাদের কাজ দেখাই।**
+   343→**Subhead:** *Most platforms ask you to trust them. We'd rather you check us.* / *বেশিরভাগ প্ল্যাটফর্ম আপনাকে বিশ্বাস করতে বলে। আমরা চাই আপনি নিজেই যাচাই করুন।*
+   344→
+   345→| Stage | What we check (EN) | কী যাচাই করি (BN) | What you'll see |
+   346→|---|---|---|---|
+   347→| **1. Identity & Ownership**<br>পরিচয় ও মালিকানা | Founder identity, ownership structure, business registration | প্রতিষ্ঠাতার পরিচয়, মালিকানা কাঠামো, ব্যবসার নিবন্ধন | ✔ Identity badge |
+   348→| **2. Legal & Compliance**<br>আইনি ও কমপ্লায়েন্স | Trade license, tax and regulatory documents, litigation check | ট্রেড লাইসেন্স, কর ও নিয়ন্ত্রক নথি, মামলা-সংক্রান্ত অনুসন্ধান | ✔ Legal docs badge |
+   349→| **3. Financial Health**<br>আর্থিক অবস্থা | Financial statements, cash flow, debts, use-of-funds plan | আর্থিক বিবরণী, নগদ প্রবাহ, দায়, তহবিল ব্যবহারের পরিকল্পনা | ✔ Financials summary |
+   350→| **4. Operations & Market**<br>কার্যক্রম ও বাজার | Site visit, customers, market position, team | সাইট ভিজিট, গ্রাহক, বাজারে অবস্থান, টিম | ✔ Site-visit note |
+   351→| **5. Advisor Review & Risk Summary**<br>অ্যাডভাইজার রিভিউ ও ঝুঁকির সারসংক্ষেপ | Independent review; key risk factors written in plain language | স্বাধীন পর্যালোচনা; প্রধান ঝুঁকিগুলো সহজ ভাষায় লেখা | ✔ Risk summary |
+   352→
+   353→**Disclaimer line (বড় ও স্পষ্ট):**
+   354→> **EN:** Verification reduces risk. It does not remove it.
+   355→> **BN:** যাচাই ঝুঁকি কমায়, কিন্তু ঝুঁকি সম্পূর্ণ দূর করে না।
+   356→
+   357→> ⚠️ প্রতিটি stage-এর "what we check" শুধু তখনই লিখবে যখন সেই কাজ বাস্তবে করা হয়। পরে প্রক্রিয়া বাড়ালে সাইট আপডেট করো।
+   358→
+   359→#### Section 5 — Featured Opportunities (Curated, ৩টি)
+   360→**Headline:** *Curated, not crowded.* / **বাছাই করা, ভিড় নয়।**
+   361→**Subhead:** *A small number of businesses that passed our vetting. Register to see documents.* / *যাচাই পাস করা অল্প কিছু ব্যবসা। নথি দেখতে রেজিস্টার করুন।*
+   362→
+   363→**Opportunity Card Anatomy** (oval thumbnail):
+   364→```
+   365→┌─────────────────────────────────────────┐
+   366→│  ⬭ [oval photo]   Sector · Location     │
+   367→│                   Business name/code    │
+   368→│  One-line description                   │
+   369→│  ─────────────────────────────────────  │
+   370→│  Seeking: ৳ [X] lakh–crore   Stage: [ ]  │
+   371→│  Instrument: [Equity/Debt/…] ⚠️          │
+   372→│  Badges: ✔ID ✔Legal ✔Financials ✔Site   │
+   373→│  ⚠ Key risks (3 bullets, always visible)│
+   374→│  [ View Summary ]  (Register for docs)  │
+   375→└─────────────────────────────────────────┘
+   376→```
+   377→- **নিয়ম:** ঝুঁকি (Key Risks) কার্ডে **সবসময় দৃশ্যমান**, লুকানো নয়।
+   378→- **Anonymized teaser** (নাম গোপন, খাত + সংখ্যা) যতক্ষণ না investor register + NDA করছে।
+   379→- **Pre-launch fallback:** আসল listing না থাকলে *"Opportunities open soon — join the priority list"* + email capture। **Fake listing কখনও নয়।**
+   380→
+   381→#### Section 6 — The NexFund Charter (৭ প্রতিশ্রুতি)
+   382→**Headline:** *Seven commitments we publish so you can hold us to them.* / **সাতটি প্রতিশ্রুতি — যাতে আপনি আমাদের জবাবদিহি করাতে পারেন।**
+   383→
+   384→| # | EN | বাংলা |
+   385→|---|---|---|
+   386→| 1 | We publish exactly how we vet. | আমরা প্রকাশ করি কীভাবে যাচাই করি। |
+   387→| 2 | We disclose every fee before you commit. | প্রতিশ্রুতির আগেই প্রতিটি ফি জানাই। |
+   388→| 3 | We never guarantee returns. | আমরা কখনো মুনাফার নিশ্চয়তা দিই না। |
+   389→| 4 | We show risks next to opportunities. | সুযোগের পাশেই ঝুঁকি দেখাই। |
+   390→| 5 | We protect your data and share it only with your consent. | আপনার তথ্য সুরক্ষিত রাখি এবং সম্মতি ছাড়া শেয়ার করি না। |
+   391→| 6 | We tell you when a deal isn't right for you. | কোনো ডিল আপনার জন্য উপযুক্ত না হলে সেটা বলে দিই। |
+   392→| 7 | We answer in your language — Bangla or English. | আপনার ভাষায় উত্তর দিই — বাংলা বা ইংরেজি। |
+   393→
+   394→> **Pre-launch-এ সবচেয়ে শক্তিশালী trust asset:** সংখ্যা/টেস্টিমোনিয়াল না থাকলে এই Charter-ই তোমার social proof। সংখ্যা এলে (real) "Numbers" section যোগ করো।
+   395→
+   396→#### Section 7 — Why NexFund (৪টি differentiator)
+   397→| Icon | EN | বাংলা |
+   398→|---|---|---|
+   399→| Shield-check | **Vetted, not just listed.** Every business goes through our review before you see it. | **শুধু তালিকা নয়, যাচাইকৃত।** আপনার সামনে আসার আগে প্রতিটি ব্যবসা আমাদের পর্যালোচনার মধ্য দিয়ে যায়। |
+   400→| Receipt | **Transparent fees.** You know what we charge, and when, before you begin. | **স্বচ্ছ ফি।** শুরুর আগেই জানবেন আমরা কত, কখন নিই। |
+   401→| Compass | **Advisory-led.** We're a financial consultancy first — not just a listing board. | **পরামর্শ-কেন্দ্রিক।** আমরা আগে ফাইন্যান্সিয়াল কনসাল্টেন্সি — শুধু লিস্টিং বোর্ড নই। |
+   402→| Languages | **Bilingual, always.** Documents, support, and meetings in Bangla or English. | **সবসময় দ্বিভাষিক।** নথি, সহায়তা ও মিটিং — বাংলা বা ইংরেজিতে। |
+   403→
+   404→#### Section 8 — Services Teaser (৩ কার্ড → Services পেজ)
+   405→Investor Readiness · Business Valuation · Financial Modeling & Pitch Deck। CTA: *Explore Services / সেবাসমূহ দেখুন*।
+   406→
+   407→#### Section 9 — Insights (সর্বশেষ ৩ লেখা)
+   408→কার্ডে: শিরোনাম, পড়ার সময়, লেখক (মুখসহ)। Headline: *Learn before you leap.* / **ঝাঁপ দেওয়ার আগে জানুন।**
+   409→
+   410→#### Section 10 — FAQ (৬টি, AEO-অপ্টিমাইজড)
+   411→প্রতিটি উত্তর **প্রথম ৪০–৬০ শব্দে সরাসরি উত্তর**, তারপর বিস্তারিত। FAQPage Schema।
+   412→
+   413→| Q (EN / BN) | Answer (EN) | উত্তর (BN) |
+   414→|---|---|---|
+   415→| **What is NexFund?** / নেক্সফান্ড কী? | NexFund is a Bangladesh-based financial consultancy and matchmaking platform. We vet growth-ready businesses and introduce them to informed investors, with documentation and advisory support. | নেক্সফান্ড বাংলাদেশভিত্তিক একটি ফাইন্যান্সিয়াল কনসাল্টেন্সি ও ম্যাচমেকিং প্ল্যাটফর্ম। আমরা প্রবৃদ্ধিমুখী ব্যবসা যাচাই করি এবং ডকুমেন্টেশন ও পরামর্শসহ অভিজ্ঞ বিনিয়োগকারীদের সাথে পরিচয় করিয়ে দিই। |
+   416→| **Is investing through NexFund safe?** / নেক্সফান্ডের মাধ্যমে বিনিয়োগ কি নিরাপদ? | Every investment carries risk, including loss of capital. We vet businesses and show key risks up front, but we never guarantee returns. | প্রতিটি বিনিয়োগেই ঝুঁকি আছে, মূলধন হারানোর সম্ভাবনাসহ। আমরা ব্যবসা যাচাই করি এবং প্রধান ঝুঁকি আগেই দেখাই, কিন্তু মুনাফার নিশ্চয়তা দিই না। |
+   417→| **How does NexFund earn?** / নেক্সফান্ড কীভাবে আয় করে? | `[Describe fee model in plain words — who pays what, when.]` ⚠️ | `[ফি মডেল সহজ ভাষায় — কে, কী, কখন দেবে।]` ⚠️ |
+   418→| **What is the minimum investment?** / সর্বনিম্ন বিনিয়োগ কত? | `[PLACEHOLDER — varies by opportunity]` | `[PLACEHOLDER — সুযোগভেদে ভিন্ন]` |
+   419→| **What do entrepreneurs need to apply?** / আবেদনে কী লাগে? | Business registration, ownership details, recent financial statements, and a use-of-funds plan. Our checklist helps you prepare. | ব্যবসার নিবন্ধন, মালিকানার তথ্য, সাম্প্রতিক আর্থিক বিবরণী ও তহবিল ব্যবহারের পরিকল্পনা। আমাদের চেকলিস্ট প্রস্তুতিতে সাহায্য করবে। |
+   420→| **Can non-resident Bangladeshis (NRBs) invest?** / প্রবাসীরা কি বিনিয়োগ করতে পারবেন? | `[Answer only after legal confirmation]` ⚠️ | `[আইনি নিশ্চিতকরণের পরে লিখুন]` ⚠️ |
+   421→
+   422→#### Section 11 — Final CTA (navy background, cyan arrow)
+   423→| EN | বাংলা |
+   424→|---|---|
+   425→| **Ready to see what's next?** Book a free 20-minute conversation. No pressure, no obligation. | **আগামীটা দেখতে প্রস্তুত?** বিনামূল্যে ২০ মিনিটের আলোচনা বুক করুন। কোনো চাপ নেই, বাধ্যবাধকতা নেই। |
+   426→| [Book a Call] · [Register as Investor] · [Raise Capital] | [কল বুক করুন] · [বিনিয়োগকারী হিসেবে রেজিস্টার] · [মূলধন খুঁজুন] |
+   427→
+   428→> ⚠️ "বিনামূল্যে" ও "২০ মিনিট" — শুধু সত্য হলে লিখবে।
+   429→
+   430→---
+   431→
+   432→### 5.2 HOW IT WORKS (`/how-it-works`)
+   433→**H1:** *From first conversation to first introduction.* / **প্রথম আলাপ থেকে প্রথম পরিচয় পর্যন্ত।**
+   434→
+   435→**Layout:** Investor / Entrepreneur **টগল ট্যাব** — প্রতিটির নিজস্ব vertical timeline।
+   436→
+   437→**Investor Journey (৬ ধাপ):** Register & profile → Risk & preference questionnaire → Browse anonymized summaries → Sign NDA → View data room ⚠️ → Advisor call → Express interest → Term discussions & documentation.
+   438→**Entrepreneur Journey (৭ ধাপ):** Readiness quiz → Application → Screening call → 5-stage vetting → Investor-ready package (valuation, deck, data room) → Listing → Introductions → Deal support.
+   439→
+   440→**প্রতিটি ধাপে:** সময়ের আনুমানিক দৈর্ঘ্য `[PLACEHOLDER]` · আপনি কী করবেন · আমরা কী করব · কী পাবেন।
+   441→**পেজের শেষে:** "What we don't do" বক্স — *We don't guarantee returns. We don't hold funds `[⚠️ if true]`. We don't pressure decisions.* / *আমরা মুনাফার নিশ্চয়তা দিই না। আমরা চাপ প্রয়োগ করি না।*
+   442→
+   443→---
+   444→
+   445→### 5.3 FOR INVESTORS (`/investors`) — প্রধান conversion পেজ
+   446→**Hero:** *Invest with your eyes open.* / **চোখ খুলে বিনিয়োগ করুন।**
+   447→**Sub:** *Real businesses. Real documents. Risks written in plain language.* / *আসল ব্যবসা। আসল নথি। সহজ ভাষায় লেখা ঝুঁকি।*
+   448→
+   449→**Sections:**
+   450→1. **Who this is for** — তিনটি persona কার্ড (Professional / Business-owner / NRB ⚠️)
+   451→2. **What you get** — Curated deal flow · Verified data room · Risk summaries · Advisor support · Bilingual documents
+   452→3. **How we protect you** — Vetting mini-stepper (Trust Center-এ লিংক)
+   453→4. **Sample Opportunity Summary** — একটি **নমুনা (স্পষ্ট "SAMPLE" ওয়াটারমার্ক)** PDF/পেজ — কী তথ্য পাবেন তা দেখাও। এটি বিশাল conversion লিভার।
+   454→5. **Investor Guide preview** — "৫টি প্রশ্ন যা যেকোনো ব্যবসায় বিনিয়োগের আগে করা উচিত" (lead magnet)
+   455→6. **Fees for investors** `[PLACEHOLDER]` — স্বচ্ছভাবে
+   456→7. **Risk box** — বড়, বিনয়ী, স্পষ্ট
+   457→8. **Registration form** (৩ ধাপ, নিচে ফ্লো)
+   458→9. **FAQ (investor-specific)**
+   459→
+   460→**Investor Registration — 3-step form**
+   461→| Step | Fields | Microcopy |
+   462→|---|---|---|
+   463→| 1. Account | নাম, ইমেইল, মোবাইল (+880, OTP), ভাষা পছন্দ | "৩০ সেকেন্ড লাগবে / Takes 30 seconds" |
+   464→| 2. Profile | অভিজ্ঞতা, আগ্রহের খাত (multi-select), সম্ভাব্য বিনিয়োগ পরিসর (range), সময়সীমা, ঝুঁকি-স্বাচ্ছন্দ্য | "কোনো উত্তর ভুল নয় — শুধু আপনার সাথে মিলাতে" |
+   465→| 3. Verification ⚠️ | KYC নীতিমালা অনুযায়ী; সংবেদনশীল ডকুমেন্ট এখানে নেওয়া নয় — third-party eKYC/সুরক্ষিত পোর্টালে | "আপনার তথ্য এনক্রিপ্টেড; সম্মতি ছাড়া শেয়ার হয় না" |
+   466→
+   467→---
+   468→
+   469→### 5.4 RAISE CAPITAL / FOR ENTREPRENEURS (`/raise-capital`)
+   470→**Hero:** *Be investor-ready before you're investor-visible.* / **বিনিয়োগকারীর নজরে আসার আগে বিনিয়োগ-প্রস্তুত হোন।**
+   471→**Sub:** *Take our 2-minute readiness check, then let's build the case investors want to see.* / *২ মিনিটের প্রস্তুতি-যাচাই দিন, তারপর বিনিয়োগকারীরা যা দেখতে চান তা একসাথে গড়ি।*
+   472→
+   473→**Sections:**
+   474→1. **Readiness Quiz (hero-তে embed)** — ১০টি প্রশ্ন → স্কোর + কী কী ঘাটতি + "Get your checklist" (ইমেইল capture)
+   475→2. **What investors look for** — ৬টি কার্ড: Clear ownership · Clean financials · Real traction · Use-of-funds plan · Competent team · Realistic valuation
+   476→3. **Investor-Ready Program** — প্যাকেজ (Valuation, Financial model, Pitch deck, Data room, Mock pitch)
+   477→4. **Process & timeline** (`[PLACEHOLDER]` সপ্তাহ)
+   478→5. **Fees** — স্বচ্ছভাবে (ফি মডেল ⚠️)
+   479→6. **What we ask of you** — সততা, ডকুমেন্ট, সময়। ("We'll say no to some businesses. Here's why." — এই বিনয়ী প্রত্যাখ্যান নীতিই trust।)
+   480→7. **Application CTA** (৫-ধাপ)
+   481→
+   482→**Entrepreneur Application — 5-step form (auto-save, progress bar)**
+   483→1. Business basics (নাম, খাত, বয়স, অবস্থান, নিবন্ধন)
+   484→2. Ownership & team
+   485→3. Financial snapshot (গত ২–৩ বছর — রেঞ্জ + ডকুমেন্ট আপলোড)
+   486→4. The ask (কত, কীসের জন্য, instrument পছন্দ)
+   487→5. Documents & consent
+   488→
+   489→**Result screen:** "Thank you — here's what happens next" + সময়রেখা + অ্যাসাইনড কন্টাক্ট + WhatsApp/ইমেইল।
+   490→
+   491→**Readiness Quiz — নমুনা প্রশ্ন**
+   492→1. ব্যবসার বয়স কত? 2. গত ১২ মাসে রাজস্ব বেড়েছে? 3. নিবন্ধিত ও হালনাগাদ লাইসেন্স আছে? 4. হিসাব পেশাদার অ্যাকাউন্ট্যান্ট রাখেন? 5. মালিকানা কাঠামো লিখিত? 6. তহবিল কীভাবে খরচ হবে তার পরিকল্পনা আছে? 7. বর্তমান দায় কত? 8. মূল গ্রাহক/সরবরাহকারী নির্ভরতা? 9. টিমে কে কী করে? 10. বিনিয়োগকারীর সাথে শেয়ার করতে কতটা তথ্য দিতে রাজি?
+   493→
+   494→---
+   495→
+   496→### 5.5 OPPORTUNITIES (`/opportunities`)
+   497→**Layout:** বাঁয়ে filter sidebar (mobile: bottom sheet) · ডানে card grid।
+   498→**Filters:** খাত (Sector) · ধাপ (Stage) · ticket size (range slider, **লাখ/কোটি** ফরম্যাট) · Instrument ⚠️ · অবস্থান (বিভাগ) · Verification stage · Sort।
+   499→**State:** URL-এ filter (শেয়ারযোগ্য লিংক) — `?sector=agri&min=10L`.
+   500→**Empty state:** *"Nothing matches yet. Tell us what you're looking for and we'll alert you."* + alert signup।
+   501→
+   502→**Opportunity Detail page (`/opportunities/[slug]`)**
+   503→```
+   504→[Breadcrumb]
+   505→[Oval hero photo] Title · Sector · Location · Verification badges (5)
+   506→─────────────────────────────────────────────
+   507→Sticky right card:  Seeking ৳X · Min ticket · Instrument ⚠️
+   508→                    [Express Interest]  [Book Advisor Call]
+   509→                    Verification progress: ●●●●○
+   510→─────────────────────────────────────────────
+   511→Tabs:  Overview | Business Model | Financials | Team | Use of Funds
+   512→       | Key Risks (গুরুত্বপূর্ণ — দ্বিতীয় ট্যাব বা প্রথমেই দৃশ্যমান)
+   513→       | Documents (NDA gated 🟡)
+   514→─────────────────────────────────────────────
+   515→"What our advisors noticed" — নিরপেক্ষ পর্যালোচনা (ভালো ও দুর্বল)
+   516→Downside scenario chart ← upside-এর পাশাপাশি
+   517→```
+   518→
+   519→---
+   520→
+   521→### 5.6 TRUST CENTER (`/trust`) ⭐ সবচেয়ে গুরুত্বপূর্ণ পেজ
+   522→**H1:** *Trust is earned in the open.* / **বিশ্বাস অর্জিত হয় খোলাখুলিভাবে।**
+   523→এই পেজ এমন হবে যা অন্য কেউ বানাতে অস্বস্তি বোধ করবে — তাই এটাই moat।
+   524→
+   525→| Sub-page | কী থাকবে |
+   526→|---|---|
+   527→| **Vetting Standard** | ৫ ধাপ বিস্তারিত + একটি **নমুনা Vetting Scorecard** (স্ক্রিনশট/PDF) |
+   528→| **The Charter** | ৭ প্রতিশ্রুতি + সংশোধনের ইতিহাস (changelog) |
+   529→| **Fees & Transparency** | ফি টেবিল · উদাহরণসহ হিসাব · "আমরা যেভাবে আয় করি এবং সম্ভাব্য স্বার্থের দ্বন্দ্ব" ⚠️ |
+   530→| **Risk Disclosure** | সহজ ভাষায়: মূলধন হারানো, liquidity ঝুঁকি, তথ্যের সীমাবদ্ধতা, ডিলিউশন ইত্যাদি |
+   531→| **Security & Privacy** | ডেটা কীভাবে সুরক্ষিত; কে কী দেখে; মুছে ফেলার অনুরোধ |
+   532→| **Regulatory Status** | ⚠️ **আসল অবস্থা যেমন আছে তেমন** (লাইসেন্স/অনুমোদন থাকলে নম্বরসহ; না থাকলে "কীভাবে পরিচালিত" — মিথ্যা বা অস্পষ্ট দাবি কখনও নয়) |
+   533→| **Report a concern** | অভিযোগ/সন্দেহ জানানোর সহজ ফর্ম + প্রতিক্রিয়ার সময় |
+   534→
+   535→---
+   536→
+   537→### 5.7 SERVICES (`/services`)
+   538→**H1:** *Advisory that gets you from "interested" to "informed."* / **"আগ্রহী" থেকে "তথ্যসমৃদ্ধ" হওয়ার পরামর্শ।**
+   539→
+   540→| Service | কার জন্য | কী পাবেন | ⚠️ |
+   541→|---|---|---|---|
+   542→| **Investor Readiness** | Entrepreneur | ব্যবসার গ্যাপ বিশ্লেষণ, রোডম্যাপ, ডকুমেন্ট চেকলিস্ট | |
+   543→| **Business Valuation** | Entrepreneur | Valuation range + পদ্ধতি ব্যাখ্যা + assumptions | |
+   544→| **Financial Modeling & Projections** | Entrepreneur | ৩–৫ বছরের মডেল, sensitivity (base/upside/**downside**) | |
+   545→| **Pitch Deck & Data Room** | Entrepreneur | পিচ ডেক, Q&A প্রস্তুতি, সুশৃঙ্খল data room | |
+   546→| **Deal Assessment Support** | Investor | ডিলের ডকুমেন্ট রিভিউ সহায়তা, প্রশ্নের তালিকা, ঝুঁকি চিহ্নিতকরণ | "Investment advice" লাইসেন্স লাগে কি না যাচাই করো |
+   547→
+   548→প্রতিটি সার্ভিসে: **Problem → Deliverables → Process → Timeline → Fee model → CTA (Book a Consultation)**।
+   549→
+   550→---
+   551→
+   552→### 5.8 ABOUT (`/about`)
+   553→**H1:** *Why we built NexFund.* / **কেন আমরা নেক্সফান্ড গড়েছি।**
+   554→**Founder Story Formula:**
+   555→1. **যে জগৎ থেকে এসেছি** — ব্যবসা ও পরামর্শের অভিজ্ঞতা
+   556→2. **যে সমস্যাটা দেখেছি** — ভালো ব্যবসা পুঁজি পায় না; পুঁজি ভালো ব্যবসা খুঁজে পায় না; মাঝখানে অবিশ্বাস
+   557→3. **যা চেষ্টা করে ব্যর্থ হয়েছে** (সৎভাবে)
+   558→4. **যা বুঝেছি** — বিশ্বাস দাবি নয়, প্রমাণ
+   559→5. **কেন এটা তৈরি করলাম**
+   560→6. **আপনার জন্য এর মানে কী**
+   561→
+   562→**অন্যান্য অংশ:** মিশন/ভিশন/মূল্যবোধ · **টিম (আসল মুখ, oval পোর্ট্রেট, LinkedIn লিংক, যোগ্যতা)** · অ্যাডভাইজরি বোর্ড ⚠️ (শুধু সত্যিকারেরটা) · পার্টনার · অফিসের ঠিকানা ও ম্যাপ · রেজিস্ট্রেশন তথ্য।
+   563→> **Trust rule:** টিমের ছবি ছাড়া "About" ফিনান্স সাইটে সন্দেহ বাড়ায়। আসল মুখ, আসল নাম।
+   564→
+   565→---
+   566→
+   567→### 5.9 INSIGHTS (`/insights`) — SEO/AEO/AGO ইঞ্জিন
+   568→**Categories:** For Investors · For Entrepreneurs · Valuation & Finance · Due Diligence · Market Notes · Deal Room Report
+   569→**Article template:** শিরোনাম → **"Short answer" বক্স (৪০–৬০ শব্দ)** → সূচিপত্র → বিভাগ → **টেবিল/চেকলিস্ট** → ঝুঁকি-নোট → FAQ (২–৩) → লেখক বায়ো (মুখ + যোগ্যতা) → আপডেটের তারিখ → সংশ্লিষ্ট CTA।
+   570→**Lead magnets:** Due Diligence Checklist (PDF) · Investor-Readiness Scorecard · SME Valuation Basics Guide।
+   571→Content calendar → Section 11.5।
+   572→
+   573→---
+   574→
+   575→### 5.10 CONTACT / BOOK A CONSULTATION (`/contact`)
+   576→**H1:** *Let's talk — no pressure.* / **আসুন কথা বলি — কোনো চাপ নেই।**
+   577→
+   578→**ফর্ম (ছোট):** আমি — *Investor / Entrepreneur / Partner / অন্য* · নাম · মোবাইল · ইমেইল · সংক্ষিপ্ত বার্তা · পছন্দের ভাষা।
+   579→**Booking widget:** সময় বেছে নেওয়া (Google Calendar/Calendly-সদৃশ), সময়ক্ষেত্র সহ (NRB-এর জন্য **timezone selector**)।
+   580→**অন্যান্য চ্যানেল:** WhatsApp · ফোন · ইমেইল · অফিস ঠিকানা + ম্যাপ · Facebook/LinkedIn।
+   581→**Response promise:** *"We reply within one business day."* `[⚠️ only if true]` / *"আমরা এক কর্মদিবসের মধ্যে উত্তর দিই।"*
+   582→
+   583→---
+   584→
+   585→### 5.11 FAQ, Legal, Account
+   586→- **FAQ (`/faq`):** ২০+ প্রশ্ন, ক্যাটেগরি ট্যাব (General · Investors · Entrepreneurs · Fees · Security · NRB), সার্চ বক্স, FAQPage schema।
+   587→- **Legal:** Privacy Policy · Terms of Use · Cookie Policy · Risk Disclosure · Disclaimer — **দুই ভাষায়**, আইনজীবী-অনুমোদিত। ⚠️
+   588→- **Account (🟡):** Investor Dashboard (saved opportunities, alerts, meetings, documents) · Entrepreneur Dashboard (application status stepper, document requests, investor interest) · Data Room (NDA-gated, watermarked, access log)।
+   589→
+   590→---
+   591→
+   592→## 6. Feature & Functionality Map
+   593→
+   594→| # | Feature | বিবরণ | Priority |
+   595→|---|---|---|---|
+   596→| 1 | **Bilingual system (BN/EN)** | URL-ভিত্তিক, CMS-এ দুই ভাষার ফিল্ড, toggle | 🟢 |
+   597→| 2 | Responsive, mobile-first UI | ৩৬০px থেকে ডিজাইন | 🟢 |
+   598→| 3 | Investor registration + profile | ৩ ধাপ, OTP | 🟢 |
+   599→| 4 | Entrepreneur readiness quiz | স্কোর + ইমেইল ক্যাপচার | 🟢 |
+   600→| 5 | Entrepreneur application | ৫ ধাপ, auto-save, ফাইল আপলোড | 🟢 |
+   601→| 6 | Opportunity listing (CMS-managed) | Filter, card, detail; anonymized teaser | 🟢 |
+   602→| 7 | Consultation booking | Calendar sync + timezone + reminders | 🟢 |
+   603→| 8 | Lead capture → CRM sync | সব ফর্ম থেকে; UTM সংরক্ষণ | 🟢 |
+   604→| 9 | Email automation | Welcome · Nurture (৫টি) · Application status | 🟢 |
+   605→| 10 | WhatsApp click-to-chat | Header, footer, sticky bar | 🟢 |
+   606→| 11 | Insights CMS | Author, schema, related, TOC | 🟢 |
+   607→| 12 | FAQ with schema | | 🟢 |
+   608→| 13 | Admin panel (light) | Application review, status change, notes, assignment | 🟢 |
+   609→| 14 | Analytics + consent | GA4 + GTM, event list (Section 14.4) | 🟢 |
+   610→| 15 | SEO/AEO/AGO infra | Schema, sitemap, hreflang, llms.txt | 🟢 |
+   611→| 16 | Security baseline | HTTPS/HSTS, rate limit, reCAPTCHA/Turnstile, RBAC | 🟢 |
+   612→| 17 | Dashboards (Investor / Entrepreneur) | Status, saved items, alerts | 🟡 |
+   613→| 18 | NDA e-sign + gated Data Room | Watermark, access logs, expiry ⚠️ | 🟡 |
+   614→| 19 | Express-interest workflow | Interest → advisor review → intro | 🟡 |
+   615→| 20 | Rule-based match scoring | Sector/ticket/horizon/risk fit — *ব্যাখ্যাযোগ্য* | 🟡 |
+   616→| 21 | Notifications | Email + SMS + WhatsApp Business ⚠️ | 🟡 |
+   617→| 22 | Tools: Readiness, Valuation Range, Scenario Simulator | ডিসক্লেইমার সহ | 🟡 |
+   618→| 23 | Saved searches & alerts | নতুন listing মিললে | 🟡 |
+   619→| 24 | "Deal Room Report" newsletter | মাসিক | 🟡 |
+   620→| 25 | Partner portal (lawyers, CAs) | রেফারেল ও নথি | 🔵 |
+   621→| 26 | Post-investment reporting | আপডেট শেয়ার | 🔵 |
+   622→| 27 | Payments | শুধু সার্ভিস ফি (bKash/Nagad/কার্ড) — ইনভেস্টমেন্ট ফান্ড হ্যান্ডলিং **আলাদা আইনি বিষয়** ⚠️ | 🔵 |
+   623→| 28 | ML-assisted matching | ≥ ৫০টি ম্যাচের ডেটা হলে | 🔵 |
+   624→| 29 | PWA / Mobile app | | 🔵 |
+   625→| 30 | Webinar/Events module | | 🔵 |
+   626→
+   627→### 6.1 Concierge MVP — কেন ও কীভাবে
+   628→- ম্যাচিং **ম্যানুয়াল** (স্প্রেডশিট/CRM + অ্যাডভাইজারের বিচার) — সামনে ওয়েবসাইট সবকিছু স্বয়ংক্রিয় মনে হবে।
+   629→- ২০টি সফল match থেকে শিখে রুল ঠিক করো, তারপর অটোমেট করো। আগে ইঞ্জিন বানালে ভুল অনুমান কোড হয়ে যাবে।
+   630→
+   631→---
+   632→
+   633→## 7. Interactive Design & Motion Playbook
+   634→
+   635→| # | Interaction | বিবরণ | Tech hint |
+   636→|---|---|---|---|
+   637→| 1 | **Hero Oval Lens** ⭐ | ৩–৫ oval, প্রতিটিতে ৩টি ছবি ধীরে cross-fade (৬–৮ সেকেন্ড, অফসেট করা যেন একসাথে না বদলায়); মাউস/টাচে সামান্য parallax (±8px); ভাসমান deal card ধীরে ওঠানামা | CSS keyframes + IntersectionObserver; Framer Motion |
+   638→| 2 | **Crossing Paths (scroll)** | SVG path stroke-dashoffset — দুই রেখা X-এ মিলে ↗ ওঠে | SVG + GSAP ScrollTrigger / CSS scroll-driven animation |
+   639→| 3 | **Arrow Button** | Primary button-এ hover করলে ছোট ↗ অ্যারো ৪px সরে যায় (লোগোর অ্যারোর প্রতিধ্বনি) | CSS transform |
+   640→| 4 | **Vetting Stepper** | ৫ ধাপ ক্লিক/স্ক্রল করলে প্রতিটির "check → badge" অ্যানিমেশন | Accordion + Lottie (হালকা) |
+   641→| 5 | **"Match Me" Mini-quiz (Investor)** | ৪ প্রশ্ন (খাত, ticket, সময়সীমা, ঝুঁকি-স্বাচ্ছন্দ্য) → "আপনার মতো investor সাধারণত এসব খাত দেখেন" + রেজিস্টার CTA | React state, কোনো ব্যাকএন্ড ছাড়াই |
+   642→| 6 | **Readiness Score (Entrepreneur)** | ১০ প্রশ্ন → গোল গেজ/oval প্রোগ্রেস + ঘাটতির তালিকা | SVG gauge |
+   643→| 7 | **Scenario Simulator** ⚠️ | স্লাইডারে base / upside / **downside** — **ডিফল্টে downside দৃশ্যমান**; বড় "Illustrative only" লেবেল | Chart.js/Recharts |
+   644→| 8 | **Opportunity Card Expand** | Hover/tap-এ Key Risks স্লাইড-আপ; badge hover-এ tooltip (কী যাচাই হয়েছে) | CSS + ARIA |
+   645→| 9 | **Live Filters** | চিপ + রেঞ্জ স্লাইডার, লাখ/কোটি ফরম্যাট, তাৎক্ষণিক ফলাফল, URL state | Next.js searchParams |
+   646→| 10 | **Number Count-up** | শুধু **আসল** সংখ্যায়; একবারই চলে | IntersectionObserver |
+   647→| 11 | **Language Toggle Cross-fade** | রিলোড ছাড়া অনুভূতি; scroll অবস্থান ধরে রাখে | Route transition |
+   648→| 12 | **Form Delight** | ধাপ-অগ্রগতি, auto-save "Saved ✓", ইনলাইন ভ্যালিডেশন সহজ ভাষায় | react-hook-form + zod |
+   649→| 13 | **Skeleton loading** | Spinner নয়, কার্ড skeleton | CSS |
+   650→| 14 | **Glossary tooltips** | "Equity", "Valuation", "Due Diligence" — BN/EN ব্যাখ্যা | Popover |
+   651→
+   652→**Performance ও Accessibility নিয়ম**
+   653→- **Mobile-first ধরে নাও** (GA4-তে যাচাই করো); মিড-রেঞ্জ Android + ধীর নেটওয়ার্ক টার্গেট
+   654→- Budget: **LCP < 2.5s (4G)**, **CLS < 0.1**, প্রাথমিক JS ≈ ≤ 170kB (gzip), ছবি **AVIF/WebP** + `srcset`, hero ছবি `priority` লোড, বাকি lazy
+   655→- `prefers-reduced-motion` → অ্যানিমেশন বন্ধ/সরল; `Save-Data` → ভিডিও/parallax বন্ধ
+   656→- **WCAG 2.2 AA:** কন্ট্রাস্ট, ফোকাস রিং, কিবোর্ড নেভিগেশন, ফর্ম লেবেল, ছবিতে alt, ভাষা attribute
+   657→- অ্যানিমেশন **কখনও কনটেন্ট লুকাবে না** (JS ফেল করলেও তথ্য দৃশ্যমান)
+   658→
+   659→---
+   660→
+   661→## 8. UX Flows & Conversion Design
+   662→
+   663→### 8.1 Investor Flow
+   664→```
+   665→Google/Facebook/LinkedIn/Referral
+   666→   → Home (Hero → Path choice: "I'm an Investor")
+   667→   → /investors (Sample Opportunity Summary দেখে)
+   668→   → Register (3-step)  ──(drop-off? → email capture: "Investor Guide")
+   669→   → Welcome email + 5-part nurture (Guide, Vetting, Sample deal, FAQ, Call invite)
+   670→   → Browse anonymized opportunities
+   671→   → [🟡 NDA] → Data room
+   672→   → Express Interest → Advisor call → Introduction → Term discussion
+   673→```
+   674→
+   675→### 8.2 Entrepreneur Flow
+   676→```
+   677→Search/Referral/Partner
+   678→   → /raise-capital → Readiness Quiz (2 min)
+   679→   → Score + checklist (email capture)
+   680→   → Apply (5-step) → Screening call → 5-stage vetting
+   681→   → Investor-Ready Program → Listing → Introductions → Deal support
+   682→```
+   683→
+   684→### 8.3 Conversion Killers to Avoid (সরাসরি কথা)
+   685→1. **অতিরিক্ত return-এর ছবি/সংখ্যা** — সন্দেহ বাড়ায়, আইনি ঝুঁকি বাড়ায়।
+   686→2. **Fake counter / fake testimonial / stock মুখ** — একবার ধরা পড়লে ব্র্যান্ড শেষ।
+   687→3. **ফি লুকানো** — সবচেয়ে বড় বিশ্বাসভঙ্গ।
+   688→4. **প্রথম ভিজিটেই দীর্ঘ ফর্ম** — ধাপে ধাপে নাও (progressive profiling)।
+   689→5. **শুধু ইংরেজি বা শুধু বাংলা "ভালো"** — দুটোই সমান মানের হতে হবে (মেশিন-অনুবাদ ছেড়ে দিও না)।
+   690→6. **জোর করে popup / exit-intent হামলা** — ফাইন্যান্স সাইটে অস্বস্তি তৈরি করে।
+   691→7. **হিরোতে অটো ভিডিও** — data ও গতি নষ্ট।
+   692→8. **CTA-র ভিড়** — প্রতি সেকশনে ১টি প্রধান CTA।
+   693→9. **"Register to view everything"** — কিছু আসল মূল্য আগে দেখাও (Sample summary, Vetting standard, Fees)।
+   694→10. **যাচাই না-করা দাবি** ("৫ ধাপ যাচাই", "২৪ ঘণ্টায় রিপ্লাই") — প্রক্রিয়া বাস্তব হওয়ার আগে লিখো না।
+   695→
+   696→### 8.4 CTA ও Microcopy Guide
+   697→| প্রেক্ষাপট | EN | BN |
+   698→|---|---|---|
+   699→| Primary (Investor) | Register as Investor | বিনিয়োগকারী হিসেবে রেজিস্টার করুন |
+   700→| Primary (Entrepreneur) | Check Your Readiness | প্রস্তুতি যাচাই করুন |
+   701→| Secondary | Book a Free Call ⚠️ | ফ্রি কল বুক করুন ⚠️ |
+   702→| Gated content | Register to view documents | নথি দেখতে রেজিস্টার করুন |
+   703→| Success | Thank you. We'll be in touch within [X]. | ধন্যবাদ। আমরা [X]-এর মধ্যে যোগাযোগ করব। |
+   704→| Error | Something went wrong. Your answers are saved — please try again. | কিছু একটা ভুল হয়েছে। আপনার উত্তর সংরক্ষিত আছে — আবার চেষ্টা করুন। |
+   705→| Empty | Nothing here yet. Tell us what you need. | এখনো কিছু নেই। আপনার প্রয়োজন জানান। |
+   706→| Risk nudge | Read the key risks before you continue. | এগোনোর আগে প্রধান ঝুঁকিগুলো পড়ুন। |
+   707→
+   708→**সংখ্যা ও মুদ্রা লোকালাইজেশন:** বাংলাদেশে **লাখ/কোটি** পদ্ধতি — EN: `৳ 50 lakh (BDT 5 million)` · BN: `৳ ৫০ লক্ষ`। `Intl.NumberFormat('bn-BD' / 'en-BD')` ব্যবহার করো। Bangla সংখ্যা (০–৯) বনাম ল্যাটিন — একটি নীতি ঠিক করে সবখানে মানো (সুপারিশ: বাংলা টেক্সটে বাংলা সংখ্যা; টেবিল/ফর্ম ইনপুটে ল্যাটিন সংখ্যা ঐচ্ছিক টগল; A/B টেস্ট করো)।
+   709→
+   710→---
+   711→
+   712→## 9. Trust Architecture (Trust দেখানোর ১২টি প্রমাণ-উপাদান)
+   713→
+   714→| # | উপাদান | কোথায় |
+   715→|---|---|---|
+   716→| 1 | **Vetting Standard** প্রকাশ্য | Home, Trust Center |
+   717→| 2 | **Verification badges** (প্রতিটির অর্থ ক্লিকে ব্যাখ্যা) | Opportunity card/detail |
+   718→| 3 | **Key Risks** সবসময় দৃশ্যমান | Card, detail |
+   719→| 4 | **ফি স্বচ্ছতা** পেজ + উদাহরণ হিসাব | Trust Center, Investors, Raise Capital |
+   720→| 5 | **Charter** (৭ প্রতিশ্রুতি) + changelog | Home, Trust |
+   721→| 6 | **আসল টিম** (মুখ, নাম, LinkedIn) | About |
+   722→| 7 | **Regulatory status যেমন আছে তেমন** | Trust, Footer ⚠️ |
+   723→| 8 | **নমুনা Vetting Scorecard / Opportunity Summary** | Investors, Trust |
+   724→| 9 | **"When we say no"** — প্রত্যাখ্যানের নীতি | Raise Capital |
+   725→| 10 | **Security & data privacy** ব্যাখ্যা | Trust, ফর্মের পাশে |
+   726→| 11 | **Report a concern** চ্যানেল | Footer, Trust |
+   727→| 12 | **Proof over time:** যাচাই-কৃত case study (অনুমতিসহ), সংখ্যা (আসল), পার্টনার লোগো (আসল) | Home, About (পরে) |
+   728→
+   729→**Testimonial নিয়ম:** সম্মতিসহ, নাম/ছবি/ভূমিকা সহ, বাড়িয়ে না বলা। অনুমতি ছাড়া কোনো ব্যবসার নাম/লোগো নয়।
+   730→
+   731→---
+   732→
+   733→## 10. Bilingual (BN/EN) Implementation Spec
+   734→
+   735→| বিষয় | সিদ্ধান্ত |
+   736→|---|---|
+   737→| **URL** | `/bn/...` ও `/en/...` (সাবডাইরেক্টরি) — SEO-র জন্য সবচেয়ে সহজ ও শক্তিশালী |
+   738→| **Default** | `/bn` প্রধান (লক্ষ্য বাজার), `x-default` → `/bn` বা ল্যাঙ্গুয়েজ পিকার পেজ |
+   739→| **hreflang** | প্রতিটি পেজে `bn-BD`, `en`, `x-default` পারস্পরিক |
+   740→| **Content parity** | দুই ভাষায় **সমান মানের**; Bangla কপি মূল লেখা হিসেবে লেখো — ইংরেজির আক্ষরিক অনুবাদ নয় |
+   741→| **Translation workflow** | লেখা → প্রফেশনাল রিভিউ → আইনি রিভিউ (আইনি টেক্সট) → CMS-এ প্রকাশ; "অনুবাদ বাকি" থাকলে পেজ প্রকাশ নয় |
+   742→| **Terminology glossary** | Equity = ইক্যুইটি/শেয়ার-মালিকানা, Valuation = ভ্যালুয়েশন/মূল্যায়ন, Due Diligence = ডিউ ডিলিজেন্স/যাচাই — **একটি সিদ্ধান্ত নিয়ে সব জায়গায় একই** |
+   743→| **Fonts** | Section 2.3; `unicode-range` সাবসেট |
+   744→| **Forms/Emails/PDF** | সবই দ্বিভাষিক; ব্যবহারকারীর পছন্দ প্রোফাইলে সংরক্ষিত |
+   745→| **Names/Transliteration** | নাম ইংরেজিতে লিখলে বাংলায় ও উল্টোটা দুটোই সংরক্ষণ (ঐচ্ছিক) |
+   746→| **Dates** | BN: `২৯ সেপ্টেম্বর ২০২৬` · EN: `29 Sep 2026` |
+   747→| **Testing** | দুই ভাষায় ৩৬০px-এ ওভারফ্লো, কাটা মাত্রা, লাইন-হাইট, দীর্ঘ শব্দ |
+   748→
+   749→---
+   750→
+   751→## 11. SEO · AEO · AGO Strategy
+   752→
+   753→### 11.1 লক্ষ্য
+   754→- **SEO:** সার্চ ইঞ্জিনে খুঁজে পাওয়া · **AEO (Answer Engine):** ফিচার্ড স্নিপেট/"People also ask"-এ উত্তর হিসেবে আসা · **AGO (Generative Engine):** ChatGPT/Gemini/Perplexity-সদৃশ টুলের উত্তরে উৎস হিসেবে উদ্ধৃত হওয়া।
+   755→
+   756→### 11.2 Keyword Clusters (ভলিউম **যাচাই করা নেই** — Google Keyword Planner ও Search Console দিয়ে validate করো)
+   757→| Cluster | English | বাংলা / Banglish |
+   758→|---|---|---|
+   759→| Find investors | find investors for my business Bangladesh · business funding Bangladesh · SME funding | ব্যবসার জন্য বিনিয়োগকারী · ব্যবসায় মূলধন সংগ্রহ · এসএমই ফান্ডিং |
+   760→| Invest | invest in Bangladesh startups · SME investment · where to invest in Bangladesh | স্টার্টআপে বিনিয়োগ · ব্যবসায় বিনিয়োগ · কোথায় বিনিয়োগ করবেন |
+   761→| Valuation | business valuation Bangladesh · how to value a small business | ব্যবসার ভ্যালুয়েশন · ব্যবসার মূল্য নির্ধারণ |
+   762→| Due diligence | due diligence checklist before investing | বিনিয়োগের আগে কী যাচাই করবেন |
+   763→| Safety | how to avoid investment scams Bangladesh | বিনিয়োগ প্রতারণা এড়াবেন যেভাবে |
+   764→| Brand | NexFund · NexFund Bangladesh | নেক্সফান্ড |
+   765→
+   766→> **টিপ:** বাংলাদেশে অনেকে **Banglish** (ইংরেজি অক্ষরে বাংলা) সার্চ করে — কনটেন্টে কিছু Banglish কী-ফ্রেজ স্বাভাবিকভাবে রাখো, কিন্তু বাংলা লিপি প্রধান।
+   767→
+   768→### 11.3 On-Page ও Technical
+   769→- **Title (≤ 60 char) / Meta (≤ 155 char)** প্রতিটি পেজ ও ভাষার জন্য আলাদা (Appendix C)
+   770→- **Schema:** `Organization` (sameAs: LinkedIn/Facebook) · `FinancialService`/`ProfessionalService` · `WebSite` · `BreadcrumbList` · `FAQPage` · `Article` (author, datePublished, dateModified) · `Person` (টিম) · `HowTo` (প্রক্রিয়া)
+   771→- Core Web Vitals, semantic HTML (`<main>`, `<nav>`, heading hierarchy), ক্যানোনিক্যাল, XML sitemap (উভয় ভাষা), `robots.txt`
+   772→- **Entity consistency:** নাম "NexFund" / "নেক্সফান্ড", ঠিকানা, ফোন সব প্ল্যাটফর্মে হুবহু একই (Google Business Profile, LinkedIn, Facebook)
+   773→- **Google Business Profile** ও **Search Console + Bing Webmaster** সেটআপ
+   774→
+   775→### 11.4 AEO ও AGO কৌশল
+   776→1. **Answer-first কাঠামো:** প্রতিটি ইনসাইট/FAQ-এর শুরুতে ৪০–৬০ শব্দে সরাসরি উত্তর।
+   777→2. **টেবিল ও তালিকা:** তুলনা, চেকলিস্ট, ধাপ — মেশিন-পাঠযোগ্য।
+   778→3. **সংজ্ঞা ব্লক:** "What is [X]?" — একটি স্পষ্ট বাক্যে।
+   779→4. **উৎস উদ্ধৃতি:** নিয়ন্ত্রক/সরকারি/প্রাথমিক উৎসে লিংক (যাচাইযোগ্যতা = LLM-এর কাছে বিশ্বাস)।
+   780→5. **E-E-A-T:** লেখকের আসল নাম, যোগ্যতা, ছবি; "সর্বশেষ হালনাগাদ" তারিখ।
+   781→6. **`llms.txt`** ফাইল (সাইটের মূল পেজ ও সংক্ষিপ্ত বর্ণনা) — নিম্ন খরচ, সম্ভাব্য সুবিধা।
+   782→7. **robots.txt-এ AI ক্রলার নীতি** — ব্যবসায়িক সিদ্ধান্ত (অনুমতি দিলে উদ্ধৃত হওয়ার সুযোগ বাড়ে)।
+   783→8. **ব্র্যান্ড উল্লেখ বাড়াও:** LinkedIn আর্টিকেল, Facebook পেজ, গেস্ট পোস্ট, পার্টনার সাইটে উল্লেখ — LLM এন্টিটি চেনে বহু উৎসের সঙ্গতি দেখে।
+   784→9. **YMYL সতর্কতা:** ফাইন্যান্স = "Your Money Your Life" ক্যাটেগরি — Google আরও কঠোর; তাই লেখক-যোগ্যতা, রিভিউ-তারিখ ও ডিসক্লেইমার অপরিহার্য।
+   785→
+   786→### 11.5 প্রথম ৮ সপ্তাহের কনটেন্ট ক্যালেন্ডার (Pillar আর্টিকেল)
+   787→| সপ্তাহ | শিরোনাম (EN / BN) | Funnel | Lead magnet |
+   788→|---|---|---|---|
+   789→| 1 | How to evaluate an SME before investing: a 12-point checklist / বিনিয়োগের আগে একটি এসএমই যাচাইয়ের ১২ পয়েন্ট | TOFU-Investor | Due Diligence Checklist |
+   790→| 2 | Valuation basics for founders: what investors actually look at / ফাউন্ডারদের জন্য ভ্যালুয়েশনের গোড়ার কথা | TOFU-Entrepreneur | Valuation Guide |
+   791→| 3 | Red flags in investment offers (and how to spot them) / বিনিয়োগ অফারের ১০টি রেড ফ্ল্যাগ | TOFU-Investor (trust) | — |
+   792→| 4 | Equity, debt or revenue share: which fits your business? ⚠️ / ইক্যুইটি, ঋণ নাকি রেভিনিউ শেয়ার? | MOFU-Entrepreneur | Readiness Quiz |
+   793→| 5 | The 12 slides Bangladeshi founders skip in a pitch deck / পিচ ডেকের ১২ স্লাইড যা অনেকে বাদ দেন | MOFU-Entrepreneur | Pitch Template |
+   794→| 6 | Financial statements investors expect: the minimum set / বিনিয়োগকারীরা যে আর্থিক নথি চান | MOFU | Doc Checklist |
+   795→| 7 | How NexFund vets a business — stage by stage / নেক্সফান্ড কীভাবে যাচাই করে | BOFU | Book Call |
+   796→| 8 | Deal Room Report #1 (anonymized market notes) / ডিল রুম রিপোর্ট #১ | Retention | Newsletter |
+   797→
+   798→**বিতরণ:** প্রতিটি পিলার → ৩–৫টি LinkedIn/Facebook পোস্ট + ১টি শর্ট ভিডিও (বাংলা) + ইমেইল নিউজলেটার।
+   799→
+   800→---
+   801→
+   802→## 12. Technical Architecture & Security
+   803→
+   804→### 12.1 প্রস্তাবিত Stack
+   805→| Layer | সুপারিশ | কেন |
+   806→|---|---|---|
+   807→| **Frontend** | **Next.js (App Router) + TypeScript + Tailwind** | SSR/SSG (SEO), দ্রুত, i18n সহজ |
+   808→| **i18n** | `next-intl` (বা সমতুল্য) | রুট-ভিত্তিক ভাষা, ফরম্যাটিং |
+   809→| **CMS** | **Sanity** বা **Payload/Strapi** (self-host) | দ্বিভাষিক ফিল্ড, রোল, ড্রাফট→রিভিউ→পাবলিশ |
+   810→| **DB** | PostgreSQL (Supabase/Neon/self-host) | রিলেশনাল — ইউজার, আবেদন, listing, ইন্টারেস্ট |
+   811→| **Auth** | Auth.js/Clerk + **ফোন OTP** (লোকাল SMS গেটওয়ে) | বাংলাদেশে মোবাইল-প্রথম |
+   812→| **Files** | S3-compatible + signed URLs + ভাইরাস স্ক্যান | নথি সুরক্ষা |
+   813→| **Email/SMS/WhatsApp** | Resend/SES · লোকাল SMS প্রোভাইডার · WhatsApp Business API | নোটিফিকেশন |
+   814→| **Booking** | Cal.com/Calendly বা কাস্টম | টাইমজোন সহ |
+   815→| **E-sign (🟡)** | মূল্যায়ন করো (আন্তর্জাতিক/লোকাল) ⚠️ আইনি বৈধতা | NDA |
+   816→| **eKYC (🟡)** | থার্ড-পার্টি প্রোভাইডার | সংবেদনশীল ID নিজে সংরক্ষণ না করাই ভালো |
+   817→| **Analytics** | GA4 + GTM + Search Console + Clarity/Hotjar (consent সহ) | |
+   818→| **Hosting/CDN** | Vercel/Cloudflare + CDN; ব্যাকএন্ড ও DB সিঙ্গাপুর/নিকটতম রিজিয়ন | লেটেন্সি |
+   819→| **Monitoring** | Sentry + Uptime | |
+   820→
+   821→**Team/ভূমিকা:** Zoolyum — ব্র্যান্ড, UI/UX, কপি, SEO, ক্যাম্পেইন · Nexily IT — ইঞ্জিনিয়ারিং, ইন্টিগ্রেশন, সিকিউরিটি · আইনজীবী/কমপ্লায়েন্স পরামর্শদাতা — আইনি টেক্সট ও নিয়ম · ১ জন অ্যাডভাইজার/অ্যানালিস্ট — vetting ও ম্যানুয়াল ম্যাচিং।
+   822→
+   823→### 12.2 Security & Privacy Baseline
+   824→- HTTPS + HSTS, CSP হেডার, rate limiting, bot protection (Turnstile/reCAPTCHA)
+   825→- **RBAC** (Admin / Advisor / Investor / Entrepreneur), অ্যাডমিন **2FA বাধ্যতামূলক**
+   826→- ডেটা এনক্রিপশন (transit + at rest); সংবেদনশীল ফিল্ড ফিল্ড-লেভেল এনক্রিপ্ট
+   827→- **Audit log** (কে কোন নথি কখন দেখল); data room-এ ওয়াটারমার্ক (🟡)
+   828→- **Data minimization:** যা লাগে শুধু তাই নাও; NID/পাসপোর্ট মার্কেটিং সাইটে নয়
+   829→- ব্যাকআপ (দৈনিক) ও রিস্টোর টেস্ট; ঘটনা-সাড়া পরিকল্পনা
+   830→- **Privacy:** সম্মতি-ভিত্তিক শেয়ারিং, ডিলিট/এক্সপোর্ট অনুরোধ প্রক্রিয়া; বর্তমান বাংলাদেশি ডেটা-সুরক্ষা প্রয়োজনীয়তা আইনজীবী দিয়ে যাচাই ⚠️
+   831→
+   832→---
+   833→
+   834→## 13. Compliance & Legal Guardrails ⚠️
+   835→
+   836→> আমি আইনজীবী নই। নিচের তালিকা **প্রশ্ন** — উত্তর আনতে হবে বাংলাদেশের সিকিউরিটিজ/কর্পোরেট আইনে অভিজ্ঞ আইনজীবীর কাছ থেকে, **launch-এর আগে**।
+   837→
+   838→1. প্ল্যাটফর্মের কার্যক্রম (investor–business matchmaking, listing, advisory, সাফল্য-ফি) কি কোনো নিবন্ধন/লাইসেন্স/ছাড়ের আওতায় পড়ে? কোন সংস্থার?
+   839→2. কোন instrument (ইক্যুইটি, ঋণ, রেভিনিউ শেয়ার ইত্যাদি) ও কোন ধরনের investor-এর কাছে প্রচার করা যায়?
+   840→3. **আর্থিক প্রচারণার (financial promotion)** নিয়ম — "returns", "guaranteed", টেস্টিমোনিয়াল ও বিজ্ঞাপনে কী নিষিদ্ধ?
+   841→4. AML/KYC বাধ্যবাধকতা; অর্থ গ্রহণ/হ্যান্ডলিং করবে কি না (**না করাই সরলতম মডেল**)।
+   842→5. NRB বিনিয়োগ ও বৈদেশিক মুদ্রা নিয়ম।
+   843→6. ডেটা সুরক্ষা, NDA/ই-স্বাক্ষরের বৈধতা।
+   844→7. সাফল্য-ফি বা কমিশন কাঠামোর বৈধতা ও প্রকাশের বাধ্যবাধকতা।
+   845→
+   846→**Copy guardrails (অভ্যন্তরীণ নিয়ম):** "guaranteed/নিশ্চিত" নয় · "risk-free/ঝুঁকিমুক্ত" নয় · অতীত রিটার্ন দেখালে সবসময় ঝুঁকি-ডিসক্লেইমার · প্রতিটি দাবির পেছনে প্রমাণ · আইনজীবী-অনুমোদিত ডিসক্লেইমার প্রতিটি সংশ্লিষ্ট পেজে।
+   847→
+   848→---
+   849→
+   850→## 14. Roadmap, KPIs & Launch
+   851→
+   852→### 14.1 ১২-সপ্তাহের রোডম্যাপ (indicative)
+   853→| ধাপ | সপ্তাহ | ডেলিভারেবল |
+   854→|---|---|---|
+   855→| **0. Foundation** | 0–1 | আইনি চেকলিস্ট শুরু · লোগো কিট সম্প্রসারণ · ৩–৫ listing-ready ব্যবসা চিহ্নিত · ১০টি ইন্টারভিউ (৫ investor + ৫ entrepreneur) · কম্পিটিটর অডিট |
+   856→| **1. Design** | 2–4 | Sitemap ফাইনাল · Wireframe (মোবাইল আগে) · UI kit + টোকেন · Hero প্রোটোটাইপ (Oval Lens) · BN+EN কপি ড্রাফট · ফটোশুট |
+   857→| **2. Build MVP** | 5–9 | Next.js সাইট + CMS · ফর্ম/OTP · quiz · listing (CMS) · booking · email automation · admin light · analytics · schema |
+   858→| **3. QA & Seed** | 10–11 | কনটেন্ট সিড (৪টি ইনসাইট, FAQ) · SEO টেকনিক্যাল · অ্যাক্সেসিবিলিটি · পারফরম্যান্স · সিকিউরিটি রিভিউ · আইনি অনুমোদন · **সফট লঞ্চ** (২০ investor + ১০ ব্যবসা) |
+   859→| **4. Launch & Learn** | 12+ | পাবলিক লঞ্চ · ক্যাম্পেইন · সাপ্তাহিক রিভিউ · Phase 2 পরিকল্পনা |
+   860→
+   861→### 14.2 KPI ফ্রেমওয়ার্ক
+   862→| স্তর | মেট্রিক |
+   863→|---|---|
+   864→| **North Star** | Qualified introductions / month |
+   865→| **Acquisition** | Sessions (ভাষা অনুযায়ী) · Organic share · Channel mix · CPL |
+   866→| **Activation** | Investor registration rate · Quiz completion · Application start→complete |
+   867→| **Trust signals** | Trust Center visits → registration · Vetting পেজে সময় · Sample summary ডাউনলোড |
+   868→| **Conversion** | Consultation booked · Interest expressed · Intro→meeting rate |
+   869→| **Quality** | Vetting pass rate · Time-to-verify · Match satisfaction (NPS) |
+   870→| **Technical** | LCP/CLS · Form error rate · Bangla vs English bounce rate |
+   871→
+   872→> **বেসলাইন নিয়ম:** প্রথম ৩০ দিনে নিজেদের বেসলাইন বানাও — বাইরের "গড়" বেঞ্চমার্ক অন্ধভাবে ধরো না।
+   873→
+   874→### 14.3 লঞ্চ-পরবর্তী ৩০ দিন
+   875→- **সপ্তাহ ১:** সফট-লঞ্চ ফলাফল রিভিউ; হিটম্যাপ/রেকর্ডিং দেখে ফ্রিকশন ঠিক করো
+   876→- **সপ্তাহ ২:** LinkedIn (Investor) + Facebook (Entrepreneur/SME) কনটেন্ট চালু; Meta লিড-জেন টেস্ট (ছোট বাজেট, **আগে ট্রাস্ট কনটেন্ট, পরে অফার**)
+   877→- **সপ্তাহ ৩:** পার্টনার আউটরিচ (CA ফার্ম, আইনজীবী, incubator, চেম্বার) — রেফারেল মডেল
+   878→- **সপ্তাহ ৪:** প্রথম "Deal Room Report" · A/B টেস্ট (hero কপি, CTA)
+   879→- **চ্যানেল ম্যাট্রিক্স:** Investor → LinkedIn, রেফারেল, SEO, ইভেন্ট/ওয়েবিনার · Entrepreneur → Facebook/Meta, পার্টনার (CA/ব্যাংকার), SEO
+   880→
+   881→### 14.4 GTM/GA4 Event তালিকা
+   882→`lang_switch` · `cta_click_investor` · `cta_click_entrepreneur` · `quiz_start` · `quiz_complete` · `register_step_1/2/3` · `application_step_1..5` · `application_submit` · `opportunity_view` · `opportunity_filter` · `sample_summary_download` · `checklist_download` · `consult_booked` · `interest_expressed` · `nda_signed` · `dataroom_open` · `trust_center_view` · `faq_expand` · `whatsapp_click`
+   883→
+   884→---
+   885→
+   886→## 15. Risks & Mitigations
+   887→
+   888→| ঝুঁকি | সম্ভাবনা/প্রভাব | Mitigation |
+   889→|---|---|---|
+   890→| **Supply শূন্য** (খালি marketplace) | উচ্চ / অত্যন্ত উচ্চ | Launch-এর আগে ৩–৫ listing; "priority list" fallback; কখনও fake listing নয় |
+   891→| **আইনি/নিয়ন্ত্রক ঝুঁকি** | মাঝারি / অত্যন্ত উচ্চ | Section 13; সরল মডেল (অর্থ হ্যান্ডলিং নয়) ⚠️ |
+   892→| **একটি খারাপ ডিলে খ্যাতি নষ্ট** | মাঝারি / উচ্চ | কঠোর vetting, ঝুঁকি প্রকাশ, "আমরা নিশ্চয়তা দিই না" সর্বত্র |
+   893→| **প্রতিশ্রুতি vs বাস্তবতা** (site যা বলে, অপারেশন যা করে) | উচ্চ / উচ্চ | কপি = বাস্তব প্রক্রিয়া; প্রক্রিয়া বাড়লে কপি বাড়াও |
+   894→| **ধীর সাইট/ভারী অ্যানিমেশন** | মাঝারি / মাঝারি | পারফরম্যান্স বাজেট, reduced-motion |
+   895→| **খারাপ বাংলা অনুবাদ** | মাঝারি / মাঝারি | বাংলা-প্রথম লেখা + পেশাদার রিভিউ |
+   896→| **ডেটা ফাঁস** | নিম্ন / অত্যন্ত উচ্চ | Section 12.2 |
+   897→| **scope creep** | উচ্চ / মাঝারি | MVP তালিকা লক; Phase 2 আলাদা |
+   898→
+   899→---
+   900→
+   901→## 16. Quick Wins
+   902→
+   903→**৪৮ ঘণ্টায়:**
+   904→1. **৩–৫টি সম্ভাব্য listing** চিহ্নিত করো (নাম, খাত, আকার, রাজি কি না)।
+   905→2. **আইনজীবীর সাথে ১ ঘণ্টার কনসাল্ট** বুক করো (Section 13-এর ৭টি প্রশ্ন নিয়ে)।
+   906→3. লোগো ভেক্টর থেকে **আসল hex** বের করে টোকেন ফাইনাল করো; **horizontal lockup + icon** বানানোর ব্রিফ দাও।
+   907→4. `nexfund` ডোমেইন/সোশ্যাল হ্যান্ডেল/Google Business Profile নিশ্চিত করো।
+   908→
+   909→**৭ দিনে:**
+   910→5. ১০টি ইন্টারভিউ শিডিউল (৫ investor, ৫ entrepreneur) — মূল ভয়টা তাদের নিজের ভাষায় নোট করো (সেটাই কপি)।
+   911→6. **Vetting Standard v0.1** লিখে অভ্যন্তরীণভাবে চূড়ান্ত করো (কী আসলেই করবে)।
+   912→7. **ফি মডেল** সিদ্ধান্ত (আইনজীবী-সহ)।
+   913→8. Hero-র জন্য ৫টি ব্যবসার ফটোশুট সময়সূচি।
+   914→9. "Coming soon + priority list" পেজ লাইভ করো (ইমেইল ক্যাপচার) — লঞ্চের আগেই অডিয়েন্স গড়া শুরু।
+   915→
+   916→---
+   917→
+   918→## 17. বাংলা সারসংক্ষেপ
+   919→
+   920→- **মূল কথা:** ওয়েবসাইট শুধু সুন্দর হলে হবে না — **বিশ্বাস দেখাতে হবে**। "প্রতিশ্রুতির আগে প্রমাণ" — এটাই NexFund-এর ব্র্যান্ড-স্লোগান ও ডিজাইনের ভিত্তি।
+   921→- **ডিজাইন গল্প:** লোগোর **X = দুই পথের মিলন**। Hero-তে **oval ফ্রেম** (ছোট থেকে বড়, উপরে উঠছে) যেখানে আসল বাংলাদেশি ব্যবসার ছবি ধীরে বদলাবে; পেছনে cyan রেখা ↗।
+   922→- **রং/ফন্ট:** Navy (প্রধান) + Cyan (শুধু হাইলাইট/অ্যারো; সাদা ব্যাকগ্রাউন্ডে ছোট লেখায় নয়) · Manrope/Inter + Anek Bangla/Hind Siliguri।
+   923→- **পেজ:** Home · How It Works · Investors · Raise Capital · Opportunities · **Trust Center (সবচেয়ে গুরুত্বপূর্ণ)** · Services · Insights · About · FAQ · Contact।
+   924→- **সবচেয়ে শক্তিশালী ৫টি জিনিস:** (১) প্রকাশ্য ৫-ধাপ Vetting (২) ঝুঁকি সবসময় দৃশ্যমান (৩) ফি আগে থেকে স্বচ্ছ (৪) Charter — ৭ প্রতিশ্রুতি (৫) আসল টিম ও আসল ছবি।
+   925→- **ফিচার (MVP):** BN/EN সুইচ · Investor রেজিস্ট্রেশন · Readiness Quiz · Application · Curated listing · Booking · Email automation · Admin light। **পরে:** Dashboard, Data Room, Matching engine।
+   926→- **কৌশল:** Concierge MVP — সামনে প্রিমিয়াম সাইট, পেছনে হাতে-করা ম্যাচিং; ২০টা সফল match-এর পর অটোমেশন।
+   927→- **সবচেয়ে বড় ঝুঁকি:** খালি মার্কেটপ্লেস ও আইনি অনুমোদন। **লঞ্চের আগে ৩–৫টি আসল listing + আইনজীবীর পরামর্শ।**
+   928→- **আজকের কাজ:** listing-ready ব্যবসা চিহ্নিত করো · আইনজীবীর সাথে কথা বলো · লোগোর আসল hex ও lockup ঠিক করো।
+   929→
+   930→---
+   931→
+   932→## Appendix A — Design Tokens & Hero Oval Starter (CSS)
+   933→
+   934→```css
+   935→:root {
+   936→  /* Brand (verify hex from vector logo) */
+   937→  --nx-navy-900: #061F4A;
+   938→  --nx-navy-700: #0A3A8F;
+   939→  --nx-navy-500: #2F5FBF;
+   940→  --nx-cyan-500: #26B7D8;
+   941→  --nx-cyan-100: #E3F6FB;
+   942→  --nx-ink: #0E1726;
+   943→  --nx-slate-600: #475569;
+   944→  --nx-mist-50: #F5F8FC;
+   945→  --nx-white: #FFFFFF;
+   946→  --nx-success: #12805C;
+   947→  --nx-warning: #B7791F;
+   948→  --nx-danger: #C53030;
+   949→
+   950→  --radius-card: 16px;
+   951→  --radius-pill: 999px;
+   952→  --ease: cubic-bezier(.2,.8,.2,1);
+   953→
+   954→  --font-display-en: "Manrope", system-ui, sans-serif;
+   955→  --font-body-en: "Inter", system-ui, sans-serif;
+   956→  --font-display-bn: "Anek Bangla", "Noto Sans Bengali", sans-serif;
+   957→  --font-body-bn: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
+   958→}
+   959→
+   960→html[lang="bn"] body { font-family: var(--font-body-bn); line-height: 1.75; letter-spacing: 0; }
+   961→html[lang="bn"] h1, html[lang="bn"] h2 { font-family: var(--font-display-bn); line-height: 1.3; }
+   962→html[lang="en"] body { font-family: var(--font-body-en); line-height: 1.5; }
+   963→html[lang="en"] h1, html[lang="en"] h2 { font-family: var(--font-display-en); }
+   964→
+   965→/* Oval Lens */
+   966→.oval {
+   967→  position: relative;
+   968→  aspect-ratio: 4 / 5;
+   969→  border-radius: 50%;
+   970→  overflow: hidden;
+   971→  isolation: isolate;
+   972→}
+   973→.oval::after {                      /* cyan focus ring */
+   974→  content: ""; position: absolute; inset: -8px;
+   975→  border: 2px solid var(--nx-cyan-500); border-radius: 50%;
+   976→  opacity: .7; pointer-events: none;
+   977→}
+   978→.oval img {
+   979→  position: absolute; inset: 0; width: 100%; height: 100%;
+   980→  object-fit: cover; opacity: 0;
+   981→  animation: nx-fade 21s infinite;  /* 3 images × 7s */
+   982→}
+   983→.oval img:nth-child(2) { animation-delay: 7s; }
+   984→.oval img:nth-child(3) { animation-delay: 14s; }
+   985→.oval img:first-child  { opacity: 1; }
+   986→@keyframes nx-fade {
+   987→  0%   { opacity: 0; } 6%  { opacity: 1; }
+   988→  33%  { opacity: 1; } 39% { opacity: 0; } 100% { opacity: 0; }
+   989→}
+   990→
+   991→/* Rising composition (lengths echo the logo arrow) */
+   992→.hero-ovals { position: relative; height: 560px; }
+   993→.hero-ovals .o1 { position: absolute; left: 0;   bottom: 0;   width: 180px; }
+   994→.hero-ovals .o2 { position: absolute; left: 34%; bottom: 60px; width: 240px; }
+   995→.hero-ovals .o3 { position: absolute; right: 0;  top: 0;      width: 320px; }
+   996→
+   997→@media (prefers-reduced-motion: reduce) { .oval img { animation: none; } }
+   998→@media (max-width: 768px) {
+   999→  .hero-ovals { height: 420px; }
+  1000→  .hero-ovals .o3 { width: 220px; } .hero-ovals .o2 { width: 160px; } .hero-ovals .o1 { display: none; }
+  1001→}
+  1002→```
+  1003→
+  1004→---
+  1005→
+  1006→## Appendix B — Extra Microcopy Library
+  1007→
+  1008→| Where | EN | BN |
+  1009→|---|---|---|
+  1010→| OTP | We sent a 6-digit code to your phone. | আপনার ফোনে ৬ সংখ্যার কোড পাঠানো হয়েছে। |
+  1011→| Consent | I understand that investing carries risk, including loss of capital. | আমি বুঝি যে বিনিয়োগে ঝুঁকি আছে, মূলধন হারানোর সম্ভাবনাসহ। |
+  1012→| Data promise | Your information is encrypted and shared only with your consent. | আপনার তথ্য এনক্রিপ্টেড এবং কেবল আপনার সম্মতিতে শেয়ার হয়। |
+  1013→| Application saved | Saved. Pick up where you left off, anytime. | সংরক্ষিত। যেকোনো সময় যেখানে থেমেছিলেন সেখান থেকে শুরু করুন। |
+  1014→| Not a fit | This opportunity may not match your profile. Here's why — and what might. | এই সুযোগটি আপনার প্রোফাইলের সাথে নাও মিলতে পারে। কারণ এবং বিকল্প এখানে। |
+  1015→| Rejection (entrepreneur) | Thank you for applying. We're not able to list you right now — here's what to strengthen, and we'd welcome you back. | আবেদনের জন্য ধন্যবাদ। এই মুহূর্তে আপনাকে তালিকাভুক্ত করতে পারছি না — কী উন্নত করতে হবে তা এখানে; আপনি আবার আবেদন করতে পারেন। |
+  1016→| Email subject (welcome) | Welcome to NexFund — here's how we vet | নেক্সফান্ডে স্বাগতম — আমরা কীভাবে যাচাই করি |
+  1017→| Email subject (nurture) | 5 questions to ask before you invest in any business | যেকোনো ব্যবসায় বিনিয়োগের আগে ৫টি প্রশ্ন |
+  1018→
+  1019→---
+  1020→
+  1021→## Appendix C — Page Meta (Title ≤ 60 · Description ≤ 155)
+  1022→
+  1023→| Page | EN Title | EN Description | BN Title | BN Description |
+  1024→|---|---|---|---|---|
+  1025→| Home | NexFund — Fund What's Next in Bangladesh | Financial consultancy connecting informed investors with verified, growth-ready Bangladeshi businesses. Vetted, documented, transparent. | নেক্সফান্ড — আগামীর উদ্যোগে বিনিয়োগ | যাচাইকৃত বাংলাদেশি ব্যবসার সাথে অভিজ্ঞ বিনিয়োগকারীদের সংযোগ। যাচাই, ডকুমেন্টেশন ও স্বচ্ছতাসহ। |
+  1026→| Investors | Invest in Verified Bangladeshi Businesses | See real businesses, documents, and risks before you invest. Register as an investor with NexFund. | যাচাইকৃত ব্যবসায় বিনিয়োগ করুন | বিনিয়োগের আগে আসল ব্যবসা, নথি ও ঝুঁকি দেখুন। নেক্সফান্ডে বিনিয়োগকারী হিসেবে রেজিস্টার করুন। |
+  1027→| Raise Capital | Raise Capital for Your Business | Check your investor-readiness and connect with the right capital. Valuation, pitch deck, and data-room support. | আপনার ব্যবসার জন্য মূলধন সংগ্রহ | বিনিয়োগ-প্রস্তুতি যাচাই করুন ও সঠিক পুঁজির সাথে যুক্ত হোন। ভ্যালুয়েশন, পিচ ডেক ও ডেটা রুম সহায়তা। |
+  1028→| Trust Center | How NexFund Vets, Charges & Protects You | Our 5-stage vetting, fee transparency, risk disclosure, and security — published openly. | নেক্সফান্ড কীভাবে যাচাই করে ও আপনাকে সুরক্ষা দেয় | আমাদের ৫-ধাপ যাচাই, ফি স্বচ্ছতা, ঝুঁকি বিবরণী ও নিরাপত্তা — প্রকাশ্যে। |
+  1029→| Services | Financial Advisory & Investor Readiness | Business valuation, financial modeling, pitch decks, and deal assessment support in Bangladesh. | ফাইন্যান্সিয়াল অ্যাডভাইজরি ও ইনভেস্টর রেডিনেস | ব্যবসার ভ্যালুয়েশন, ফাইন্যান্সিয়াল মডেলিং, পিচ ডেক ও ডিল মূল্যায়ন সহায়তা। |
+  1030→
+  1031→> ⚠️ Title/Description-এ "৫-ধাপ" ইত্যাদি দাবি বাস্তবতা মিললে রাখো।
+  1032→
+  1033→---
+  1034→
+  1035→*NexFund — Fund what's next. · প্রতিশ্রুতির আগে প্রমাণ।*
+  1036→

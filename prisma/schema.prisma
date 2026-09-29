@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Investor registrations from the 3-step form (blueprint §5.3)
+model Investor {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String
+  language    String   @default("bn") // bn | en
+  experience  String? // exploring | some | active
+  sectors     String? // JSON array of sector keys
+  ticketRange String? // "5-25" | "25-100" | "100-400" | "400+"
+  horizon     String? // short | medium | long
+  riskComfort String? // cautious | balanced | comfortable
+  status      String   @default("new") // new | verified | active
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Entrepreneur readiness quiz results (blueprint §5.4)
+model QuizResult {
+  id        String   @id @default(cuid())
+  email     String?
+  score     Int // 0–100
+  answers   String // JSON array of 0/1/2 per question
+  gaps      String // JSON array of question indexes scoring < 2
+  language  String   @default("bn")
+  createdAt DateTime @default(now())
+}
+
+/// Consultation booking / contact inquiries (blueprint §5.10)
+model ContactInquiry {
+  id           String   @id @default(cuid())
+  role         String // investor | entrepreneur | partner | other
+  name         String
+  phone        String?
+  email        String
+  slot         String? // morning | afternoon | evening
+  message      String?
+  language     String   @default("bn")
+  status       String   @default("new") // new | replied | closed
+  createdAt    DateTime @default(now())
+}
+
+/// Anonymized opportunity listings (blueprint §5.5)
+model Opportunity {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  codeName       String // e.g. "RMG-201" (anonymized until NDA)
+  sector         String // key: garments | agri | logistics ...
+  sectorBn       String
+  location       String
+  locationBn     String
+  headline       String
+  headlineBn     String
+  description    String
+  descriptionBn  String
+  seekingMin     Int // in lakh BDT
+  seekingMax     Int // in lakh BDT
+  stage          Int // 1–5 verification stage reached
+  instrument     String
+  instrumentBn   String
+  risks          String // JSON: [{en, bn}, ...] — always visible on cards
+  badges         String // JSON array of BadgeKey completed
+  image          String // public image path
+  revenue        String? // anonymized range, e.g. "৳3.2–3.8 crore/yr"
+  revenueBn      String?
+  featured       Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+}
+
+/// Priority-list / newsletter capture
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("home") // home | opportunities | footer
+  language  String   @default("bn")
+  createdAt DateTime @default(now())
+}
