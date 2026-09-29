@@ -12,6 +12,9 @@ import { HowItWorks } from "@/components/site/how-it-works";
 import { Vetting } from "@/components/site/vetting";
 import { Opportunities } from "@/components/site/opportunities";
 import { MatchMe } from "@/components/site/match-me";
+import { ScenarioSimulator } from "@/components/site/scenario-simulator";
+import { ScrollProgress } from "@/components/site/scroll-progress";
+import { BackToTop } from "@/components/site/back-to-top";
 import { Charter, WhyNexFund } from "@/components/site/charter";
 import { Services, Insights } from "@/components/site/services-insights";
 import { Faq, FinalCta } from "@/components/site/faq-cta";
@@ -52,6 +55,7 @@ function Page() {
             <Vetting />
             <Opportunities />
             <MatchMe />
+            <ScenarioSimulator />
             <Charter />
             <WhyNexFund />
             <Services />
@@ -63,6 +67,8 @@ function Page() {
       </AnimatePresence>
       <Footer />
       <MobileCtaBar />
+      <ScrollProgress />
+      <BackToTop />
       <InvestorDialog />
       <QuizDialog />
       <ContactDialog />

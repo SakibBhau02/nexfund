@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, BookMarked } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { FAQ, FINAL_CTA } from "@/lib/content";
+import { FAQ, FINAL_CTA, GLOSSARY_LABELS } from "@/lib/content";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
+import { G } from "./glossary";
 import {
   Accordion,
   AccordionContent,
@@ -35,6 +36,23 @@ export function Faq() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-5 leading-relaxed text-slate-600">
                   {t(item.a)}
+                  {/* R3: glossary term chips (§7 #14) — bilingual tooltip on tap/hover */}
+                  {item.terms && item.terms.length > 0 && (
+                    <p className="mt-3 flex flex-wrap items-center gap-2 border-t border-nx-navy-100 pt-3">
+                      <span className="flex items-center gap-1 text-[11px] font-bold tracking-wide text-slate-400 uppercase">
+                        <BookMarked className="h-3 w-3" aria-hidden="true" />
+                        {t(FAQ.termsLabel)}
+                      </span>
+                      {item.terms.map((term) => (
+                        <span
+                          key={term}
+                          className="rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1 text-xs font-bold text-nx-cyan-700"
+                        >
+                          <G term={term}>{t(GLOSSARY_LABELS[term] ?? { en: term, bn: term })}</G>
+                        </span>
+                      ))}
+                    </p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             ))}

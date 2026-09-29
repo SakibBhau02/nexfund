@@ -108,3 +108,58 @@ Unresolved / next-phase recommendations:
 3. Glossary could extend to Insights article cards + FAQ answers
 4. Real-voice testimonial/case-study section when actual data exists (never fake)
 5. Consider preserving investor "express interest" records per opportunity (new table) once matching workflow goes live
+
+---
+Task ID: r3-3
+Agent: full-stack-developer
+Task: Wire express-interest capture form into opportunity detail dialog
+
+Work Log:
+- Read worklog, opportunity-dialog.tsx, contact-dialog.tsx (input/label/textarea + success-state patterns), EXPRESS copy in content.ts, /api/interest route, i18n hook, dialog-store
+- Edited ONLY src/components/site/dialogs/opportunity-dialog.tsx:
+  - Added imports: useEffect, CircleCheck + Loader2 (lucide), EXPRESS (content), Input/Label/Textarea (shadcn); removed now-unused openInvestor selector
+  - New state: xiView ("actions"|"form"|"success"), xiEmail/xiName/xiNote, xiSending, xiError; reset effect on [isOpen, slug] so reopening/closing/switching listing always starts fresh
+  - "Express Interest" button now switches the sticky action area to an inline form (no dialog close, no investor dialog); "Book Advisor Call" untouched (still open("contact"))
+  - Form: EXPRESS.title + EXPRESS.sub copy, Email* (required, autoFocus, aria-invalid on error, autoComplete=email, dir=ltr), Name (optional), Note (textarea w/ EXPRESS.notePlaceholder); noValidate + custom validation (/^[^\s@]+@[^\s@]+\.[^\s@]+$/); inline error via role="alert" text-nx-danger (errEmail / errGeneric); Cancel (বাতিল/Cancel ternary) keeps drafts and returns to actions; Submit posts {opportunitySlug: o.slug, email, name, note, language: lang} to /api/interest with Loader2 animate-spin + EXPRESS.submitting + disabled state
+  - Success view: spring CircleCheck in nx-verified-bg circle, EXPRESS.successTitle/successBody, "Done — back to listing" (finishSuccess) clears the form and returns to default actions
+  - All three views animated with AnimatePresence mode="wait" + motion.div fade/slide (0.22s, same pattern as tab content); default view keeps the Lock/expressNote line; submit button styled rounded-full bg-nx-navy-700 px-5 py-3 like existing primary
+- INFRA FIX (dev server only, no code): first browser submit hit 500 — dev server (started 17:50) held a stale globalThis Prisma singleton from BEFORE prisma generate ran at 17:59, so db.opportunityInterest was undefined (same issue R2 hit). On-disk client was fresh; killed stale server (PIDs 6013-6029) and relaunched detached via `( setsid bun run dev >/dev/null 2>&1 </dev/null & )` double-fork so it survives across tool calls (plain nohup/setsid got reaped by sandbox; double-fork escapes the per-call process-tree cleanup). Server healthy since 18:08
+- QA via agent-browser (8 screenshots in qa/r3-05-express-*.png): 1-dialog-actions, 2-form (EN), 3-invalid-email inline error, 4-success (EN), 5-back-to-actions, 6-bn-form, 7-bn-success, 8-mobile-375px-form (no horizontal overflow)
+- Verified flows: View Summary → dialog; Express Interest → inline form (email input autofocused); invalid email → role=alert "Enter a valid email address." + aria-invalid=true; valid submit → 201 → success heading "Interest recorded ✓" + advisor-reach-out body; Done → default actions restored; Cancel → actions (draft preserved); Book Advisor Call → contact dialog opens (unchanged); full BN flow (আগ্রহ জানান → ইমেইল/নাম/বাতিল/আগ্রহ পাঠান → আগ্রহ রেকর্ড হয়েছে ✓ → লিস্টিংয়ে ফিরুন); mobile 375px stacked layout, scrollWidth check "no-overflow"; zero browser console/page errors
+- API spot-checks with curl: 201 {ok:true,id} valid; 400 zod issues on bad email; 404 on unknown slug
+- DB persistence via prisma client script: OpportunityInterest rows — {codeName RMG-201, email test.interest@sakib.example, name "Test Investor", note, language "en", status "new", slug rmg-201-denim-knitwear}, {curl.check@sakib.example, "en"}, {test.bn@sakib.example, "bn"} — all persisted correctly
+- bun run lint: 0 errors. dev.log post-restart: only 201/400/404 /api/interest entries, no errors
+
+Stage Summary:
+- Express-interest capture now runs fully inline inside the opportunity dialog (actions ⇄ form ⇄ success, animated, bilingual, accessible) and persists to OpportunityInterest via existing POST /api/interest
+- Deviations: had to restart the dev server (infra, stale Prisma singleton predating prisma generate — no source files touched for this); relaunched detached so it persists; no changes to content.ts, prisma schema, or API routes
+- Known nuance: aria-invalid is set on the email input whenever any submit error shows (email-format or generic server error); error copy is per EXPRESS
+
+---
+Task ID: R3 (webDevReview cron round 3) — main agent + full-stack-developer subagent
+Agent: main (Z.ai Code) + full-stack-developer (r3-3)
+Task: Scheduled review — QA current state, then add Scenario Simulator, Express-Interest persistence, glossary extension, styling polish
+
+Work Log:
+- QA pass on entry: dev.log clean (all 200s), lint 0 errors, agent-browser sweep — all 10 sections + footer present, opportunity detail dialog (6 BN tabs), BN⇄EN toggle, no horizontal overflow, no console errors, mobile CTA bar present. Verdict: stable → proceed with new features.
+- R3-2a Backend: new Prisma model OpportunityInterest (opportunitySlug, codeName, email, name?, note?, language, status new/reviewed/introduced/declined, @@index) → bun run db:push; new API route POST /api/interest with zod validation + featured-listing existence check (404 if unknown slug, 400 invalid, 201 created).
+- R3-2b Content (content.ts): SIM block (simulator copy: eyebrow/title/sub, illustrative-pill, 4 control labels, impliedValuation, yearsUnit with Bangla digits, 3 scenario name+desc, exitValue/multipleLabel/changeLabel/loss/gain, reset, footnote w/ dilution-fees-taxes honesty, saveTitle/saveSub/saveCta/saved/saveErr); EXPRESS block (interest form: title/sub/email/name/note+placeholder/submit/submitting/successTitle/successBody/successAnother/errEmail/errGeneric); GLOSSARY +7 terms (exit, multiple, data room, nda, capital loss, exit multiple) + GLOSSARY_LABELS display map (all bilingual); FAQ items got terms[] field (due diligence / capital loss / ticket / data room) + termsLabel.
+- R3-3 (subagent, full-stack-developer): opportunity-dialog.tsx "Express Interest" no longer opens generic investor dialog — inline 3-state flow in sticky action area (actions ↔ form ↔ success, AnimatePresence): email (required, autoFocus, aria-invalid) + name + note fields, inline role=alert errors, Loader2 spinner while posting, CircleCheck success state, cancel keeps draft, state resets on dialog close/slug change. Verified: 8 screenshots, DB rows (RMG-201 ×3 test emails), 201/400/404 API paths, BN+EN flows, mobile 375px no overflow. (Note: subagent had to restart dev server — stale Prisma singleton after generate, same as R2.)
+- R3-2 Scenario Simulator (main agent, new component scenario-simulator.tsx, blueprint §7 #7 + §0.4): section id="simulator" bg-nx-mist between MatchMe and Charter. Explainable model: exit proceeds = ticket × (1+growth)^years × exitMultiple; scenarios down (growth −25pp floor −35, multiple 0.65), base (as-is, 1.0), up (+12pp cap 45, 1.3); DOWNSIDE listed first with warn emphasis + "look here first" tag (blueprint: downside default-visible). 4 shadcn sliders (ticket 25–400 lakh, stake 5–40%, growth −10..+35%, years 2–8) with live nx-num value chips; implied entry valuation = ticket/stake panel with G-tooltips (valuation, exit multiple); 3 animated result bars (warm-to-loss gradient / navy / cyan) with dashed break-even marker at ticket level, value inside bar, multiple × and ±% gain/loss chips (danger red for loss, verified green for gain); per-scenario assumption line (growth %/yr · exit multiple) for explainability; honesty pill "Illustrative only" in heading + warn footnote (total loss possible, ignores dilution/fees/taxes); "Save this scenario" email capture → POST /api/newsletter source="simulator" with success swap. Custom CSS utilities in globals.css: .nx-warm-to-loss (warn→danger gradient), .nx-progress-gradient.
+- R3-4 Glossary extension: FAQ answers now render term chips ("Terms explained:" row w/ BookMarked icon) using G + GLOSSARY_LABELS; Insights category badges for DD + valuation articles wrapped in G (For Investors stays plain).
+- R3-5 Styling: ScrollProgress (framer useScroll + spring scaleX, navy→cyan 3px gradient bar, fixed top z-80) + BackToTop (appears >600px scroll, smooth scroll top, bottom-24 above mobile CTA bar / md:bottom-6, bilingual aria-label) — both wired into page.tsx.
+- QA of all R3 features via agent-browser: simulator math verified against hand calc (defaults: 0.32×/−68%, 1.76×/+76%, 3.81×/+281%; growth→+30%: 0.83×/3.71×/7.51× — all match model); slider drag via pointer events recalculates live; save flow → "On its way ✓" + DB row (source=simulator); express-interest main-agent spot check → success state + DB row; FAQ chips render BN ("ডিউ ডিলিজেন্স") + EN; tooltip content verified via trusted hover; Insights badges: DD + Valuation glossary buttons, third plain; scroll progress scaleX tracks position (0.285 at test scroll); back-to-top no overlap with mobile CTA bar (716 < 745); mobile 375px: simulator stacks, 4 sliders + save form reachable, no overflow; clean reload: 0 console errors, title correct.
+- Lint: 0 errors. Screenshots: qa/r3-06..r3-12 (simulator BN/EN/mobile, progress+backtop, express form, insights-en, faq-terms-en).
+
+Stage Summary:
+- 3 new user-facing features: Scenario Simulator (biggest — downside-first illustrative equity model with sliders, animated bars, break-even marker, explainable assumptions, email save), Express-Interest persistence per listing (DB-backed, advisor-review workflow foundation §7 #19), glossary extension to FAQ + Insights
+- 2 styling additions: reading-progress bar + back-to-top
+- New API: POST /api/interest; new table: OpportunityInterest; /api/newsletter reused with source="simulator"
+- All flows verified end-to-end in browser + DB; lint clean; no console errors; mobile-safe
+
+Unresolved / next-phase recommendations:
+1. Downside-scenario mini-chart inside opportunity detail dialog (§5.5 "Downside scenario chart ← upside-এর পাশাপাশি") — simulator math could be reused per-listing
+2. Simulator: preset scenario buttons ("conservative/balanced/ambitious") + share-permalink of slider state (URL hash)
+3. FAQ schema JSON-LD already exists — consider HowTo/FAQ enrichment with glossary definitions for AEO
+4. Real admin view for OpportunityInterest records once matching workflow goes live (currently DB-only)
+5. Optional: subtle count-up animation on simulator numbers when values change (respect prefers-reduced-motion)

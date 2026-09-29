@@ -89,6 +89,21 @@ model Opportunity {
   createdAt      DateTime @default(now())
 }
 
+/// Express-interest records per opportunity (blueprint §7 #19 — Interest → advisor review → intro)
+model OpportunityInterest {
+  id              String   @id @default(cuid())
+  opportunitySlug String // Opportunity.slug the interest was expressed for
+  codeName        String // denormalized listing code, e.g. "RMG-201", for reporting
+  email           String
+  name            String?
+  note            String?
+  language        String   @default("bn") // bn | en
+  status          String   @default("new") // new | reviewed | introduced | declined
+  createdAt       DateTime @default(now())
+
+  @@index([opportunitySlug])
+}
+
 /// Priority-list / newsletter capture
 model NewsletterSubscriber {
   id        String   @id @default(cuid())

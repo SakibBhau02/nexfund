@@ -78,6 +78,12 @@ export function Insights() {
   const { t, lang } = useLanguage();
   const openInvestor = useDialogStore((s) => s.openInvestor);
 
+  // R3: glossary term per article category (§7 #14)
+  const catGlossary: Record<string, string> = {
+    "sme-due-diligence-checklist": "due diligence",
+    "valuation-basics-for-founders": "valuation",
+  };
+
   return (
     <section id="insights" className="bg-nx-mist py-20 md:py-24" aria-labelledby="insights-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
@@ -99,7 +105,11 @@ export function Insights() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-nx-navy-900/45 to-transparent" aria-hidden="true" />
                   <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-nx-navy-800 backdrop-blur">
-                    {t(a.category)}
+                    {catGlossary[a.slug] ? (
+                      <G term={catGlossary[a.slug]}>{t(a.category)}</G>
+                    ) : (
+                      t(a.category)
+                    )}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-6">

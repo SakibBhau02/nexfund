@@ -508,6 +508,7 @@ export const FAQ = {
         en: "NexFund is a Bangladesh-based financial consultancy and matchmaking platform. We vet growth-ready businesses and introduce them to informed investors, with documentation and advisory support.",
         bn: "নেক্সফান্ড বাংলাদেশভিত্তিক একটি ফাইন্যান্সিয়াল কনসাল্টেন্সি ও ম্যাচমেকিং প্ল্যাটফর্ম। আমরা প্রবৃদ্ধিমুখী ব্যবসা যাচাই করি এবং ডকুমেন্টেশন ও পরামর্শসহ অভিজ্ঞ বিনিয়োগকারীদের সাথে পরিচয় করিয়ে দিই।",
       } as L,
+      terms: ["due diligence"],
     },
     {
       q: { en: "Is investing through NexFund safe?", bn: "নেক্সফান্ডের মাধ্যমে বিনিয়োগ কি নিরাপদ?" } as L,
@@ -515,6 +516,7 @@ export const FAQ = {
         en: "Every investment carries risk, including loss of capital. We vet businesses and show key risks up front, but we never guarantee returns.",
         bn: "প্রতিটি বিনিয়োগেই ঝুঁকি আছে, মূলধন হারানোর সম্ভাবনাসহ। আমরা ব্যবসা যাচাই করি এবং প্রধান ঝুঁকি আগেই দেখাই, কিন্তু মুনাফার নিশ্চয়তা দিই না।",
       } as L,
+      terms: ["capital loss"],
     },
     {
       q: { en: "How does NexFund earn?", bn: "নেক্সফান্ড কীভাবে আয় করে?" } as L,
@@ -529,6 +531,7 @@ export const FAQ = {
         en: "It varies by opportunity — current tickets range from ৳50 lakh to ৳4 crore. Each listing shows its range before you register, and fees are disclosed before you commit.",
         bn: "সুযোগভেদে ভিন্ন — বর্তমান টিকেট পরিসর ৳৫০ লক্ষ থেকে ৳৪ কোটি। প্রতিটি লিস্টিংয়ে রেঞ্জ আগেই দেখানো হয়, আর ফি জানানো হয় প্রতিশ্রুতির আগেই।",
       } as L,
+      terms: ["ticket"],
     },
     {
       q: { en: "What do entrepreneurs need to apply?", bn: "আবেদনে কী লাগে?" } as L,
@@ -536,6 +539,7 @@ export const FAQ = {
         en: "Business registration, ownership details, recent financial statements, and a use-of-funds plan. Our checklist helps you prepare.",
         bn: "ব্যবসার নিবন্ধন, মালিকানার তথ্য, সাম্প্রতিক আর্থিক বিবরণী ও তহবিল ব্যবহারের পরিকল্পনা। আমাদের চেকলিস্ট প্রস্তুতিতে সাহায্য করবে।",
       } as L,
+      terms: ["data room"],
     },
     {
       q: { en: "Can non-resident Bangladeshis (NRBs) invest?", bn: "প্রবাসীরা কি বিনিয়োগ করতে পারবেন?" } as L,
@@ -545,6 +549,7 @@ export const FAQ = {
       } as L,
     },
   ],
+  termsLabel: { en: "Terms explained:", bn: "শব্দের ব্যাখ্যা:" } as L,
 };
 
 export const FINAL_CTA = {
@@ -894,6 +899,45 @@ export const GLOSSARY: Record<string, L> = {
     en: "Ticket — the amount a single investor puts into one opportunity.",
     bn: "টিকেট (Ticket) — একজন বিনিয়োগকারীর একটি সুযোগে দেওয়া পরিমাণ।",
   },
+  exit: {
+    en: "Exit — the event where you sell your stake (buyback, sale of the company) and realize your return.",
+    bn: "এক্সিট (Exit) — আপনার অংশ বিক্রি করার ঘটনা (বাইব্যাক, কোম্পানি বিক্রি) — তখনই রিটার্ন বাস্তব হয়।",
+  },
+  multiple: {
+    en: "Multiple — how many times your invested money an exit returns. 2x means you get back double.",
+    bn: "মাল্টিপল (Multiple) — এক্সিটে আপনার বিনিয়োগ কত গুণ ফেরত আসে। ২x মানে দ্বিগুণ।",
+  },
+  "data room": {
+    en: "Data room — a secure collection of a business's documents that investors use to verify claims.",
+    bn: "ডেটা রুম (Data Room) — ব্যবসার নথির নিরাপদ সংগ্রহ, যা দেখে বিনিয়োগকারীরা দাবি যাচাই করেন।",
+  },
+  nda: {
+    en: "NDA — a confidentiality agreement signed before sensitive business details are shared.",
+    bn: "NDA — সংবেদনশীল ব্যবসার তথ্য শেয়ারের আগে স্বাক্ষরিত গোপনীয়তা চুক্তি।",
+  },
+  "capital loss": {
+    en: "Capital loss — losing part or all of the money you invested. In private investments, total loss is possible.",
+    bn: "ক্যাপিটাল লস (Capital loss) — বিনিয়োগ করা টাকার কিছু বা সব হারানো। প্রাইভেট বিনিয়োগে সম্পূর্ণ হারানোও সম্ভব।",
+  },
+  "exit multiple": {
+    en: "Exit multiple — the price the business sells for, as a multiple of its earnings or revenue. Higher entry price, higher bar to clear.",
+    bn: "এক্সিট মাল্টিপল (Exit multiple) — ব্যবসা বিক্রির দাম, আয় বা রাজস্বের গুণিতক হিসেবে। প্রবেশমূল্য যত বেশি, বাধাও তত উঁচু।",
+  },
+};
+
+/** Short localized display labels for glossary chips (keys into GLOSSARY) */
+export const GLOSSARY_LABELS: Record<string, L> = {
+  equity: { en: "Equity", bn: "ইক্যুইটি" } as L,
+  valuation: { en: "Valuation", bn: "ভ্যালুয়েশন" } as L,
+  "due diligence": { en: "Due Diligence", bn: "ডিউ ডিলিজেন্স" } as L,
+  "revenue share": { en: "Revenue Share", bn: "রেভিনিউ শেয়ার" } as L,
+  ticket: { en: "Ticket", bn: "টিকেট" } as L,
+  exit: { en: "Exit", bn: "এক্সিট" } as L,
+  multiple: { en: "Multiple", bn: "মাল্টিপল" } as L,
+  "data room": { en: "Data Room", bn: "ডেটা রুম" } as L,
+  nda: { en: "NDA", bn: "NDA" } as L,
+  "capital loss": { en: "Capital Loss", bn: "ক্যাপিটাল লস" } as L,
+  "exit multiple": { en: "Exit Multiple", bn: "এক্সিট মাল্টিপল" } as L,
 };
 
 /* ── Match Me mini-quiz (blueprint §7 #5, R2) ── */
@@ -965,5 +1009,93 @@ export const NEWSLETTER = {
   privacy: {
     en: "One email a month. Unsubscribe anytime.",
     bn: "মাসে একটি ইমেইল। যেকোনো সময় বন্ধ করুন।",
+  } as L,
+};
+
+/* ── Scenario Simulator (blueprint §7 #7, R3) — downside first, illustrative only ── */
+export const SIM = {
+  eyebrow: { en: "SCENARIO SIMULATOR", bn: "সিনারিও সিমুলেটর" } as L,
+  title: {
+    en: "See the downside before you dream of the upside.",
+    bn: "আপসাইডের স্বপ্নের আগে ডাউনসাইড দেখুন।",
+  } as L,
+  sub: {
+    en: "Move the sliders to model an illustrative minority equity investment. The downside case leads — that's the honest starting point.",
+    bn: "সংখ্যালঘু ইক্যুইটি বিনিয়োগের একটি নমুনা হিসাব করতে স্লাইডার সরান। ডাউনসাইড কেস আগে — সৎ শুরু সেটাই।",
+  } as L,
+  illustrative: {
+    en: "Illustrative only — not a forecast, not advice",
+    bn: "শুধুই নমুনা — পূর্বাভাস নয়, পরামর্শ নয়",
+  } as L,
+  controls: {
+    ticket: { en: "Your ticket", bn: "আপনার টিকেট" } as L,
+    stake: { en: "Stake acquired", bn: "অর্জিত অংশীদারিত্ব" } as L,
+    growth: { en: "Business growth / year", bn: "বার্ষিক বৃদ্ধি (ভিত্তি কেস)" } as L,
+    years: { en: "Holding period", bn: "ধারণকাল" } as L,
+  },
+  impliedValuation: {
+    en: "Implied entry valuation", bn: "নিহিত প্রবেশ ভ্যালুয়েশন",
+  } as L,
+  yearsUnit: (n: number): L => ({
+    en: `${n} year${n > 1 ? "s" : ""}`,
+    bn: `${n === 1 ? "১" : n === 2 ? "২" : n === 3 ? "৩" : n === 4 ? "৪" : n === 5 ? "৫" : n === 6 ? "৬" : n === 7 ? "৭" : "৮"} বছর`,
+  }),
+  scenarios: {
+    down: { name: { en: "Downside", bn: "ডাউনসাইড" } as L,
+      desc: { en: "Growth misses the plan; exit multiple compresses.", bn: "পরিকল্পনা অনুযায়ী হয় না; এক্সিট মাল্টিপল কমে।" } as L },
+    base: { name: { en: "Base", bn: "বেস" } as L,
+      desc: { en: "The plan mostly works; multiple holds.", bn: "পরিকল্পনা মোটামুটি কাজ করে; মাল্টিপল ধরে থাকে।" } as L },
+    up: { name: { en: "Upside", bn: "আপসাইড" } as L,
+      desc: { en: "Plan beats expectations; multiple expands.", bn: "প্রত্যাশা ছাড়িয়ে যায়; মাল্টিপল বাড়ে।" } as L },
+  },
+  exitValue: { en: "Est. value at exit", bn: "এক্সিটে আনুমানিক মূল্য" } as L,
+  multipleLabel: { en: "Multiple", bn: "মাল্টিপল" } as L,
+  changeLabel: { en: "vs. ticket", bn: "টিকেটের তুলনায়" } as L,
+  loss: { en: "loss", bn: "ক্ষতি" } as L,
+  gain: { en: "gain", bn: "লাভ" } as L,
+  reset: { en: "Reset", bn: "রিসেট" } as L,
+  footnote: {
+    en: "Private investments can lose all capital. This simple model ignores dilution, fees and taxes — real outcomes vary.",
+    bn: "প্রাইভেট বিনিয়োগে সম্পূর্ণ মূলধন হারানো সম্ভব। এই সরল মডেল ডিলিউশন, ফি ও কর ধরে না — বাস্তব ফল ভিন্ন হতে পারে।",
+  } as L,
+  saveTitle: { en: "Save this scenario", bn: "সিনারিওটি সেভ করুন" } as L,
+  saveSub: {
+    en: "We'll email you the numbers and walk through them on a call — no obligation.",
+    bn: "সংখ্যাগুলো ইমেইলে পাঠাব ও একটি কলে বুঝিয়ে দেব — কোনো বাধ্যবাধকতা নেই।",
+  } as L,
+  saveCta: { en: "Send me the numbers", bn: "সংখ্যাগুলো পাঠান" } as L,
+  saved: { en: "On its way ✓", bn: "পথে আছে ✓" } as L,
+  saveErr: {
+    en: "Couldn't save — check the email and try again.",
+    bn: "সেভ হয়নি — ইমেইল দেখে আবার চেষ্টা করুন।",
+  } as L,
+};
+
+/* ── Express-interest form in opportunity dialog (blueprint §7 #19, R3) ── */
+export const EXPRESS = {
+  title: { en: "Express interest", bn: "আগ্রহ জানান" } as L,
+  sub: {
+    en: "Record your interest in this listing — an advisor reviews every one before introductions.",
+    bn: "এই লিস্টিংয়ে আপনার আগ্রহ রেকর্ড করুন — পরিচয় করানোর আগে একজন অ্যাডভাইজার প্রতিটি আগ্রহ পর্যালোচনা করেন।",
+  } as L,
+  email: { en: "Email", bn: "ইমেইল" } as L,
+  name: { en: "Name (optional)", bn: "নাম (ঐচ্ছিক)" } as L,
+  note: { en: "Anything we should know? (optional)", bn: "আমাদের জানা দরকার এমন কিছু? (ঐচ্ছিক)" } as L,
+  notePlaceholder: {
+    en: "e.g. I've invested in this sector before…",
+    bn: "যেমন: এই খাতে আগে বিনিয়োগ করেছি…",
+  } as L,
+  submit: { en: "Submit interest", bn: "আগ্রহ পাঠান" } as L,
+  submitting: { en: "Sending…", bn: "পাঠানো হচ্ছে…" } as L,
+  successTitle: { en: "Interest recorded ✓", bn: "আগ্রহ রেকর্ড হয়েছে ✓" } as L,
+  successBody: {
+    en: "An advisor will review your interest and reach out within 2 business days.",
+    bn: "একজন অ্যাডভাইজার আপনার আগ্রহ পর্যালোচনা করে ২ কার্যদিবসের মধ্যে যোগাযোগ করবেন।",
+  } as L,
+  successAnother: { en: "Done — back to listing", bn: "সম্পন্ন — লিস্টিংয়ে ফিরুন" } as L,
+  errEmail: { en: "Enter a valid email address.", bn: "সঠিক ইমেইল ঠিকানা দিন।" } as L,
+  errGeneric: {
+    en: "Something went wrong — please try again.",
+    bn: "কিছু একটা সমস্যা হয়েছে — আবার চেষ্টা করুন।",
   } as L,
 };

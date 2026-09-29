@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,6 +10,8 @@ import {
   ArrowUpRight,
   BadgeCheck,
   Calendar,
+  CircleCheck,
+  Loader2,
   Lock,
   MapPin,
   ShieldCheck,
@@ -24,9 +26,12 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { OPP_DLG, OPP, BADGES, BADGE_TIPS, type BadgeKey } from "@/lib/content";
+import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, type BadgeKey } from "@/lib/content";
 import { formatTkRange, bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { G } from "@/components/site/glossary";
 import type { OpportunityDTO } from "@/components/site/opportunities";
@@ -38,9 +43,26 @@ export function OpportunityDialog() {
   const dialog = useDialogStore((s) => s.dialog);
   const slug = useDialogStore((s) => s.opportunitySlug);
   const close = useDialogStore((s) => s.close);
-  const openInvestor = useDialogStore((s) => s.openInvestor);
   const open = useDialogStore((s) => s.open);
   const isOpen = dialog === "opportunity";
+
+  /* ── Express-interest inline flow (actions ⇄ form ⇄ success) ── */
+  const [xiView, setXiView] = useState<"actions" | "form" | "success">("actions");
+  const [xiEmail, setXiEmail] = useState("");
+  const [xiName, setXiName] = useState("");
+  const [xiNote, setXiNote] = useState("");
+  const [xiSending, setXiSending] = useState(false);
+  const [xiError, setXiError] = useState("");
+
+  // Reset the flow whenever the dialog closes or switches to another listing
+  useEffect(() => {
+    setXiView("actions");
+    setXiEmail("");
+    setXiName("");
+    setXiNote("");
+    setXiError("");
+    setXiSending(false);
+  }, [isOpen, slug]);
 
   const { data } = useQuery<OpportunityDTO[]>({
     queryKey: ["opportunities"],
@@ -75,6 +97,48 @@ export function OpportunityDialog() {
 
   const useOfFunds = (o.useOfFunds ?? []) as UseOfFundsItem[];
   const stageDots = [1, 2, 3, 4, 5];
+
+  const backToActions = () => {
+    setXiView("actions");
+    setXiError("");
+  };
+
+  const finishSuccess = () => {
+    setXiView("actions");
+    setXiEmail("");
+    setXiName("");
+    setXiNote("");
+    setXiError("");
+  };
+
+  const submitInterest = async () => {
+    const email = xiEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setXiError(t(EXPRESS.errEmail));
+      return;
+    }
+    setXiSending(true);
+    setXiError("");
+    try {
+      const res = await fetch("/api/interest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          opportunitySlug: o.slug,
+          email,
+          name: xiName.trim(),
+          note: xiNote.trim(),
+          language: lang,
+        }),
+      });
+      if (!res.ok) throw new Error("failed");
+      setXiView("success");
+    } catch {
+      setXiError(t(EXPRESS.errGeneric));
+    } finally {
+      setXiSending(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
@@ -277,30 +341,157 @@ export function OpportunityDialog() {
           </p>
         </div>
 
-        {/* ── Actions ── */}
+        {/* ── Actions ⇄ Express-interest inline flow ── */}
         <div className="sticky bottom-0 border-t border-nx-navy-100 bg-white/95 px-6 py-4 backdrop-blur">
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <button
-              onClick={() => openInvestor("investor")}
-              className="nx-arrow-btn inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
-            >
-              {t(OPP_DLG.expressInterest)}
-              <span className="nx-arrow">
-                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-              </span>
-            </button>
-            <button
-              onClick={() => open("contact")}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500"
-            >
-              <Calendar className="h-4 w-4" aria-hidden="true" />
-              {t(OPP_DLG.bookAdvisorCall)}
-            </button>
-          </div>
-          <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
-            <Lock className="h-3 w-3" aria-hidden="true" />
-            {t(OPP_DLG.expressNote)}
-          </p>
+          <AnimatePresence mode="wait">
+            {xiView === "actions" && (
+              <motion.div
+                key="actions"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.22 }}
+              >
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button
+                    onClick={() => setXiView("form")}
+                    className="nx-arrow-btn inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+                  >
+                    {t(OPP_DLG.expressInterest)}
+                    <span className="nx-arrow">
+                      <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => open("contact")}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500"
+                  >
+                    <Calendar className="h-4 w-4" aria-hidden="true" />
+                    {t(OPP_DLG.bookAdvisorCall)}
+                  </button>
+                </div>
+                <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+                  <Lock className="h-3 w-3" aria-hidden="true" />
+                  {t(OPP_DLG.expressNote)}
+                </p>
+              </motion.div>
+            )}
+
+            {xiView === "form" && (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.22 }}
+              >
+                <p className="text-xs font-extrabold tracking-wide text-nx-navy-900 uppercase">
+                  {t(EXPRESS.title)}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500">{t(EXPRESS.sub)}</p>
+                <form
+                  className="mt-3 space-y-3"
+                  noValidate
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void submitInterest();
+                  }}
+                >
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <Label htmlFor="xi-email">{t(EXPRESS.email)} *</Label>
+                      <Input
+                        id="xi-email"
+                        type="email"
+                        dir="ltr"
+                        autoFocus
+                        autoComplete="email"
+                        value={xiEmail}
+                        onChange={(e) => setXiEmail(e.target.value)}
+                        aria-invalid={xiError ? true : undefined}
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="xi-name">{t(EXPRESS.name)}</Label>
+                      <Input
+                        id="xi-name"
+                        autoComplete="name"
+                        value={xiName}
+                        onChange={(e) => setXiName(e.target.value)}
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="xi-note">{t(EXPRESS.note)}</Label>
+                    <Textarea
+                      id="xi-note"
+                      rows={2}
+                      value={xiNote}
+                      onChange={(e) => setXiNote(e.target.value)}
+                      placeholder={t(EXPRESS.notePlaceholder)}
+                      className="mt-1.5 resize-none"
+                    />
+                  </div>
+                  {xiError && (
+                    <p role="alert" className="text-sm font-semibold text-nx-danger">
+                      {xiError}
+                    </p>
+                  )}
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={backToActions}
+                      disabled={xiSending}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {lang === "bn" ? "বাতিল" : "Cancel"}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={xiSending}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {xiSending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                      {xiSending ? t(EXPRESS.submitting) : t(EXPRESS.submit)}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            {xiView === "success" && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.22 }}
+                className="text-center"
+              >
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.1, type: "spring", bounce: 0.5 }}
+                  className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-nx-verified-bg"
+                >
+                  <CircleCheck className="h-7 w-7 text-nx-verified" aria-hidden="true" />
+                </motion.span>
+                <h3 className="mt-3 text-base font-extrabold text-nx-navy-900">
+                  {t(EXPRESS.successTitle)}
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">{t(EXPRESS.successBody)}</p>
+                <button
+                  type="button"
+                  onClick={finishSuccess}
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+                >
+                  {t(EXPRESS.successAnother)}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </DialogContent>
     </Dialog>
