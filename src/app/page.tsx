@@ -11,6 +11,7 @@ import { TwoPaths } from "@/components/site/two-paths";
 import { HowItWorks } from "@/components/site/how-it-works";
 import { Vetting } from "@/components/site/vetting";
 import { Opportunities } from "@/components/site/opportunities";
+import { MatchMe } from "@/components/site/match-me";
 import { Charter, WhyNexFund } from "@/components/site/charter";
 import { Services, Insights } from "@/components/site/services-insights";
 import { Faq, FinalCta } from "@/components/site/faq-cta";
@@ -18,6 +19,7 @@ import { Footer, MobileCtaBar } from "@/components/site/footer";
 import { InvestorDialog } from "@/components/site/dialogs/investor-dialog";
 import { QuizDialog } from "@/components/site/dialogs/quiz-dialog";
 import { ContactDialog } from "@/components/site/dialogs/contact-dialog";
+import { OpportunityDialog } from "@/components/site/dialogs/opportunity-dialog";
 
 function Page() {
   const { lang } = useLanguage();
@@ -49,6 +51,7 @@ function Page() {
             <HowItWorks />
             <Vetting />
             <Opportunities />
+            <MatchMe />
             <Charter />
             <WhyNexFund />
             <Services />
@@ -63,6 +66,7 @@ function Page() {
       <InvestorDialog />
       <QuizDialog />
       <ContactDialog />
+      <OpportunityDialog />
     </div>
   );
 }

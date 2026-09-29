@@ -1,0 +1,12 @@
+# NexFund
+> Bangladesh-based financial consultancy and matchmaking platform. We connect informed investors with verified, growth-ready Bangladeshi businesses — with due diligence, documentation, and advisory. Proof before promise.
+
+Sections: For Investors | For Entrepreneurs (Raise Capital) | Opportunities (anonymized listings with visible key risks) | 5-Stage Vetting Standard | The NexFund Charter (7 commitments) | Advisory Services | Insights | FAQ.
+
+Key facts:
+- Every listing shows key risks next to the opportunity; verification progress badges (identity, legal, financials, site visit, advisor review).
+- Fees are disclosed before commitment; NexFund never guarantees returns and does not hold client funds.
+- Bilingual: Bangla (bn-BD default) and English, including documents and support.
+- Contact: hello@nexfund.example · +880 1700-000000 · Gulshan Avenue, Dhaka 1212.
+
+Risk note: Investing involves risk, including possible loss of capital. Verification reduces risk; it does not remove it.

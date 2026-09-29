@@ -7,6 +7,7 @@ import { useDialogStore } from "@/lib/dialog-store";
 import { SERVICES, INSIGHTS } from "@/lib/content";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
+import { G } from "./glossary";
 
 const SVC_ICONS = { target: Target, scale: Scale, chart: LineChart, presentation: Presentation, search: SearchCheck };
 
@@ -36,7 +37,15 @@ export function Services() {
                       {t(isInvestor ? SERVICES.investor : SERVICES.entrepreneur)}
                     </span>
                   </div>
-                  <h3 className="mt-4 text-lg font-extrabold text-nx-navy-900">{t(svc.title)}</h3>
+                  <h3 className="mt-4 text-lg font-extrabold text-nx-navy-900">
+                    {svc.icon === "scale" ? (
+                      <G term="valuation">{t(svc.title)}</G>
+                    ) : svc.icon === "search" ? (
+                      <G term="due diligence">{t(svc.title)}</G>
+                    ) : (
+                      t(svc.title)
+                    )}
+                  </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">{t(svc.desc)}</p>
                   <ul className="mt-4 flex-1 space-y-1.5">
                     {svc.gets.map((g) => (

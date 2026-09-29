@@ -19,6 +19,7 @@ import { OPP, BADGES, BADGE_TIPS, type BadgeKey } from "@/lib/content";
 import { formatTkRange } from "@/lib/format";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
+import { G } from "./glossary";
 import {
   Tooltip,
   TooltipContent,
@@ -49,11 +50,24 @@ export type OpportunityDTO = {
   image: string;
   revenue?: string;
   revenueBn?: string;
+  // R2 detail-dialog enrichment
+  overview?: string;
+  overviewBn?: string;
+  teamNote?: string;
+  teamNoteBn?: string;
+  financialNote?: string;
+  financialNoteBn?: string;
+  useOfFunds?: { item: { en: string; bn: string }; pct: number }[];
+  advisorNote?: string;
+  advisorNoteBn?: string;
+  modelNote?: string;
+  modelNoteBn?: string;
 };
 
 export function Opportunities() {
   const { t, lang } = useLanguage();
   const openInvestor = useDialogStore((s) => s.openInvestor);
+  const openOpportunity = useDialogStore((s) => s.openOpportunity);
   const [sector, setSector] = useState<string>("all");
 
   const { data, isLoading } = useQuery<OpportunityDTO[]>({
@@ -85,36 +99,30 @@ export function Opportunities() {
           <SectionHeading eyebrow={t(OPP.eyebrow)} title={t(OPP.title)} sub={t(OPP.sub)} />
         </Reveal>
 
-        {/* Sector filter chips */}
+        {/* Sector filter chips — with press micro-interaction (R2) */}
         <Reveal delay={0.05}>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-2" role="group" aria-label={lang === "bn" ? "খাত ফিল্টার" : "Sector filter"}>
-            <button
-              onClick={() => setSector("all")}
-              aria-pressed={sector === "all"}
-              className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-semibold transition-all",
-                sector === "all"
-                  ? "border-nx-navy-700 bg-nx-navy-700 text-white"
-                  : "border-nx-navy-200 bg-white text-nx-navy-800 hover:border-nx-navy-500"
-              )}
-            >
-              {t(OPP.allSectors)}
-            </button>
-            {sectors.map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setSector(key)}
-                aria-pressed={sector === key}
-                className={cn(
-                  "rounded-full border px-4 py-1.5 text-sm font-semibold transition-all",
-                  sector === key
-                    ? "border-nx-navy-700 bg-nx-navy-700 text-white"
-                    : "border-nx-navy-200 bg-white text-nx-navy-800 hover:border-nx-navy-500"
-                )}
-              >
-                {t(label)}
-              </button>
-            ))}
+            {["all", ...sectors.map(([k]) => k)].map((key) => {
+              const label = key === "all" ? t(OPP.allSectors) : t(sectors.find(([k]) => k === key)![1]);
+              const active = sector === key;
+              return (
+                <motion.button
+                  key={key}
+                  onClick={() => setSector(key)}
+                  aria-pressed={active}
+                  whileTap={{ scale: 0.93 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  className={cn(
+                    "rounded-full border px-4 py-1.5 text-sm font-semibold transition-all duration-200",
+                    active
+                      ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_8px_18px_-8px_rgba(10,58,143,0.6)]"
+                      : "border-nx-navy-200 bg-white text-nx-navy-800 hover:-translate-y-0.5 hover:border-nx-navy-500 hover:shadow-[0_8px_18px_-10px_rgba(10,58,143,0.4)]"
+                  )}
+                >
+                  {label}
+                </motion.button>
+              );
+            })}
           </div>
         </Reveal>
 
@@ -199,7 +207,14 @@ export function Opportunities() {
                             {t(OPP.instrument)}
                           </dt>
                           <dd className="mt-0.5 font-semibold text-nx-navy-800">
-                            {lang === "bn" ? o.instrumentBn : o.instrument}
+                            {/* R2: glossary tooltip on instrument (§7 #14) */}
+                            {o.instrument.toLowerCase().includes("equity") ? (
+                              <G term="equity">{lang === "bn" ? o.instrumentBn : o.instrument}</G>
+                            ) : o.instrument.toLowerCase().includes("revenue") ? (
+                              <G term="revenue share">{lang === "bn" ? o.instrumentBn : o.instrument}</G>
+                            ) : (
+                              lang === "bn" ? o.instrumentBn : o.instrument
+                            )}
                           </dd>
                         </div>
                       </dl>
@@ -260,23 +275,19 @@ export function Opportunities() {
                         </ul>
                       </div>
 
-                      {/* actions */}
+                      {/* actions — open full detail dialog (R2) */}
                       <div className="mt-5 flex items-center gap-2">
-                        <details className="group/details relative flex-1">
-                          <summary className="flex cursor-pointer list-none items-center justify-center gap-1.5 rounded-full border border-nx-navy-200 px-4 py-2.5 text-sm font-bold text-nx-navy-800 transition-colors hover:border-nx-navy-500 [&::-webkit-details-marker]:hidden">
-                            <Info className="h-4 w-4" aria-hidden="true" />
-                            {t(OPP.viewSummary)}
-                          </summary>
-                          <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-2xl border border-nx-navy-100 bg-white p-4 shadow-[0_24px_48px_-16px_rgba(6,31,74,0.3)]">
-                            <p className="text-[13px] leading-relaxed text-slate-600">
-                              {lang === "bn" ? o.descriptionBn : o.description}
-                            </p>
-                            <p className="nx-num mt-3 flex items-center gap-1.5 text-[12px] font-bold text-nx-navy-700">
-                              <span className="h-1.5 w-1.5 rounded-full bg-nx-cyan-500" aria-hidden="true" />
-                              {lang === "bn" ? `রাজস্ব: ${o.revenueBn}` : `Revenue: ${o.revenue}`}
-                            </p>
-                          </div>
-                        </details>
+                        <motion.button
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => openOpportunity(o.slug)}
+                          className="nx-arrow-btn flex flex-1 items-center justify-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-4 py-2.5 text-sm font-bold text-nx-navy-800 transition-colors hover:border-nx-navy-500"
+                        >
+                          <Info className="h-4 w-4" aria-hidden="true" />
+                          {t(OPP.viewSummary)}
+                          <span className="nx-arrow">
+                            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        </motion.button>
                         <button
                           onClick={() => openInvestor("investor")}
                           aria-label={t(OPP.registerDocs)}

@@ -33,6 +33,18 @@ export async function GET() {
         image: o.image,
         revenue: o.revenue ?? undefined,
         revenueBn: o.revenueBn ?? undefined,
+        // detail-dialog enrichment (R2)
+        overview: o.overview ?? undefined,
+        overviewBn: o.overviewBn ?? undefined,
+        teamNote: o.teamNote ?? undefined,
+        teamNoteBn: o.teamNoteBn ?? undefined,
+        financialNote: o.financialNote ?? undefined,
+        financialNoteBn: o.financialNoteBn ?? undefined,
+        useOfFunds: o.useOfFunds ? JSON.parse(o.useOfFunds) : undefined,
+        advisorNote: o.advisorNote ?? undefined,
+        advisorNoteBn: o.advisorNoteBn ?? undefined,
+        modelNote: o.modelNote ?? undefined,
+        modelNoteBn: o.modelNoteBn ?? undefined,
       }))
     );
   } catch (e) {

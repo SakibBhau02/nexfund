@@ -79,3 +79,32 @@ Next-phase recommendations (for webDevReview agents):
 2. More features: newsletter form in footer (API exists, UI missing), sample opportunity summary page (§5.3 #4 — big conversion lever), "Match Me" mini-quiz for investors (§7 #5), scenario simulator (§7 #7)
 3. SEO: FAQPage schema JSON-LD, Organization schema, llms.txt
 4. i18n: hreflang is impossible on single route; consider ?lang= param canonicalization later
+
+---
+Task ID: R2 (webDevReview cron round 2)
+Agent: webDevReview (Z.ai Code)
+Task: Scheduled 15-min review — QA current state, then add features + styling detail
+
+Work Log:
+- QA pass on current state: / and /api/opportunities 200 OK, no browser/console errors, EN⇄BN toggle, investor/quiz dialogs, all 7 sections, no overflow — all green
+- R2-2 Opportunity Detail Dialog (blueprint §5.5, biggest conversion lever): extended Prisma Opportunity model with overview/teamNote/financialNote/useOfFunds(JSON)/advisorNote/modelNote (+Bn variants); destructive re-seed with rich bilingual content for all 3 listings; API returns enriched fields; new dialogs/opportunity-dialog.tsx with 6 tabs (Overview/Model/Financials/Team/Use of Funds/Key Risks), animated use-of-funds allocation bars, sticky key-facts strip (seeking/revenue/instrument/verification dots), "What our advisors noticed" panel, Express Interest + Book Advisor Call actions, "Illustrative listing" honesty badge w/ tooltip, NDA-gate notes; card "View Summary" now opens the dialog (replaced details popover)
+- R2-3 Match Me mini-quiz (§7 #5): new match-me.tsx card below opportunities — 4 questions (sector/ticket/horizon/risk) → explainable client-side matching against LIVE anonymized listings (cautious users only see stage-5 listings), shows matching count + codeNames + sector chips + register CTA + honest disclaimer; spring micro-interactions on option chips
+- R2-4 Footer newsletter form: brand column now has "The Deal Room, monthly" capture posting to existing /api/newsletter; verified end-to-end (deals@sakib.example persisted, success state swaps form)
+- R2-5 Styling details: new G glossary component (dotted-underline + bilingual tooltip for Equity/Valuation/Due Diligence/Revenue Share/Ticket) wired into opportunity-card instruments + Services card titles; sector filter chips rebuilt with whileTap spring + hover lift + active shadow; dialog tab underline layoutId animation; risk tab uses warn-colored underline
+- R2-6 SEO/AGO: FAQPage + FinancialService(Organization) JSON-LD in server-side layout.tsx (both languages in answers); public/llms.txt created
+- Infra fix: dev server was holding stale Prisma singleton after schema push (globalThis cache) → restarted dev process, enriched API confirmed
+- QA of all new features via agent-browser: detail dialog (6 tabs, funds bars ৬২%, risks disclaimer, advisor note, express CTA), Match Me full flow (agri/mid/medium/cautious → result + register CTA), newsletter DB-verified, glossary tooltip verified via pointer events, mobile 375px: no overflow, tabs scrollable horizontally, sticky actions reachable
+- VLM review of new UI: flagged card-height inconsistency — disproven by direct measurement (all cards exactly 548px/aligned); headline truncation is intentional line-clamp-2
+- Lint: clean. No console/page errors.
+
+Stage Summary:
+- 3 significant new features (opportunity detail dialog w/ enriched data, Match Me quiz, newsletter capture), glossary tooltips + chip micro-interactions, JSON-LD + llms.txt
+- All verified end-to-end in browser with DB persistence where applicable
+- QA screenshots: qa/08-opp-detail.png, 09-opp-detail-mobile.png, 10-matchme.png
+
+Unresolved / next-phase recommendations:
+1. Sample Opportunity Summary as a dedicated shareable "page-like" experience is now covered by the detail dialog; remaining: PDF-style export view (low priority)
+2. Scenario simulator (§7 #7, base/upside/downside sliders) — good next feature for the Tools concept
+3. Glossary could extend to Insights article cards + FAQ answers
+4. Real-voice testimonial/case-study section when actual data exists (never fake)
+5. Consider preserving investor "express interest" records per opportunity (new table) once matching workflow goes live

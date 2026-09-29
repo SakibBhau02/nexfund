@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Linkedin, Facebook, Youtube, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Scale, Lock } from "lucide-react";
+import { Linkedin, Facebook, Youtube, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Scale, Lock, Send } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { FOOTER, NAV } from "@/lib/content";
+import { FOOTER, NAV, NEWSLETTER, UI } from "@/lib/content";
 import { Logo } from "./brand";
 
 const WHATSAPP_URL = "https://wa.me/8801700000000";
@@ -87,7 +87,7 @@ export function Footer() {
     <footer className="relative bg-nx-navy-950 text-white">
       <div className="mx-auto max-w-[1200px] px-5 pb-28 pt-16 md:px-6 md:pb-10">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          {/* Brand */}
+          {/* Brand + newsletter */}
           <div>
             <Logo variant="light" className="text-2xl" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/65">{t(FOOTER.tagline)}</p>
@@ -134,6 +134,7 @@ export function Footer() {
                 <span className="nx-num">+৮৮০ ১৭০০-০০০০০০</span>
               </p>
             </address>
+            <NewsletterForm />
           </div>
 
           {/* Platform */}
@@ -256,6 +257,81 @@ export function Footer() {
       {/* Mobile sticky CTA spacer handled by fixed bar */}
       <LegalDialog open={legal} onOpenChange={setLegal} />
     </footer>
+  );
+}
+
+/** Footer newsletter / priority-list signup (R2) — posts to /api/newsletter */
+function NewsletterForm() {
+  const { t, lang } = useLanguage();
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (state === "sending") return;
+    setState("sending");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "footer", language: lang }),
+      });
+      if (!res.ok) throw new Error("failed");
+      setState("done");
+    } catch {
+      setState("error");
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/12 bg-white/[0.04] p-5">
+      <h3 className="text-xs font-extrabold tracking-[0.18em] text-nx-cyan-400 uppercase">
+        {t(NEWSLETTER.title)}
+      </h3>
+      <p className="mt-2 text-[13px] leading-relaxed text-white/60">{t(NEWSLETTER.sub)}</p>
+      {state === "done" ? (
+        <p className="mt-3.5 inline-flex items-center gap-2 rounded-full bg-nx-verified/20 px-4 py-2 text-sm font-bold text-emerald-200">
+          <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+          {t(NEWSLETTER.joined)}
+        </p>
+      ) : (
+        <form onSubmit={submit} className="mt-3.5 flex gap-2">
+          <label htmlFor="footer-newsletter-email" className="sr-only">
+            {t(NEWSLETTER.placeholder)}
+          </label>
+          <input
+            id="footer-newsletter-email"
+            type="email"
+            required
+            dir="ltr"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (state === "error") setState("idle");
+            }}
+            placeholder={t(NEWSLETTER.placeholder)}
+            className="nx-num min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-nx-cyan-400 focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={state === "sending"}
+            aria-label={t(NEWSLETTER.join)}
+            className="inline-flex shrink-0 items-center justify-center rounded-full bg-nx-cyan-500 px-4 py-2.5 text-sm font-bold text-nx-navy-900 transition-colors hover:bg-nx-cyan-400 disabled:opacity-60"
+          >
+            {state === "sending" ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-nx-navy-900/30 border-t-nx-navy-900" aria-hidden="true" />
+            ) : (
+              <Send className="h-4 w-4" aria-hidden="true" />
+            )}
+            <span className="ml-1.5 hidden sm:inline">{t(NEWSLETTER.join)}</span>
+          </button>
+        </form>
+      )}
+      {state === "error" && (
+        <p className="mt-2 text-xs font-semibold text-rose-300">{t(UI.somethingWrong)}</p>
+      )}
+      <p className="mt-2.5 text-[11px] text-white/40">{t(NEWSLETTER.privacy)}</p>
+    </div>
   );
 }
 

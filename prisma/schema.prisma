@@ -72,6 +72,18 @@ model Opportunity {
   image          String // public image path
   revenue        String? // anonymized range, e.g. "৳3.2–3.8 crore/yr"
   revenueBn      String?
+  // ── Detail-dialog enrichment (R2) ──
+  overview       String? // long-form "what the business does"
+  overviewBn     String?
+  teamNote       String? // team & operations snapshot
+  teamNoteBn     String?
+  financialNote  String? // plain-language financial health summary
+  financialNoteBn String?
+  useOfFunds     String? // JSON: [{item:{en,bn}, pct:Int}] allocation breakdown
+  advisorNote    String? // "what our advisors noticed" — strengths & weaknesses
+  advisorNoteBn  String?
+  modelNote      String? // business model summary
+  modelNoteBn    String?
   featured       Boolean  @default(false)
   sortOrder      Int      @default(0)
   createdAt      DateTime @default(now())

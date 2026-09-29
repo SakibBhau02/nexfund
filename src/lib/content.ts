@@ -839,3 +839,131 @@ export const UI = {
   invalidPhone: { en: "Check your mobile number", bn: "মোবাইল নম্বর দেখে নিন" } as L,
   savedToast: { en: "Done — we'll be in touch.", bn: "হয়ে গেছে — আমরা যোগাযোগ করব।" } as L,
 };
+
+/* ── Opportunity detail dialog (blueprint §5.5 detail page, R2) ── */
+export const OPP_DLG = {
+  illustrative: { en: "Illustrative listing", bn: "নমুনা তালিকা" } as L,
+  illustrativeTip: {
+    en: "Demo data for the preview build — real listings appear after launch vetting.",
+    bn: "প্রিভিউ বিল্ডের নমুনা তথ্য — লঞ্চ-যাচাইয়ের পরে আসল তালিকা আসবে।",
+  } as L,
+  tabs: [
+    { en: "Overview", bn: "সংক্ষিপ্ত বিবরণ" },
+    { en: "Business Model", bn: "ব্যবসার মডেল" },
+    { en: "Financials", bn: "আর্থিক অবস্থা" },
+    { en: "Team", bn: "টিম" },
+    { en: "Use of Funds", bn: "তহবিলের ব্যবহার" },
+    { en: "Key Risks", bn: "প্রধান ঝুঁকি" },
+  ] as L[],
+  advisorTitle: { en: "What our advisors noticed", bn: "আমাদের অ্যাডভাইজারদের পর্যবেক্ষণ" } as L,
+  expressInterest: { en: "Express Interest", bn: "আগ্রহ জানান" } as L,
+  bookAdvisorCall: { en: "Book Advisor Call", bn: "অ্যাডভাইজার কল বুক করুন" } as L,
+  expressNote: {
+    en: "An advisor reviews every expression of interest before any introduction.",
+    bn: "পরিচয় করানোর আগে প্রতিটি আগ্রহের অভিব্যক্তি একজন অ্যাডভাইজার পর্যালোচনা করেন।",
+  } as L,
+  revenueLabel: { en: "Revenue", bn: "রাজস্ব" } as L,
+  seekingLabel: { en: "Seeking", bn: "সংগ্রহের লক্ষ্য" } as L,
+  minTicketLabel: { en: "Min. ticket", bn: "সর্বনিম্ন টিকেট" } as L,
+  instrumentLabel: { en: "Instrument", bn: "ইনস্ট্রুমেন্ট" } as L,
+  ndaNote: {
+    en: "Full documents & identity unlock after registration + NDA.",
+    bn: "রেজিস্ট্রেশন + NDA-এর পরে সম্পূর্ণ নথি ও পরিচয় খোলে।",
+  } as L,
+};
+
+/* ── Glossary tooltips (blueprint §7 #14, R2) ── */
+export const GLOSSARY: Record<string, L> = {
+  equity: {
+    en: "Equity — part-ownership of the business. You share profits and risks, and your return depends on the company growing.",
+    bn: "ইক্যুইটি (Equity) — ব্যবসার আংশিক মালিকানা। লাভ-ক্ষতি ভাগ করে নেন; আপনার রিটার্ন নির্ভর করে কোম্পানি বাড়লে কতটা।",
+  },
+  valuation: {
+    en: "Valuation — how much the whole business is worth today. It decides what share your money buys.",
+    bn: "ভ্যালুয়েশন (Valuation) — ব্যবসাটি আজ সব মিলিয়ে কতটার। এটাই ঠিক করে আপনার টাকা কত অংশ কেনে।",
+  },
+  "due diligence": {
+    en: "Due Diligence — checking a business's documents, finances and operations before committing money.",
+    bn: "ডিউ ডিলিজেন্স (Due Diligence) — টাকা দেওয়ার আগে ব্যবসার নথি, আর্থিক তথ্য ও কার্যক্রম যাচাই করা।",
+  },
+  "revenue share": {
+    en: "Revenue share — you receive an agreed share of the business's sales, not ownership.",
+    bn: "রেভিনিউ শেয়ার (Revenue Share) — মালিকানা নয়, ব্যবসার বিক্রয়ের একটি সম্মত অংশ আপনি পান।",
+  },
+  ticket: {
+    en: "Ticket — the amount a single investor puts into one opportunity.",
+    bn: "টিকেট (Ticket) — একজন বিনিয়োগকারীর একটি সুযোগে দেওয়া পরিমাণ।",
+  },
+};
+
+/* ── Match Me mini-quiz (blueprint §7 #5, R2) ── */
+export const MATCH = {
+  eyebrow: { en: "MATCH ME", bn: "আমার ম্যাচ" } as L,
+  title: { en: "What should you look at first?", bn: "আগে কোনদিকে তাকাবেন?" } as L,
+  sub: {
+    en: "Four quick questions — we'll point you to the sectors and tickets that typically fit.",
+    bn: "চারটি দ্রুত প্রশ্ন — সাধারণত যেসব খাত ও টিকেট আপনার সাথে মেলে, সেদিকেই ইঙ্গিত করব।",
+  } as L,
+  restart: { en: "Start over", bn: "আবার শুরু করুন" } as L,
+  questions: [
+    {
+      q: { en: "Which sector draws your eye?", bn: "কোন খাত আপনার নজর টানে?" } as L,
+      opts: [
+        { key: "garments", en: "Garments & manufacturing", bn: "গার্মেন্টস ও ম্যানুফ্যাকচারিং" },
+        { key: "agri", en: "Agri & food", bn: "কৃষি ও খাদ্য" },
+        { key: "logistics", en: "Logistics & trade", bn: "লজিস্টিকস ও বাণিজ্য" },
+        { key: "any", en: "Show me everything", bn: "সব দেখান" },
+      ],
+    },
+    {
+      q: { en: "What's a comfortable ticket?", bn: "কত টিকেট আরামদায়ক?" } as L,
+      opts: [
+        { key: "small", en: "৳5–25 lakh", bn: "৳৫–২৫ লক্ষ" },
+        { key: "mid", en: "৳25 lakh–1 crore", bn: "৳২৫ লক্ষ–১ কোটি" },
+        { key: "large", en: "৳1 crore+", bn: "৳১ কোটি+" },
+      ],
+    },
+    {
+      q: { en: "How long can the money work?", bn: "টাকা কতদিন কাজে রাখতে পারবেন?" } as L,
+      opts: [
+        { key: "short", en: "2–3 years", bn: "২–৩ বছর" },
+        { key: "medium", en: "3–5 years", bn: "৩–৫ বছর" },
+        { key: "long", en: "5+ years", bn: "৫+ বছর" },
+      ],
+    },
+    {
+      q: { en: "How do you feel about risk?", bn: "ঝুঁকি নিয়ে আপনার অনুভূতি?" } as L,
+      opts: [
+        { key: "cautious", en: "Cautious — capital first", bn: "সতর্ক — মূলধন আগে" },
+        { key: "balanced", en: "Balanced", bn: "ভারসাম্যপূর্ণ" },
+        { key: "comfortable", en: "Comfortable with real risk", bn: "প্রকৃত ঝুঁকিতে স্বাচ্ছন্দ্য" },
+      ],
+    },
+  ],
+  resultTitle: { en: "Your starting point", bn: "আপনার শুরুর জায়গা" } as L,
+  matches: (n: number): L => ({
+    en: `${n} verified opportunit${n === 1 ? "y" : "ies"} fit this profile right now`,
+    bn: `এই মুহূর্তে ${n}টি যাচাইকৃত সুযোগ এই প্রোফাইলের সাথে মেলে`,
+  }),
+  registerCta: { en: "Register to see them", bn: "দেখতে রেজিস্টার করুন" } as L,
+  disclaimer: {
+    en: "A simple pointer, not advice — every decision deserves full diligence.",
+    bn: "সহজ ইঙ্গিত, পরামর্শ নয় — প্রতিটি সিদ্ধান্তে পূর্ণ যাচাই প্রাপ্য।",
+  } as L,
+};
+
+/* ── Newsletter / priority list (footer, R2) ── */
+export const NEWSLETTER = {
+  title: { en: "The Deal Room, monthly", bn: "ডিল রুম, মাসিক" } as L,
+  sub: {
+    en: "New vetted opportunities and honest market notes — no noise.",
+    bn: "নতুন যাচাইকৃত সুযোগ ও সৎ বাজার-নোট — কোনো কোলাহল নেই।",
+  } as L,
+  placeholder: { en: "you@example.com", bn: "you@example.com" } as L,
+  join: { en: "Join", bn: "যোগ দিন" } as L,
+  joined: { en: "You're on the list ✓", bn: "আপনি লিস্টে আছেন ✓" } as L,
+  privacy: {
+    en: "One email a month. Unsubscribe anytime.",
+    bn: "মাসে একটি ইমেইল। যেকোনো সময় বন্ধ করুন।",
+  } as L,
+};

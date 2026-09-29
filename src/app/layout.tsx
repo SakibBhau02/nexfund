@@ -3,6 +3,7 @@ import { Manrope, Inter, Anek_Bangla, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/lib/i18n";
+import { FAQ } from "@/lib/content";
 
 const manrope = Manrope({
   variable: "--font-display-en",
@@ -56,6 +57,56 @@ export const metadata: Metadata = {
   },
 };
 
+/** Structured data for SEO/AEO (blueprint §11.3): FAQPage + Organization */
+function StructuredData() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.items.map((item) => ({
+      "@type": "Question",
+      name: item.q.en,
+      acceptedAnswer: {
+        "@type": "Answer",
+        // include both languages so answer engines can cite either
+        text: `${item.a.en}\n\n${item.a.bn}`,
+      },
+    })),
+  };
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    name: "NexFund",
+    alternateName: "নেক্সফান্ড",
+    slogan: "Proof before promise — প্রতিশ্রুতির আগে প্রমাণ।",
+    description:
+      "Bangladesh-based financial consultancy and matchmaking platform connecting informed investors with verified, growth-ready businesses.",
+    areaServed: "BD",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Dhaka",
+      addressCountry: "BD",
+    },
+    email: "hello@nexfund.example",
+    telephone: "+8801700000000",
+    sameAs: [
+      "https://www.linkedin.com/company/nexfund",
+      "https://www.facebook.com/nexfundbd",
+    ],
+  };
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+      />
+    </>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -66,6 +117,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${inter.variable} ${anekBangla.variable} ${hindSiliguri.variable} antialiased bg-background text-foreground`}
       >
+        <StructuredData />
         <LanguageProvider>{children}</LanguageProvider>
         <Toaster />
       </body>
