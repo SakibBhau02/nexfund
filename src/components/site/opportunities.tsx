@@ -79,7 +79,9 @@ export function Opportunities() {
   const { t, lang } = useLanguage();
   const openInvestor = useDialogStore((s) => s.openInvestor);
   const openOpportunity = useDialogStore((s) => s.openOpportunity);
-  const [sector, setSector] = useState<string>("all");
+  /* R6: sector filter lives in the store so the BN⇄EN cross-fade keeps it */
+  const sector = useDialogStore((s) => s.sectorFilter);
+  const setSector = useDialogStore((s) => s.setSectorFilter);
 
   /* ── R5-CMP: side-by-side compare state. The shortlist lives in the zustand
      store so the language cross-fade (key={lang} remount) keeps the picks. ── */

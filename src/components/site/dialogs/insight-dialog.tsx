@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import type { UIEvent } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowUpRight,
   BookMarked,
@@ -14,26 +13,37 @@ import {
   Share2,
   Check,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE } from "@/lib/content";
+import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE, READERTOC } from "@/lib/content";
 import { bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { G } from "@/components/site/glossary";
 
+type ReaderCard = (typeof INSIGHTS.articles)[number];
+type ReaderArticle = (typeof ARTICLES)[string];
+
 /**
  * Insight article reader dialog (R4-3) — the "Read the guide" cards open the
  * full bilingual article here instead of teasing the investor registration.
+ *
+ * Architecture note (R6): all per-article state (share, reading progress,
+ * mini-TOC position, minutes-left) lives in <ReaderContent>, which is keyed
+ * by slug and mounted inside DialogContent — Radix unmounts the content when
+ * the dialog closes, so every open starts from a clean slate without any
+ * reset effects.
  */
 export function InsightDialog() {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const dialog = useDialogStore((s) => s.dialog);
   const slug = useDialogStore((s) => s.insightSlug);
   const close = useDialogStore((s) => s.close);
-  const open = useDialogStore((s) => s.open);
-  const openInvestor = useDialogStore((s) => s.openInvestor);
   const openInsight = useDialogStore((s) => s.openInsight);
   const isOpen = dialog === "insight";
+
+  /* the scroll host is DialogContent itself — shared with ReaderContent */
+  const scrollElRef = useRef<HTMLDivElement | null>(null);
 
   /* R5: deep-link — #insight=<slug> opens the article directly (permalink) */
   useEffect(() => {
@@ -44,7 +54,63 @@ export function InsightDialog() {
     return () => cancelAnimationFrame(raf);
   }, [openInsight]);
 
-  /* R5: share — native share sheet where available, clipboard fallback */
+  const card = INSIGHTS.articles.find((a) => a.slug === slug);
+  const article = slug ? ARTICLES[slug] : undefined;
+
+  /* Unknown slug → simple not-found state */
+  if (isOpen && !article) {
+    return (
+      <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
+        <DialogContent
+          className="rounded-3xl p-0 sm:max-w-[440px]"
+          aria-describedby={undefined}
+        >
+          <div className="p-8 text-center">
+            <FileQuestion className="mx-auto h-10 w-10 text-nx-cyan-500" aria-hidden="true" />
+            <DialogTitle className="mt-3 text-base font-bold leading-relaxed text-nx-navy-900">
+              {t(READER.notFound)}
+            </DialogTitle>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!card || !article || !slug) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
+      <DialogContent
+        ref={scrollElRef}
+        aria-describedby={undefined}
+        className="nx-scroll max-h-[90vh] gap-0 overflow-y-auto rounded-3xl p-0 sm:max-w-[720px] [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-white/15 [&_[data-slot=dialog-close]]:p-1.5 [&_[data-slot=dialog-close]]:text-white [&_[data-slot=dialog-close]]:backdrop-blur [&_[data-slot=dialog-close]]:transition-colors [&_[data-slot=dialog-close]]:hover:bg-white/30"
+      >
+        {isOpen ? (
+          <ReaderContent key={slug} slug={slug} card={card} article={article} scrollElRef={scrollElRef} />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Per-article reader body — keyed by slug, so state resets on remount. */
+function ReaderContent({
+  slug,
+  card,
+  article,
+  scrollElRef,
+}: {
+  slug: string;
+  card: ReaderCard;
+  article: ReaderArticle;
+  scrollElRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const { lang, t } = useLanguage();
+  const open = useDialogStore((s) => s.open);
+  const openInvestor = useDialogStore((s) => s.openInvestor);
+  const reduce = useReducedMotion();
+
+  /* ── R5: share — native share sheet where available, clipboard fallback ── */
   const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
   const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -56,7 +122,6 @@ export function InsightDialog() {
   );
 
   const share = async () => {
-    if (!slug) return;
     const url = `${window.location.origin}${window.location.pathname}#insight=${slug}`;
     if (typeof navigator.share === "function") {
       try {
@@ -90,242 +155,301 @@ export function InsightDialog() {
     shareTimer.current = setTimeout(() => setShareState("idle"), 2600);
   };
 
-  /* Reading progress — updated imperatively (no re-renders on scroll) */
+  /* ── Reading progress + R6 mini-TOC tracking + minutes-left ── */
   const progressWrapRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const secRefs = useRef<(HTMLElement | null)[]>([]);
+  const [activeSec, setActiveSec] = useState(0);
+  const [minLeft, setMinLeft] = useState<number | null>(null);
+  const lastLeftRef = useRef(-1); // last displayed minutes-left
 
-  const handleScroll = (e: UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    const denom = el.scrollHeight - el.clientHeight;
-    const p = denom > 0 ? Math.min(1, Math.max(0, el.scrollTop / denom)) : 0;
-    if (progressBarRef.current) progressBarRef.current.style.transform = `scaleX(${p})`;
-    if (progressWrapRef.current) {
-      progressWrapRef.current.setAttribute("aria-valuenow", String(Math.round(p * 100)));
-    }
+  // native scroll listener on the dialog's scroll host (DialogContent) —
+  // setState only fires from the event callback, never from the effect body
+  useEffect(() => {
+    const host = scrollElRef.current;
+    if (!host) return;
+    const onScroll = () => {
+      const denom = host.scrollHeight - host.clientHeight;
+      const p = denom > 0 ? Math.min(1, Math.max(0, host.scrollTop / denom)) : 0;
+      if (progressBarRef.current) progressBarRef.current.style.transform = `scaleX(${p})`;
+      if (progressWrapRef.current) {
+        progressWrapRef.current.setAttribute("aria-valuenow", String(Math.round(p * 100)));
+      }
+
+      /* track the section currently at the top of the viewport */
+      const secs = secRefs.current;
+      if (secs.length > 0) {
+        const hostTop = host.getBoundingClientRect().top;
+        let idx = 0;
+        for (let i = 0; i < secs.length; i++) {
+          const s = secs[i];
+          if (s && s.getBoundingClientRect().top - hostTop <= 160) idx = i;
+        }
+        const found = idx;
+        setActiveSec((prev) => (prev === found ? prev : found));
+      }
+
+      /* remaining reading time — re-renders only when the minute changes */
+      const left = Math.max(0, Math.ceil(card.minutes * (1 - p)));
+      if (left !== lastLeftRef.current) {
+        lastLeftRef.current = left;
+        setMinLeft(left);
+      }
+    };
+    host.addEventListener("scroll", onScroll, { passive: true });
+    return () => host.removeEventListener("scroll", onScroll);
+  }, [scrollElRef, card.minutes]);
+
+  /* R6: TOC jump — rect math (robust vs offsetParent), no page-side scroll */
+  const jumpTo = (i: number) => {
+    const el = scrollElRef.current;
+    const s = secRefs.current[i];
+    if (!el || !s) return;
+    const delta = s.getBoundingClientRect().top - el.getBoundingClientRect().top;
+    el.scrollTo({ top: el.scrollTop + delta - 14, behavior: reduce ? "auto" : "smooth" });
+    setActiveSec(i);
   };
-
-  const card = INSIGHTS.articles.find((a) => a.slug === slug);
-  const article = slug ? ARTICLES[slug] : undefined;
-
-  /* Unknown slug → simple not-found state */
-  if (isOpen && !article) {
-    return (
-      <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
-        <DialogContent
-          className="rounded-3xl p-0 sm:max-w-[440px]"
-          aria-describedby={undefined}
-        >
-          <div className="p-8 text-center">
-            <FileQuestion className="mx-auto h-10 w-10 text-nx-cyan-500" aria-hidden="true" />
-            <DialogTitle className="mt-3 text-base font-bold leading-relaxed text-nx-navy-900">
-              {t(READER.notFound)}
-            </DialogTitle>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (!card || !article) return null;
 
   const updated = lang === "bn" ? bnNum(article.updated) : article.updated;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
-      <DialogContent
-        onScroll={handleScroll}
-        aria-describedby={undefined}
-        className="nx-scroll max-h-[90vh] gap-0 overflow-y-auto rounded-3xl p-0 sm:max-w-[720px] [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:bg-white/15 [&_[data-slot=dialog-close]]:p-1.5 [&_[data-slot=dialog-close]]:text-white [&_[data-slot=dialog-close]]:backdrop-blur [&_[data-slot=dialog-close]]:transition-colors [&_[data-slot=dialog-close]]:hover:bg-white/30"
+    <>
+      {/* ── Reading progress (thin, sticky at very top) + remaining-time pill ── */}
+      <div
+        ref={progressWrapRef}
+        role="progressbar"
+        aria-label={t(READER.scrollProgressAria)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={0}
+        className="sticky top-0 z-20 h-[3px] w-full"
       >
-        {/* ── Reading progress (thin, sticky at very top) ── */}
         <div
-          ref={progressWrapRef}
-          role="progressbar"
-          aria-label={t(READER.scrollProgressAria)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={0}
-          className="sticky top-0 z-20 h-[3px] w-full"
+          ref={progressBarRef}
+          aria-hidden="true"
+          className="nx-progress-gradient h-full w-full"
+          style={{ transform: "scaleX(0)" }}
+        />
+        {/* R6: floating minutes-left pill — rides with the sticky bar */}
+        <span
+          aria-hidden="true"
+          className="nx-num pointer-events-none absolute right-4 top-[9px] inline-flex items-center gap-1 rounded-full border border-nx-navy-100 bg-white/92 px-2.5 py-1 text-[10px] font-extrabold text-nx-navy-700 shadow-[0_6px_16px_-8px_rgba(6,31,74,0.35)] backdrop-blur"
         >
-          <div
-            ref={progressBarRef}
-            aria-hidden="true"
-            className="nx-progress-gradient h-full w-full"
-            style={{ transform: "scaleX(0)" }}
+          <Clock className="h-3 w-3 text-nx-cyan-500" />
+          {t(READERTOC.remaining(minLeft ?? card.minutes))}
+        </span>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.32, ease: "easeOut" }}
+      >
+        {/* ── Hero image strip ── */}
+        <div className="relative h-44 w-full overflow-hidden">
+          <Image
+            src={card.image}
+            alt={t(card.title)}
+            fill
+            sizes="(max-width: 768px) 100vw, 720px"
+            className="object-cover"
           />
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-nx-navy-900/85 via-nx-navy-900/35 to-transparent"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-5">
+            <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-nx-navy-800 backdrop-blur">
+              {t(card.category)}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              {t(INSIGHTS.readTime(card.minutes))}
+            </span>
+            <span className="nx-num inline-flex items-center rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">
+              {t(READER.updatedLabel)} {updated}
+            </span>
+            {/* R5: share permalink — native sheet on mobile, clipboard elsewhere */}
+            <button
+              type="button"
+              onClick={share}
+              aria-live="polite"
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {shareState === "copied" ? (
+                <Check className="h-3 w-3" aria-hidden="true" />
+              ) : (
+                <Share2 className="h-3 w-3" aria-hidden="true" />
+              )}
+              {shareState === "copied"
+                ? t(SHARE.linkCopied)
+                : shareState === "failed"
+                  ? t(SHARE.copyFailed)
+                  : t(SHARE.shareArticle)}
+            </button>
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.32, ease: "easeOut" }}
-        >
-          {/* ── Hero image strip ── */}
-          <div className="relative h-44 w-full overflow-hidden">
-            <Image
-              src={card.image}
-              alt={t(card.title)}
-              fill
-              sizes="(max-width: 768px) 100vw, 720px"
-              className="object-cover"
-            />
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-nx-navy-900/85 via-nx-navy-900/35 to-transparent"
-              aria-hidden="true"
-            />
-            <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-5">
-              <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-nx-navy-800 backdrop-blur">
-                {t(card.category)}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">
-                <Clock className="h-3 w-3" aria-hidden="true" />
-                {t(INSIGHTS.readTime(card.minutes))}
-              </span>
-              <span className="nx-num inline-flex items-center rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">
-                {t(READER.updatedLabel)} {updated}
-              </span>
-              {/* R5: share permalink — native sheet on mobile, clipboard elsewhere */}
-              <button
-                type="button"
-                onClick={share}
-                aria-live="polite"
-                className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                {shareState === "copied" ? (
-                  <Check className="h-3 w-3" aria-hidden="true" />
-                ) : (
-                  <Share2 className="h-3 w-3" aria-hidden="true" />
-                )}
-                {shareState === "copied"
-                  ? t(SHARE.linkCopied)
-                  : shareState === "failed"
-                    ? t(SHARE.copyFailed)
-                    : t(SHARE.shareArticle)}
-              </button>
-            </div>
+        {/* ── Title + short answer ── */}
+        <DialogHeader className="px-6 pb-2 pt-5 sm:px-8">
+          <DialogTitle className="text-xl font-extrabold leading-snug text-nx-navy-900 sm:text-2xl">
+            {t(card.title)}
+          </DialogTitle>
+          <div className="mt-3 rounded-xl bg-nx-cyan-50 p-4 text-left">
+            <p className="text-[10px] font-extrabold tracking-[0.14em] text-nx-cyan-700 uppercase">
+              {t(INSIGHTS.shortAnswer)}
+            </p>
+            <p className="mt-1 text-[13px] leading-relaxed text-nx-ink/80">{t(card.short)}</p>
           </div>
+        </DialogHeader>
 
-          {/* ── Title + short answer ── */}
-          <DialogHeader className="px-6 pb-2 pt-5 sm:px-8">
-            <DialogTitle className="text-xl font-extrabold leading-snug text-nx-navy-900 sm:text-2xl">
-              {t(card.title)}
-            </DialogTitle>
-            <div className="mt-3 rounded-xl bg-nx-cyan-50 p-4 text-left">
-              <p className="text-[10px] font-extrabold tracking-[0.14em] text-nx-cyan-700 uppercase">
-                {t(INSIGHTS.shortAnswer)}
-              </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-nx-ink/80">{t(card.short)}</p>
-            </div>
-          </DialogHeader>
-
-          {/* ── Article body ── */}
-          <div className="px-6 pb-6 pt-4 sm:px-8">
+        {/* ── R6: sticky mini-TOC — numbered jump chips per section ── */}
+        <nav
+          aria-label={t(READERTOC.tocLabel)}
+          className="sticky top-[3px] z-10 border-b border-nx-navy-100 bg-white/92 px-6 py-2.5 backdrop-blur sm:px-8"
+        >
+          <div className="nx-scroll flex items-center gap-1.5 overflow-x-auto pb-0.5">
+            <span className="shrink-0 pr-1 text-[10px] font-extrabold tracking-[0.14em] text-slate-400 uppercase">
+              {t(READERTOC.tocLabel)}
+            </span>
             {article.sections.map((sec, i) => {
               const num = String(i + 1).padStart(2, "0");
+              const active = activeSec === i;
               return (
-                <section key={sec.h.en} className={i > 0 ? "mt-7" : undefined}>
-                  <div className="flex items-baseline gap-3">
-                    <span className="nx-num text-sm font-extrabold text-nx-cyan-500" aria-hidden="true">
-                      {lang === "bn" ? bnNum(num) : num}
-                    </span>
-                    <h3 className="text-base font-extrabold leading-snug text-nx-navy-900 sm:text-lg">
-                      {t(sec.h)}
-                    </h3>
-                  </div>
-                  {t(sec.body)
-                    .split("\n\n")
-                    .map((p, j) => (
-                      <p key={j} className="mt-2.5 text-sm leading-relaxed text-slate-600">
-                        {p}
-                      </p>
-                    ))}
-                  {sec.list && (
-                    <ul className="mt-3 space-y-2.5">
-                      {sec.list.map((li) => (
-                        <li
-                          key={li.en}
-                          className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
-                        >
-                          <span
-                            className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-nx-cyan-500"
-                            aria-hidden="true"
-                          />
-                          {t(li)}
-                        </li>
-                      ))}
-                    </ul>
+                <button
+                  key={sec.h.en}
+                  type="button"
+                  aria-current={active ? "true" : undefined}
+                  title={t(sec.h)}
+                  onClick={() => jumpTo(i)}
+                  className={cn(
+                    "nx-num shrink-0 rounded-full border px-3 py-1 text-[11px] font-extrabold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400",
+                    active
+                      ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_8px_18px_-8px_rgba(10,58,143,0.7)]"
+                      : "border-nx-navy-200 bg-white text-nx-navy-600 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
                   )}
-                </section>
+                >
+                  <span className="sr-only">{t(sec.h)}</span>
+                  {lang === "bn" ? bnNum(num) : num}
+                </button>
               );
             })}
-
-            {/* ── Glossary chips ── */}
-            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-nx-navy-100 pt-5">
-              <span className="flex items-center gap-1 text-[11px] font-bold tracking-wide text-slate-400 uppercase">
-                <BookMarked className="h-3 w-3" aria-hidden="true" />
-                {t(READER.termsLabel)}
-              </span>
-              {article.terms.map((term) => (
-                <span
-                  key={term}
-                  className="rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1 text-xs font-bold text-nx-cyan-700"
-                >
-                  <G term={term}>{t(GLOSSARY_LABELS[term] ?? { en: term, bn: term })}</G>
-                </span>
-              ))}
-            </div>
-
-            {/* ── Key takeaways ── */}
-            <div className="mt-4 rounded-2xl border border-nx-navy-100 bg-nx-mist p-5">
-              <p className="text-xs font-extrabold tracking-[0.12em] text-nx-navy-800 uppercase">
-                {t(READER.keyTakeawaysTitle)}
-              </p>
-              <ul className="mt-3 space-y-2.5">
-                {article.takeaways.map((tk) => (
-                  <li
-                    key={tk.en}
-                    className="flex items-start gap-2.5 text-sm leading-relaxed text-nx-ink/90"
-                  >
-                    <CircleCheck
-                      className="mt-0.5 h-4 w-4 shrink-0 text-nx-verified"
-                      aria-hidden="true"
-                    />
-                    {t(tk)}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
-        </motion.div>
+        </nav>
 
-        {/* ── Next steps (non-sticky) ── */}
-        <div className="mx-6 mb-6 rounded-2xl border border-nx-cyan-200 bg-gradient-to-br from-nx-cyan-50 to-white p-5 sm:mx-8">
-          <p className="text-xs font-extrabold tracking-wide text-nx-navy-900 uppercase">
-            {t(READER.nextStepsTitle)}
-          </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{t(READER.nextStepsSub)}</p>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => openInvestor("investor")}
-              className="nx-arrow-btn inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
-            >
-              {t(READER.registerCta)}
-              <span className="nx-arrow">
-                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        {/* ── Article body ── */}
+        <div className="px-6 pb-6 pt-4 sm:px-8">
+          {article.sections.map((sec, i) => {
+            const num = String(i + 1).padStart(2, "0");
+            return (
+              <section
+                key={sec.h.en}
+                ref={(el) => {
+                  secRefs.current[i] = el;
+                }}
+                className={i > 0 ? "mt-7" : undefined}
+              >
+                <div className="flex items-baseline gap-3">
+                  <span className="nx-num text-sm font-extrabold text-nx-cyan-500" aria-hidden="true">
+                    {lang === "bn" ? bnNum(num) : num}
+                  </span>
+                  <h3 className="text-base font-extrabold leading-snug text-nx-navy-900 sm:text-lg">
+                    {t(sec.h)}
+                  </h3>
+                </div>
+                {t(sec.body)
+                  .split("\n\n")
+                  .map((p, j) => (
+                    <p key={j} className="mt-2.5 text-sm leading-relaxed text-slate-600">
+                      {p}
+                    </p>
+                  ))}
+                {sec.list && (
+                  <ul className="mt-3 space-y-2.5">
+                    {sec.list.map((li) => (
+                      <li
+                        key={li.en}
+                        className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600"
+                      >
+                        <span
+                          className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-nx-cyan-500"
+                          aria-hidden="true"
+                        />
+                        {t(li)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            );
+          })}
+
+          {/* ── Glossary chips ── */}
+          <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-nx-navy-100 pt-5">
+            <span className="flex items-center gap-1 text-[11px] font-bold tracking-wide text-slate-400 uppercase">
+              <BookMarked className="h-3 w-3" aria-hidden="true" />
+              {t(READER.termsLabel)}
+            </span>
+            {article.terms.map((term) => (
+              <span
+                key={term}
+                className="rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1 text-xs font-bold text-nx-cyan-700"
+              >
+                <G term={term}>{t(GLOSSARY_LABELS[term] ?? { en: term, bn: term })}</G>
               </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => open("contact")}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500"
-            >
-              <Calendar className="h-4 w-4" aria-hidden="true" />
-              {t(READER.bookCallCta)}
-            </button>
+            ))}
+          </div>
+
+          {/* ── Key takeaways ── */}
+          <div className="mt-4 rounded-2xl border border-nx-navy-100 bg-nx-mist p-5">
+            <p className="text-xs font-extrabold tracking-[0.12em] text-nx-navy-800 uppercase">
+              {t(READER.keyTakeawaysTitle)}
+            </p>
+            <ul className="mt-3 space-y-2.5">
+              {article.takeaways.map((tk) => (
+                <li
+                  key={tk.en}
+                  className="flex items-start gap-2.5 text-sm leading-relaxed text-nx-ink/90"
+                >
+                  <CircleCheck
+                    className="mt-0.5 h-4 w-4 shrink-0 text-nx-verified"
+                    aria-hidden="true"
+                  />
+                  {t(tk)}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </motion.div>
+
+      {/* ── Next steps (non-sticky) ── */}
+      <div className="mx-6 mb-6 rounded-2xl border border-nx-cyan-200 bg-gradient-to-br from-nx-cyan-50 to-white p-5 sm:mx-8">
+        <p className="text-xs font-extrabold tracking-wide text-nx-navy-900 uppercase">
+          {t(READER.nextStepsTitle)}
+        </p>
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{t(READER.nextStepsSub)}</p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => openInvestor("investor")}
+            className="nx-arrow-btn inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+          >
+            {t(READER.registerCta)}
+            <span className="nx-arrow">
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => open("contact")}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500"
+          >
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+            {t(READER.bookCallCta)}
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

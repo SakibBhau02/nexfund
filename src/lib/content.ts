@@ -1633,3 +1633,42 @@ export const CMP = {
   ctaDetail: { en: "Open full summary", bn: "সম্পূর্ণ সারসংক্ষেপ খুলুন" } as L,
   scenNA: { en: "—", bn: "—" } as L,
 } as const;
+
+/* ── R6: FAQ live search ── */
+export const FAQS = {
+  label: { en: "Search the questions", bn: "প্রশ্ন খুঁজুন" } as L,
+  placeholder: {
+    en: "Type a keyword — e.g. minimum, fees, exit…",
+    bn: "শব্দ লিখুন — যেমন: সর্বনিম্ন, ফি, এক্সিট…",
+  } as L,
+  clear: { en: "Clear search", bn: "খুঁজা মুছুন" } as L,
+  count: (n: number): L => ({
+    en: n === 1 ? "1 question matches" : `${n} questions match`,
+    bn: n === 1 ? "১টি প্রশ্ন মিলেছে" : `${bnDigit(n)}টি প্রশ্ন মিলেছে`,
+  }),
+  emptyTitle: { en: "No match in the current questions", bn: "বর্তমান প্রশ্নগুলোতে কিছু মেলেনি" } as L,
+  emptySub: {
+    en: "Try a different word, or ask us directly — we answer every message.",
+    bn: "অন্য শব্দে চেষ্টা করুন, বা সরাসরি জিজ্ঞেস করুন — আমরা প্রতিটি বার্তার উত্তর দিই।",
+  } as L,
+  searchBoth: { en: "Searches English & Bangla", bn: "ইংরেজি ও বাংলা — দুই ভাষাতেই খোঁজে" } as L,
+} as const;
+
+/* ── R6: opportunity listing share/permalink ── */
+export const OPPS = {
+  shareListing: { en: "Share listing", bn: "লিস্টিং শেয়ার করুন" } as L,
+  notFoundTitle: { en: "Listing not found", bn: "লিস্টিং পাওয়া যায়নি" } as L,
+  notFoundSub: {
+    en: "This link points to a listing that is no longer available. Browse the current opportunities instead.",
+    bn: "এই লিংকটি এমন একটি লিস্টিংয়ের দিকে নির্দেশ করছে যা আর নেই। বর্তমান সুযোগগুলো দেখুন।",
+  } as L,
+} as const;
+
+/* ── R6: insight reader mini-TOC + remaining reading time ── */
+export const READERTOC = {
+  tocLabel: { en: "Jump to a section", bn: "অংশে যান" } as L,
+  remaining: (m: number): L => ({
+    en: m <= 0 ? "done" : `~${m} min left`,
+    bn: m <= 0 ? "সম্পন্ন" : `~${bnDigit(m)} মিনিট বাকি`,
+  }),
+} as const;

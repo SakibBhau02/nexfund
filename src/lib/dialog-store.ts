@@ -18,6 +18,13 @@ interface DialogState {
    */
   compareSlugs: string[];
   setCompareSlugs: (slugs: string[]) => void;
+  /**
+   * R6: active opportunities sector filter ("all" or an EN sector key from
+   * the DB — stable across languages since BN labels render from the same
+   * key). Stored here for the same remount-survival reason as compareSlugs.
+   */
+  sectorFilter: string;
+  setSectorFilter: (sector: string) => void;
   open: (kind: Exclude<DialogKind, null>) => void;
   openInvestor: (prefill?: "investor" | "founder") => void;
   openOpportunity: (slug: string) => void;
@@ -32,6 +39,8 @@ export const useDialogStore = create<DialogState>((set) => ({
   insightSlug: undefined,
   compareSlugs: [],
   setCompareSlugs: (slugs) => set({ compareSlugs: slugs }),
+  sectorFilter: "all",
+  setSectorFilter: (sector) => set({ sectorFilter: sector }),
   open: (kind) => set({ dialog: kind, opportunitySlug: undefined, insightSlug: undefined }),
   openInvestor: (prefill) =>
     set({ dialog: "investor", investorPrefill: prefill, opportunitySlug: undefined, insightSlug: undefined }),

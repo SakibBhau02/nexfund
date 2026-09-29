@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,10 +11,13 @@ import {
   BadgeCheck,
   Calendar,
   CircleCheck,
+  FileQuestion,
   Loader2,
   Lock,
   MapPin,
   Minus,
+  Share2,
+  Check,
   ShieldCheck,
   Sparkles,
   TrendingDown,
@@ -30,7 +33,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, SIM, SCEN, type BadgeKey, type ScenAssumption } from "@/lib/content";
+import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, SIM, SCEN, SHARE, OPPS, type BadgeKey, type ScenAssumption } from "@/lib/content";
 import { formatTk, formatTkRange, bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -48,6 +51,7 @@ export function OpportunityDialog() {
   const slug = useDialogStore((s) => s.opportunitySlug);
   const close = useDialogStore((s) => s.close);
   const open = useDialogStore((s) => s.open);
+  const openOpportunity = useDialogStore((s) => s.openOpportunity);
   const isOpen = dialog === "opportunity";
 
   /* ── Express-interest inline flow (actions ⇄ form ⇄ success) ── */
@@ -58,6 +62,61 @@ export function OpportunityDialog() {
   const [xiSending, setXiSending] = useState(false);
   const [xiError, setXiError] = useState("");
 
+  /* ── R6: listing permalink share ── */
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
+  const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (shareTimer.current) clearTimeout(shareTimer.current);
+    };
+  }, []);
+
+  /* R6: deep-link — #opp=<slug> opens the listing directly (permalink).
+     Unknown slugs fall through to the not-found state below (data loaded,
+     no match) instead of spinning forever. */
+  useEffect(() => {
+    const m = /^#opp=([a-z0-9-]+)$/i.exec(window.location.hash);
+    if (!m) return;
+    const raf = requestAnimationFrame(() => openOpportunity(m[1]));
+    return () => cancelAnimationFrame(raf);
+  }, [openOpportunity]);
+
+  const share = async () => {
+    if (!slug) return;
+    const url = `${window.location.origin}${window.location.pathname}#opp=${slug}`;
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: document.title, url });
+        return;
+      } catch {
+        // sheet dismissed or failed → fall through to clipboard
+      }
+    }
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      ok = true;
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+    setShareState(ok ? "copied" : "failed");
+    if (shareTimer.current) clearTimeout(shareTimer.current);
+    shareTimer.current = setTimeout(() => setShareState("idle"), 2600);
+  };
+
   // Reset the flow whenever the dialog closes or switches to another listing
   useEffect(() => {
     setXiView("actions");
@@ -66,6 +125,8 @@ export function OpportunityDialog() {
     setXiNote("");
     setXiError("");
     setXiSending(false);
+    setShareState("idle");
+    if (shareTimer.current) clearTimeout(shareTimer.current);
   }, [isOpen, slug]);
 
   const { data } = useQuery<OpportunityDTO[]>({
@@ -85,15 +146,41 @@ export function OpportunityDialog() {
   const tabIcons = [Info, Briefcase, LineChart, Activity, Users, Wallet, AlertTriangle];
 
   if (!o) {
+    // R6: data loaded but no match → friendly not-found (bad/stale permalink);
+    // otherwise still fetching → loading state
+    const notFound = Array.isArray(data) && data.length > 0;
     return (
       <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
-        <DialogContent className="rounded-3xl p-0 sm:max-w-[640px]">
-          <div className="space-y-3 p-8 text-center">
-            <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-nx-navy-100" />
-            <p className="text-sm text-slate-500">
-              {lang === "bn" ? "সুযোগটি লোড হচ্ছে…" : "Loading opportunity…"}
-            </p>
-          </div>
+        <DialogContent
+          className={notFound ? "rounded-3xl p-0 sm:max-w-[440px]" : "rounded-3xl p-0 sm:max-w-[640px]"}
+          aria-describedby={undefined}
+        >
+          {notFound ? (
+            <div className="p-8 text-center">
+              <FileQuestion className="mx-auto h-10 w-10 text-nx-cyan-500" aria-hidden="true" />
+              <DialogTitle className="mt-3 text-base font-bold leading-relaxed text-nx-navy-900">
+                {t(OPPS.notFoundTitle)}
+              </DialogTitle>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{t(OPPS.notFoundSub)}</p>
+              <button
+                onClick={close}
+                className="mt-5 rounded-full bg-nx-navy-700 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+              >
+                {lang === "bn" ? "বর্তমান সুযোগ দেখুন" : "Browse current opportunities"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3 p-8 text-center">
+              {/* a11y: Radix requires a title even in the loading state */}
+              <DialogTitle className="sr-only">
+                {lang === "bn" ? "সুযোগটি লোড হচ্ছে…" : "Loading opportunity…"}
+              </DialogTitle>
+              <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-nx-navy-100" />
+              <p className="text-sm text-slate-500">
+                {lang === "bn" ? "সুযোগটি লোড হচ্ছে…" : "Loading opportunity…"}
+              </p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     );
@@ -178,6 +265,24 @@ export function OpportunityDialog() {
                     {t(OPP_DLG.illustrativeTip)}
                   </TooltipContent>
                 </Tooltip>
+                {/* R6: share permalink — native sheet on mobile, clipboard elsewhere */}
+                <button
+                  type="button"
+                  onClick={share}
+                  aria-live="polite"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-2.5 py-0.5 text-[11px] font-bold text-nx-navy-700 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400"
+                >
+                  {shareState === "copied" ? (
+                    <Check className="h-3 w-3" aria-hidden="true" />
+                  ) : (
+                    <Share2 className="h-3 w-3" aria-hidden="true" />
+                  )}
+                  {shareState === "copied"
+                    ? t(SHARE.linkCopied)
+                    : shareState === "failed"
+                      ? t(SHARE.copyFailed)
+                      : t(OPPS.shareListing)}
+                </button>
               </div>
               <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-nx-cyan-700 uppercase">
                 <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
