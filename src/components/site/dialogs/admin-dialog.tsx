@@ -311,7 +311,7 @@ function AdminWorkspace() {
       <>
         <DialogHeader className="border-b border-nx-navy-100 px-6 pb-5 pt-7 text-center sm:text-center">
           <p className="flex justify-center">
-            <Logo className="text-[1.55rem]" />
+            <Logo className="h-9" />
           </p>
           <DialogTitle className="pt-1 text-xl font-extrabold text-nx-navy-900">
             {t(ADMIN.title)}

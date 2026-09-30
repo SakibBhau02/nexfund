@@ -26,6 +26,11 @@ const PAGE_FOR_NAV: Record<string, string> = {
   faq: "faq",
 };
 
+/** R11: About + Impact join the nav. Desktop shows all items except "paths"
+ *  (audiences stay reachable via the home Two-Paths section, the footer and
+ *  the About page cross-links) — keeps the xl nav on one comfortable line. */
+const DESKTOP_NAV = NAV.filter((item) => item.id !== "paths");
+
 export function Header() {
   const { lang, setLang, t } = useLanguage();
   const open = useDialogStore((s) => s.open);
@@ -79,12 +84,12 @@ export function Header() {
             aria-label="NexFund — home"
             className="shrink-0"
           >
-            <Logo className="text-xl md:text-[1.35rem]" />
+            <Logo className="h-8 md:h-9" />
           </button>
 
-          {/* Desktop nav */}
-          <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
-            {NAV.map((item) => {
+          {/* Desktop nav (R11: about + impact added; shown from xl to keep one line) */}
+          <nav aria-label="Primary" className="hidden items-center gap-1 xl:flex">
+            {DESKTOP_NAV.map((item) => {
               const pageId = PAGE_FOR_NAV[item.id] ?? item.id;
               return (
                 <button
@@ -124,7 +129,7 @@ export function Header() {
             {/* Mobile: lang toggle compact + hamburger */}
             <LangToggle lang={lang} setLang={setLang} className="sm:hidden" />
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-nx-navy-200 bg-white text-nx-navy-800 lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-nx-navy-200 bg-white text-nx-navy-800 xl:hidden"
               onClick={() => setMenuOpen(true)}
               aria-label={lang === "bn" ? "মেনু খুলুন" : "Open menu"}
             >
@@ -147,7 +152,7 @@ export function Header() {
             aria-modal="true"
           >
             <div className="flex items-center justify-between px-5 py-4">
-              <Logo variant="light" className="text-xl" />
+              <Logo variant="light" className="h-9" />
               <button
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white"
                 onClick={() => setMenuOpen(false)}

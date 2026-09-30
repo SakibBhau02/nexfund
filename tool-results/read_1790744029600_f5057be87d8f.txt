@@ -1,0 +1,860 @@
+     1→"use client";
+     2→
+     3→import { motion } from "framer-motion";
+     4→import type { LucideIcon } from "lucide-react";
+     5→import {
+     6→  AlertTriangle,
+     7→  ArrowLeft,
+     8→  ArrowRight,
+     9→  Ban,
+    10→  CheckCircle2,
+    11→  ClipboardCheck,
+    12→  Eye,
+    13→  FileText,
+    14→  Fingerprint,
+    15→  Info,
+    16→  LineChart,
+    17→  ListChecks,
+    18→  Scale,
+    19→  ShieldCheck,
+    20→  Users,
+    21→} from "lucide-react";
+    22→import { useLanguage, type L } from "@/lib/i18n";
+    23→import { navigateTo } from "@/lib/page-router";
+    24→import { VETTING } from "@/lib/content";
+    25→import { bnNum } from "@/lib/format";
+    26→import {
+    27→  PageHero,
+    28→  PageBody,
+    29→  CtaBand,
+    30→  CyanButton,
+    31→  OutlineLightButton,
+    32→  DetailHero,
+    33→  MetaChip,
+    34→  PageNotFound,
+    35→  SectionHead,
+    36→} from "./shell";
+    37→
+    38→/**
+    39→ * R10 Vetting Standard — landing + per-pillar detail pages.
+    40→ *   #p/vetting            → the five pillars, red-flag list, CTA
+    41→ *   #p/vetting/<slug>     → one pillar: what we check, documents,
+    42→ *                           red flags, why it matters, prev/next nav
+    43→ * Pillar slugs match VETTING.stages keys in content.ts.
+    44→ */
+    45→
+    46→const T = {
+    47→  heroCopy: {
+    48→    en: "Every business on NexFund passes a five-pillar review before any investor sees it. No pillar can be skipped, and any one of them can end the review. If a fact can't be verified, it doesn't get published.",
+    49→    bn: "নেক্সফান্ডের প্রতিটি ব্যবসা বিনিয়োগকারীর সামনে আসার আগে পাঁচ-স্তম্ভের যাচাই পাস করে। কোনো স্তম্ভ বাদ দেওয়ার সুযোগ নেই, আবার যেকোনো একটিই পুরো রিভিউ শেষ করে দিতে পারে। যে তথ্য যাচাই করা যায় না, সেটা প্রকাশই হয় না।",
+    50→  },
+    51→  badge: { en: "5 pillars · 1 standard", bn: "৫টি স্তম্ভ · একটি মানদণ্ড" } as const,
+    52→  heroCta: { en: "Explore the five pillars", bn: "পাঁচটি স্তম্ভ দেখুন" } as const,
+    53→  heroCta2: { en: "See who passed", bn: "যারা পাস করেছে" } as const,
+    54→  pillarsEyebrow: { en: "THE FIVE PILLARS", bn: "পাঁচটি স্তম্ভ" } as const,
+    55→  pillarsTitle: {
+    56→    en: "What every business must pass",
+    57→    bn: "প্রতিটি ব্যবসাকে যা পাস করতেই হয়",
+    58→  } as const,
+    59→  pillarsCopy: {
+    60→    en: "Identity, legal standing, financial health, operations and an independent advisor review — five separate gates, walked in order, with no exceptions and no shortcuts.",
+    61→    bn: "পরিচয়, আইনি অবস্থান, আর্থিক সুস্থতা, কার্যক্রম আর স্বাধীন অ্যাডভাইজার রিভিউ — পাঁচটি আলাদা দরজা, ক্রম মেনে, কোনো ব্যতিক্রম বা শর্টকাট ছাড়াই।",
+    62→  } as const,
+    63→  readPillar: { en: "Read the pillar in detail", bn: "স্তম্ভটি বিস্তারিত পড়ুন" } as const,
+    64→  flagsEyebrow: { en: "WHAT GETS REJECTED", bn: "যা বাতিল হয়" } as const,
+    65→  flagsTitle: {
+    66→    en: "Some things end the review on the spot",
+    67→    bn: "কিছু বিষয় দেখলেই রিভিউ শেষ",
+    68→  } as const,
+    69→  flagsCopy: {
+    70→    en: "These are disqualifiers, not negotiation points. When we find one, the listing stops — whatever the sector, whatever the size of the raise.",
+    71→    bn: "এগুলো দর-কষাকষির বিষয় নয়, অযোগ্যতার কারণ। একটি পেলেই তালিকা থেমে যায় — খাত যাই হোক, সংগ্রহের অঙ্ক যত বড়ই হোক।",
+    72→  } as const,
+    73→  honestEyebrow: { en: "THE HONEST PART", bn: "সৎ কথাটা" } as const,
+    74→  ctaTitle: { en: "Curious who made it through?", bn: "কারা পেরোলো, দেখতে চান?" } as const,
+    75→  ctaCopy: {
+    76→    en: "Every listing on the platform carries the verification badges and a plain-language risk summary — check them against this standard yourself.",
+    77→    bn: "প্ল্যাটফর্মের প্রতিটি তালিকায় থাকে যাচাই-ব্যাজ আর সহজ-ভাষার ঝুঁকি-সারসংক্ষেপ — নিজেই এই মানদণ্ডে মিলিয়ে দেখুন।",
+    78→  } as const,
+    79→  ctaBtn: { en: "Browse verified listings", bn: "যাচাইকৃত তালিকা দেখুন" } as const,
+    80→  ctaBtn2: { en: "Read our Charter", bn: "আমাদের চার্টার পড়ুন" } as const,
+    81→  /* detail page */
+    82→  detailCtaTitle: { en: "Every pillar, every listing, every time.", bn: "প্রতিটি স্তম্ভ, প্রতিটি তালিকা, প্রতিবার।" } as const,
+    83→  detailCtaCopy: {
+    84→    en: "The standard doesn't bend for sector, size or story. See the businesses that cleared all five gates — and the risk summaries we published with them.",
+    85→    bn: "খাত, আকার বা গল্প দিয়ে মানদণ্ড বাঁকানো যায় না। পাঁচটি দরজাই পার হওয়া ব্যবসাগুলো দেখুন — সাথে আমাদের প্রকাশিত ঝুঁকি-সারসংক্ষেপ।",
+    86→  } as const,
+    87→  askPillar: { en: "Ask about this pillar", bn: "এই স্তম্ভ নিয়ে জিজ্ঞাসা করুন" } as const,
+    88→  docsTitle: { en: "Documents we require", bn: "যেসব নথি আমরা চাই" } as const,
+    89→  docsEyebrow: { en: "THE PAPER TRAIL", bn: "নথির সারি" } as const,
+    90→  docsIntro: {
+    91→    en: "The review doesn't start until these are in the data room. Missing any of them is itself a finding.",
+    92→    bn: "এগুলো ডেটা রুমে না পৌঁছানো পর্যন্ত রিভিউ শুরুই হয় না। কোনোটা না থাকাটাই আবার একটি তথ্য।",
+    93→  } as const,
+    94→  flagsPanelTitle: { en: "Red flags that stop a listing", bn: "লাল সংকেত — যা দেখলে তালিকা বন্ধ" } as const,
+    95→  whyEyebrow: { en: "WHY IT MATTERS TO INVESTORS", bn: "বিনিয়োগকারীর কাছে কেন গুরুত্বপূর্ণ" } as const,
+    96→  seeNote: {
+    97→    en: "This badge appears on a listing only after the pillar is cleared — the verification note behind it lives in the data room.",
+    98→    bn: "স্তম্ভ পাস হওয়ার পরেই কেবল ব্যাজটি তালিকায় দেখা যায় — পেছনের যাচাই-নোট থাকে ডেটা রুমে।",
+    99→  } as const,
+   100→  prevPillar: { en: "Previous pillar", bn: "পূর্ববর্তী স্তম্ভ" } as const,
+   101→  nextPillar: { en: "Next pillar", bn: "পরবর্তী স্তম্ভ" } as const,
+   102→  allPillars: { en: "All five pillars", bn: "পাঁচটি স্তম্ভই দেখুন" } as const,
+   103→  pillarRail: { en: "Jump between pillars", bn: "স্তম্ভের মধ্যে যান" } as const,
+   104→  docsChip: (n: number, bn: (x: number) => string) =>
+   105→    ({
+   106→      en: `${n} document${n === 1 ? "" : "s"} required`,
+   107→      bn: `${bn(n)}টি নথি লাগবে`,
+   108→    }) as L,
+   109→  pillarOf: (n: number, bn: (x: number) => string) =>
+   110→    ({
+   111→      en: `Pillar ${n} of 5`,
+   112→      bn: `স্তম্ভ ৫টির মধ্যে ${bn(n)}`,
+   113→    }) as L,
+   114→  pillarEyebrow: (n: number, bn: (x: number) => string) =>
+   115→    ({
+   116→      en: `PILLAR ${n} OF 5`,
+   117→      bn: `স্তম্ভ ৫টির মধ্যে ${bn(n)}`,
+   118→    }) as L,
+   119→  num: (n: number, bn: (x: number) => string) => ({ en: String(n), bn: bn(n) }) as L,
+   120→};
+   121→
+   122→/* ── Pillar detail copy (slugs mirror VETTING.stages keys) ────────────── */
+   123→
+   124→type Pillar = {
+   125→  slug: string;
+   126→  icon: LucideIcon;
+   127→  heroCopy: L;
+   128→  check: L[];
+   129→  docs: L[];
+   130→  flags: L[];
+   131→  why: L;
+   132→};
+   133→
+   134→const PILLARS: Pillar[] = [
+   135→  {
+   136→    slug: "identity",
+   137→    icon: Fingerprint,
+   138→    heroCopy: {
+   139→      en: "The first gate of every review: who really owns and runs the business — and whether the paperwork agrees.",
+   140→      bn: "যাচাইয়ের প্রথম দরজা: ব্যবসাটি আসলে কার, কারা চালায় — আর কাগজে-কাগজে সব মিলে কি না।",
+   141→    },
+   142→    check: [
+   143→      {
+   144→        en: "Founder national ID (NID) and recent photos, matched in person or on a live video call.",
+   145→        bn: "প্রতিষ্ঠাতার জাতীয় পরিচয়পত্র (NID) ও সাম্প্রতিক ছবি — সরাসরি দেখা বা লাইভ ভিডিও কলে মিলিয়ে নেওয়া হয়।",
+   146→      },
+   147→      {
+   148→        en: "Trade license and incorporation papers, checked against RJSC and city-corporation records.",
+   149→        bn: "ট্রেড লাইসেন্স ও নিবন্ধনপত্র — RJSC ও সিটি করপোরেশনের রেকর্ডের সাথে মিলিয়ে।",
+   150→      },
+   151→      {
+   152→        en: "The full ownership table: every shareholder above 5%, with percentages in writing.",
+   153→        bn: "সম্পূর্ণ মালিকানা টেবিল: ৫%-এর বেশি অংশের প্রতিটি শেয়ারহোল্ডার, লিখিত শতকরা হারসহ।",
+   154→      },
+   155→      {
+   156→        en: "Whether any shares are pledged, disputed, or already promised to someone else.",
+   157→        bn: "শেয়ার কোনোভাবে বন্ধক, বিবাদে বা আগেই অন্য কাউকে প্রতিশ্রুত — কি না।",
+   158→      },
+   159→      {
+   160→        en: "Related companies and family shareholdings that could quietly move money around.",
+   161→        bn: "সম্পর্কিত কোম্পানি বা পারিবারিক অংশীদারিত্ব — যেখান দিয়ে নীরবে টাকা সরতে পারে।",
+   162→      },
+   163→      {
+   164→        en: "Directors' history: past shutdowns, blacklistings or failed ventures, disclosed up front.",
+   165→        bn: "পরিচালকদের অতীত: আগের বন্ধ হওয়া ব্যবসা, ব্ল্যাকলিস্ট বা ব্যর্থ উদ্যোগ — শুরুতেই জানা থাকে।",
+   166→      },
+   167→    ],
+   168→    docs: [
+   169→      { en: "Trade license (current, renewed)", bn: "ট্রেড লাইসেন্স (বর্তমান, নবায়নকৃত)" },
+   170→      { en: "TIN certificate & incorporation documents", bn: "TIN সনদ ও কোম্পানি নিবন্ধনের কাগজ" },
+   171→      { en: "Shareholding table / partnership deed", bn: "শেয়ারহোল্ডিং টেবিল / পার্টনারশিপ ডিড" },
+   172→      { en: "NID copies of founding directors", bn: "প্রতিষ্ঠাতা পরিচালকদের NID কপি" },
+   173→      { en: "Bank account documents in the company's name", bn: "কোম্পানির নামে ব্যাংক অ্যাকাউন্টের কাগজ" },
+   174→    ],
+   175→    flags: [
+   176→      {
+   177→        en: "The person on the license is not the person running the business.",
+   178→        bn: "লাইসেন্সে যিনি, ব্যবসা তিনি চালাচ্ছেন না।",
+   179→      },
+   180→      {
+   181→        en: "Ownership percentages that change every time we ask.",
+   182→        bn: "প্রতিবার জিজ্ঞাসায় মালিকানার হার বদলে যায়।",
+   183→      },
+   184→      {
+   185→        en: "A hidden partner who appears only after money arrives.",
+   186→        bn: "লুকানো অংশীদার — টাকা ঢোকার পরেই আবির্ভাব।",
+   187→      },
+   188→      {
+   189→        en: "Shares already pledged as collateral elsewhere.",
+   190→        bn: "শেয়ার আগেই অন্যত্র জামানত হিসেবে বন্ধক।",
+   191→      },
+   192→    ],
+   193→    why: {
+   194→      en: "If ownership is unclear, your legal claim is unclear. This pillar is what makes an investment a right you can enforce — not a handshake you can only hope for.",
+   195→      bn: "মালিকানা অস্পষ্ট হলে আপনার আইনি দাবিও অস্পষ্ট। এই স্তম্ভই বিনিয়োগকে ভরসার হাতে নয়, অধিকারের খাতায় নিয়ে যায়।",
+   196→    },
+   197→  },
+   198→  {
+   199→    slug: "legal",
+   200→    icon: Scale,
+   201→    heroCopy: {
+   202→      en: "Licences, taxes and court records — the paperwork that decides whether a business can legally take your money and keep operating.",
+   203→      bn: "লাইসেন্স, কর ও আদালতের রেকর্ড — এই কাগজগুলোই ঠিক করে ব্যবসাটি আইনত আপনার টাকা নিতে পারে কি না, আর চলতে পারবে কি না।",
+   204→    },
+   205→    check: [
+   206→      {
+   207→        en: "Trade license validity, renewal dates, and the exact scope of activities it permits.",
+   208→        bn: "ট্রেড লাইসেন্সের বৈধতা, নবায়নের তারিখ ও অনুমোদিত কার্যক্রমের সীমা।",
+   209→      },
+   210→      {
+   211→        en: "Income-tax returns and VAT filings for the last three years, cross-checked against receipts.",
+   212→        bn: "গত তিন বছরের আয়কর রিটার্ন ও ভ্যাট জমা — রসিদের সাথে মিলিয়ে।",
+   213→      },
+   214→      {
+   215→        en: "Sector licences: BGMEA membership, fire and building safety certificates, environmental clearance — whatever the sector demands.",
+   216→        bn: "খাতভিত্তিক লাইসেন্স: BGMEA সদস্যপদ, অগ্নি ও ভবন-নিরাপত্তা সনদ, পরিবেশ ছাড়পত্র — খাত যা চায়।",
+   217→      },
+   218→      {
+   219→        en: "Litigation search: civil, criminal and labour cases naming the company or its directors.",
+   220→        bn: "মামলার অনুসন্ধান: কোম্পানি বা পরিচালকদের নামে দেওয়ানি, ফৌজদারি ও শ্রম মামলা।",
+   221→      },
+   222→      {
+   223→        en: "Loan and collateral registers — every bank claim against the business, in writing.",
+   224→        bn: "ঋণ ও জামানতের হিসাব — ব্যবসার বিরুদ্ধে ব্যাংকের প্রতিটি দাবি, লিখিতভাবে।",
+   225→      },
+   226→      {
+   227→        en: "Standing with Bangladesh Bank or the relevant sector regulator, where applicable.",
+   228→        bn: "প্রযোজ্য ক্ষেত্রে বাংলাদেশ ব্যাংক বা সংশ্লিষ্ট খাত-নিয়ন্ত্রকের কাছে অবস্থান।",
+   229→      },
+   230→    ],
+   231→    docs: [
+   232→      { en: "Trade license + last 3 years of renewals", bn: "ট্রেড লাইসেন্স + গত ৩ বছরের নবায়ন" },
+   233→      { en: "Income-tax returns & VAT clearance", bn: "আয়কর রিটার্ন ও ভ্যাট ক্লিয়ারেন্স" },
+   234→      { en: "Sector certificates (fire, environmental, BGMEA…)", bn: "খাতভিত্তিক সনদ (অগ্নি, পরিবেশ, BGMEA…)" },
+   235→      { en: "Bank solvency / liability letters", bn: "ব্যাংক সলভেন্সি / দায়ের চিঠি" },
+   236→      { en: "Litigation disclosure statement, signed", bn: "স্বাক্ষরিত মামলা-প্রকাশ বিবৃতি" },
+   237→    ],
+   238→    flags: [
+   239→      {
+   240→        en: "An expired license that is 'about to be renewed' — for the second time.",
+   241→        bn: "মেয়াদোত্তীর্ণ লাইসেন্স — 'এখনই নবায়ন হবে', এই কথা দ্বিতীয়বারও।",
+   242→      },
+   243→      {
+   244→        en: "Tax returns that don't match the revenue the founder claims.",
+   245→        bn: "প্রতিষ্ঠাতার বলা রাজস্বের সাথে কর-রিটার্ন মেলে না।",
+   246→      },
+   247→      {
+   248→        en: "An undisclosed court case that surfaces in our search.",
+   249→        bn: "আমাদের অনুসন্ধানে হঠাৎ উঠে আসা অপ্রকাশিত মামলা।",
+   250→      },
+   251→      {
+   252→        en: "Certificates photographed from an angle that hides the expiry date.",
+   253→        bn: "সনদের ছবি এমন কোণ থেকে তোলা, যাতে মেয়াদ-তারিখ না দেখা যায়।",
+   254→      },
+   255→    ],
+   256→    why: {
+   257→      en: "A business that can't keep its own paperwork current will struggle to protect your money when it matters. Clean compliance is the cheapest insurance an investment has.",
+   258→      bn: "নিজের কাগজপত্রই যে ব্যবসা হালনাগাদ রাখতে পারে না, দরকারের মুহূর্তে আপনার টাকা রক্ষা করা তার পক্ষে কঠিন। পরিষ্কার কমপ্লায়েন্সই বিনিয়োগের সবচেয়ে সস্তা বিমা।",
+   259→    },
+   260→  },
+   261→  {
+   262→    slug: "financial",
+   263→    icon: LineChart,
+   264→    heroCopy: {
+   265→      en: "Numbers we can trace: statements, bank flows, debts and a use-of-funds plan that adds up — before a single taka is committed.",
+   266→      bn: "যেসব সংখ্যা মিলিয়ে দেখা যায়: বিবরণী, ব্যাংক-প্রবাহ, দায় আর হিসাব-মিলানো তহবিল-পরিকল্পনা — এক টাকাও ওঠার আগে।",
+   267→    },
+   268→    check: [
+   269→      {
+   270→        en: "Audited or reviewed financial statements for the last two to three years.",
+   271→        bn: "গত দুই-তিন বছরের অডিটেড বা পর্যালোচিত আর্থিক বিবরণী।",
+   272→      },
+   273→      {
+   274→        en: "Bank statements matched against reported revenue — deposits in, payments out.",
+   275→        bn: "রিপোর্ট করা রাজস্বের সাথে ব্যাংক স্টেটমেন্ট মিলানো — জমা ও উত্তোলন দুটোই।",
+   276→      },
+   277→      {
+   278→        en: "Accounts receivable and payable ageing: who owes them, whom they owe.",
+   279→        bn: "পাওনা-দেনার বয়স-বিশ্লেষণ: কে তাদের পাওনা, তারা কার পাওনা।",
+   280→      },
+   281→      {
+   282→        en: "All debt: bank loans, informal loans, supplier credit and personal borrowings sitting in the business.",
+   283→        bn: "সব দায়: ব্যাংকঋণ, অনানুষ্ঠানিক ঋণ, সরবরাহকারীর ধার ও ব্যবসায় জড়িয়ে থাকা ব্যক্তিগত ধার।",
+   284→      },
+   285→      {
+   286→        en: "A use-of-funds plan that reconciles with the raise amount — line by line.",
+   287→        bn: "সংগ্রহের অঙ্কের সাথে তহবিল-ব্যবহারের পরিকল্পনা মেলে — লাইন ধরে ধরে।",
+   288→      },
+   289→      {
+   290→        en: "Margin reality: the gross margin claimed versus the margin their own invoices show.",
+   291→        bn: "মার্জিনের বাস্তবতা: দাবি করা মার্জিন বনাম তাদের নিজেদের ইনভয়েসে দেখা মার্জিন।",
+   292→      },
+   293→    ],
+   294→    docs: [
+   295→      { en: "Audited financial statements (2–3 years)", bn: "অডিটেড আর্থিক বিবরণী (২–৩ বছর)" },
+   296→      { en: "Bank statements (12 months, all accounts)", bn: "ব্যাংক স্টেটমেন্ট (১২ মাস, সব অ্যাকাউন্ট)" },
+   297→      { en: "Debt & collateral schedule", bn: "ঋণ ও জামানতের তালিকা" },
+   298→      { en: "Use-of-funds budget", bn: "তহবিল ব্যবহারের বাজেট" },
+   299→      { en: "Key customer contracts / invoices", bn: "প্রধান গ্রাহক-চুক্তি / ইনভয়েস" },
+   300→    ],
+   301→    flags: [
+   302→      {
+   303→        en: "Revenue that grows in the pitch deck but not in the bank account.",
+   304→        bn: "পিচ-ডেকে রাজস্ব বাড়ে, ব্যাংক হিসাবে নয়।",
+   305→      },
+   306→      {
+   307→        en: "'Informal loans' invoked to explain away missing cash.",
+   308→        bn: "হাওয়া হয়ে যাওয়া টাকার ব্যাখ্যায় 'অনানুষ্ঠানিক ঋণ'।",
+   309→      },
+   310→      {
+   311→        en: "A use-of-funds plan that is one line long: 'expansion'.",
+   312→        bn: "এক লাইনের তহবিল-পরিকল্পনা: 'সম্প্রসারণ'।",
+   313→      },
+   314→      {
+   315→        en: "Receivables that look impressive but never turn into cash.",
+   316→        bn: "পাওনার তালিকা বিশাল, কিন্তু তা কখনো নগদ হয় না।",
+   317→      },
+   318→    ],
+   319→    why: {
+   320→      en: "Financial health is where promises meet arithmetic. This pillar doesn't predict success — it makes sure the starting numbers are true.",
+   321→      bn: "আর্থিক অবস্থাতেই প্রতিশ্রুতির মুখোমুখি হয় পাটিগণিত। এই স্তম্ভ সাফল্যের ভবিষ্যদ্বাণী করে না — শুধু নিশ্চিত করে শুরুর সংখ্যাগুলো সত্য।",
+   322→    },
+   323→  },
+   324→  {
+   325→    slug: "operations",
+   326→    icon: Users,
+   327→    heroCopy: {
+   328→      en: "We leave the desk and go see: the factory floor, the customers, the market — the difference between a business that sounds real and one that is.",
+   329→      bn: "ডেস্ক ছেড়ে আমরা সরাসরি দেখতে যাই: কারখানার মেঝে, গ্রাহক, বাজার — শোনাতে বাস্তব আর সত্যিই বাস্তব, এই পার্থক্যটা ধরতে।",
+   330→    },
+   331→    check: [
+   332→      {
+   333→        en: "An in-person site visit by our own team — production, inventory, headcount.",
+   334→        bn: "আমাদের নিজস্ব টিমের সরাসরি সাইট ভিজিট — উৎপাদন, মজুদ, কর্মীসংখ্যা।",
+   335→      },
+   336→      {
+   337→        en: "Customer references called and cross-questioned — at least three, chosen by us.",
+   338→        bn: "গ্রাহক রেফারেন্সে ফোন ও পরপর প্রশ্ন — অন্তত তিনজন, বেছে নেই আমরা।",
+   339→      },
+   340→      {
+   341→        en: "Market position: competitors, pricing power, and what actually differentiates them.",
+   342→        bn: "বাজারে অবস্থান: প্রতিযোগী, দাম ধরে রাখার ক্ষমতা, আর আসল পার্থক্যটা কোথায়।",
+   343→      },
+   344→      {
+   345→        en: "Key-person risk: what breaks if one founder steps away for six months.",
+   346→        bn: "মূল-ব্যক্তির ঝুঁকি: এক প্রতিষ্ঠাতা ছয় মাস সরে গেলে কী থেমে যায়।",
+   347→      },
+   348→      {
+   349→        en: "Team depth: who besides the founders actually runs daily operations.",
+   350→        bn: "টিমের গভীরতা: প্রতিষ্ঠাতাদের ছাড়া দৈনন্দিন কার্যক্রম কারা চালান।",
+   351→      },
+   352→      {
+   353→        en: "Order book and pipeline: signed work versus hoped-for work.",
+   354→        bn: "অর্ডার বই ও পাইপলাইন: সই-করা কাজ বনাম আশা-করা কাজ।",
+   355→      },
+   356→    ],
+   357→    docs: [
+   358→      { en: "Site-visit report (written, with photos)", bn: "সাইট-ভিজিট রিপোর্ট (লিখিত, ছবিসহ)" },
+   359→      { en: "Customer reference list with contacts", bn: "গ্রাহক রেফারেন্স তালিকা, যোগাযোগসহ" },
+   360→      { en: "Org chart & payroll summary", bn: "সংগঠন-চার্ট ও বেতন-সারসংক্ষেপ" },
+   361→      { en: "Order book / letters of intent", bn: "অর্ডার বই / অভিপ্রায়-পত্র (LOI)" },
+   362→      { en: "Utility bills & rent agreements for the premises", bn: "প্রাঙ্গণের ইউটিলিটি বিল ও ভাড়া-চুক্তি" },
+   363→    ],
+   364→    flags: [
+   365→      {
+   366→        en: "A factory tour that somehow avoids the production floor.",
+   367→        bn: "কারখানা ঘোরানো হয় — কিন্তু উৎপাদন মেঝেটা এড়িয়েই।",
+   368→      },
+   369→      {
+   370→        en: "Reference customers who can't be reached on any number given.",
+   371→        bn: "দেওয়া কোনো নম্বরেই পৌঁছানো যায় না এমন রেফারেন্স গ্রাহক।",
+   372→      },
+   373→      {
+   374→        en: "A market where 'everyone is a customer' and no one is under contract.",
+   375→        bn: "বাজার যেখানে 'সবাই গ্রাহক' — চুক্তিতে আবদ্ধ কেউ নয়।",
+   376→      },
+   377→      {
+   378→        en: "One person whose departure would stop the entire operation.",
+   379→        bn: "একজন মানুষ — চলে গেলেই পুরো কার্যক্রম থেমে যায়।",
+   380→      },
+   381→    ],
+   382→    why: {
+   383→      en: "Statements can be written by anyone. A working floor, paying customers and a team that functions — those can only be witnessed. That's why we go.",
+   384→      bn: "বিবরণী যে কেউ লিখতে পারে। চলমান কারখানা, টাকা দেওয়া গ্রাহক আর কাজ করা টিম — এগুলো কেবল চোখেই দেখা যায়। তাই আমরা যাই।",
+   385→    },
+   386→  },
+   387→  {
+   388→    slug: "advisor",
+   389→    icon: ClipboardCheck,
+   390→    heroCopy: {
+   391→      en: "The final gate: a second pair of eyes across everything above — and a plain-language risk summary you read before any decision.",
+   392→      bn: "শেষ দরজা: উপরের সবকিছুতে আরেকজোড়া চোখ — আর সিদ্ধান্তের আগে আপনি যে সহজ-ভাষার ঝুঁকি-সারসংক্ষেপটা পড়েন।",
+   393→    },
+   394→    check: [
+   395→      {
+   396→        en: "An advisor independent of the deal re-reads all four prior pillars together.",
+   397→        bn: "ডিলের সাথে জড়িত নন এমন অ্যাডভাইজর আগের চার স্তম্ভ একসাথে পুনর্যাচাই করেন।",
+   398→      },
+   399→      {
+   400→        en: "Every material risk is written down — in plain Bangla and English, not fine print.",
+   401→        bn: "প্রতিটি গুরুত্বপূর্ণ ঝুঁকি লেখা হয় — সহজ বাংলা ও ইংরেজিতে, ছোট অক্ষরে লুকিয়ে নয়।",
+   402→      },
+   403→      {
+   404→        en: "The risk summary is published next to the opportunity — not buried in a data room.",
+   405→        bn: "ঝুঁকি-সারসংক্ষেপ সুযোগের পাশেই প্রকাশ হয় — ডেটা রুমে চাপা পড়ে না।",
+   406→      },
+   407→      {
+   408→        en: "Unresolved questions from any pillar are listed, not smoothed over.",
+   409→        bn: "কোনো স্তম্ভের অমীমাংস প্রশ্ন তালিকাভুক্ত হয় — ঘোলা করে দেওয়া হয় না।",
+   410→      },
+   411→      {
+   412→        en: "A fit judgment: whether the instrument and horizon suit ordinary investors at all.",
+   413→        bn: "উপযুক্ততার বিচার: ইনস্ট্রুমেন্ট আর মেয়াদ আদৌ সাধারণ বিনিয়োগকারীর পক্ষে মানানসই কি না।",
+   414→      },
+   415→      {
+   416→        en: "A dated signature: a named advisor stands behind the review.",
+   417→        bn: "তারিখসহ স্বাক্ষর — নাম-ভুক্ত অ্যাডভাইজার রিভিউয়ের পেছনে দাঁড়ান।",
+   418→      },
+   419→    ],
+   420→    docs: [
+   421→      { en: "Signed advisor review memo", bn: "স্বাক্ষরিত অ্যাডভাইজার রিভিউ মেমো" },
+   422→      { en: "Plain-language risk summary (bilingual)", bn: "সহজ-ভাষার ঝুঁকি-সারসংক্ষেপ (দ্বিভাষিক)" },
+   423→      { en: "Open-questions register", bn: "অমীমাংস প্রশ্নের খাতা" },
+   424→      { en: "Verification checklist — all five pillars", bn: "যাচাই-চেকলিস্ট — পাঁচ স্তম্ভই" },
+   425→      { en: "Data-room index for registered investors", bn: "নিবন্ধিত বিনিয়োগকারীদের ডেটা-রুম সূচি" },
+   426→    ],
+   427→    flags: [
+   428→      {
+   429→        en: "A summary that lists strengths but somehow no risks.",
+   430→        bn: "সারসংক্ষেপে সব সুবিধা — ঝুঁকি কোথাও নেই।",
+   431→      },
+   432→      {
+   433→        en: "Risks described so vaguely they could apply to any business.",
+   434→        bn: "ঝুঁকি এতটাই অস্পষ্ট যে যেকোনো ব্যবসায় খাটিয়ে দেওয়া যায়।",
+   435→      },
+   436→      {
+   437→        en: "A review that copies the founder's own words back to us.",
+   438→        bn: "রিভিউ যেখানে প্রতিষ্ঠাতার কথাই হুবহু ফেরত এসেছে।",
+   439→      },
+   440→      {
+   441→        en: "No named human willing to sign the summary.",
+   442→        bn: "সারসংক্ষেপে সই করতে রাজি নাম-ভুক্ত কেউ নেই।",
+   443→      },
+   444→    ],
+   445→    why: {
+   446→      en: "This is the pillar that keeps the first four honest. It's also your reading material: the risk summary we publish is written for you — not for lawyers.",
+   447→      bn: "এই স্তম্ভই আগের চারটিকে সৎ রাখে। আর এটাই আপনার পড়ার উপকরণ: আমরা যে ঝুঁকি-সারসংক্ষেপ প্রকাশ করি, তা আইনজীবীদের জন্য নয় — আপনার জন্য লেখা।",
+   448→    },
+   449→  },
+   450→];
+   451→
+   452→/* Things that end a review before it starts (landing page) */
+   453→const REJECTS: L[] = [
+   454→  {
+   455→    en: "Guaranteed returns — nobody honest can promise them.",
+   456→    bn: "'নিশ্চিত মুনাফা' — সৎ কেউ এই প্রতিশ্রুতি দিতে পারে না।",
+   457→  },
+   458→  {
+   459→    en: "Documents that can't be verified at their source.",
+   460→    bn: "মূল উৎস থেকে যাচাই করা যায় না এমন নথি।",
+   461→  },
+   462→  {
+   463→    en: "Revenue that exists in presentations but not in bank records.",
+   464→    bn: "প্রেজেন্টেশনে থাকা রাজস্ব, ব্যাংক-রেকর্ডে অনুপস্থিত।",
+   465→  },
+   466→  {
+   467→    en: "Pressure to move fast — 'the round closes Friday'.",
+   468→    bn: "তাড়াহুড়োর চাপ — 'শুক্রবারই রাউন্ড বন্ধ হয়ে যাবে'।",
+   469→  },
+   470→  {
+   471→    en: "A founder who won't meet us at their own premises.",
+   472→    bn: "প্রতিষ্ঠাতা, যিনি নিজের প্রাঙ্গণেই আমাদের সাথে দেখা করবেন না।",
+   473→  },
+   474→  {
+   475→    en: "Numbers that change between meetings.",
+   476→    bn: "বৈঠক থেকে বৈঠক বদলে যাওয়া সংখ্যা।",
+   477→  },
+   478→];
+   479→
+   480→export default function VettingPage({ detail }: { detail: string | null }) {
+   481→  if (detail) return <PillarDetail slug={detail} />;
+   482→  return <VettingLanding />;
+   483→}
+   484→
+   485→/* ── Landing ──────────────────────────────────────────────────────────── */
+   486→
+   487→function VettingLanding() {
+   488→  const { t, lang } = useLanguage();
+   489→  const scrollToPillars = () =>
+   490→    document.getElementById("vetting-pillars")?.scrollIntoView({ behavior: "smooth", block: "start" });
+   491→
+   492→  return (
+   493→    <>
+   494→      <PageHero
+   495→        crumbs={[{ label: { en: "Vetting Standard", bn: "যাচাই মানদণ্ড" } }]}
+   496→        eyebrow={VETTING.eyebrow}
+   497→        title={VETTING.title}
+   498→        copy={T.heroCopy}
+   499→        image="/images/page-vetting.png"
+   500→        imageAlt={lang === "bn" ? "যাচাইয়ের কাগজ ও লেন্স" : "Financial documents under a magnifying lens"}
+   501→        badge={
+   502→          <span className="inline-flex items-center gap-1.5 rounded-full border border-nx-cyan-300/40 bg-nx-cyan-500/10 px-3.5 py-1.5 text-[12px] font-bold text-nx-cyan-300">
+   503→            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+   504→            {t(T.badge)}
+   505→          </span>
+   506→        }
+   507→        actions={
+   508→          <>
+   509→            <CyanButton onClick={scrollToPillars}>{t(T.heroCta)}</CyanButton>
+   510→            <OutlineLightButton onClick={() => navigateTo("opportunities")}>
+   511→              {t(T.heroCta2)}
+   512→            </OutlineLightButton>
+   513→          </>
+   514→        }
+   515→      />
+   516→
+   517→      <PageBody>
+   518→        {/* the five pillars */}
+   519→        <section id="vetting-pillars" aria-label={t(T.pillarsTitle)}>
+   520→          <SectionHead eyebrow={T.pillarsEyebrow} title={T.pillarsTitle} copy={T.pillarsCopy} />
+   521→          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+   522→            {PILLARS.map((p, i) => {
+   523→              const stage = VETTING.stages[i];
+   524→              const Icon = p.icon;
+   525→              return (
+   526→                <motion.article
+   527→                  key={p.slug}
+   528→                  initial={{ opacity: 0, y: 14 }}
+   529→                  animate={{ opacity: 1, y: 0 }}
+   530→                  transition={{ delay: i * 0.06, duration: 0.35 }}
+   531→                  className="group flex h-full flex-col rounded-3xl border border-nx-navy-100 bg-white p-6 shadow-[0_10px_30px_-16px_rgba(6,31,74,0.15)] transition-all hover:-translate-y-1 hover:border-nx-navy-300 hover:shadow-[0_22px_44px_-18px_rgba(6,31,74,0.28)]"
+   532→                >
+   533→                  <div className="flex items-center justify-between">
+   534→                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-nx-navy-950 text-nx-cyan-400">
+   535→                      <Icon className="h-5 w-5" aria-hidden="true" />
+   536→                    </span>
+   537→                    <span className="nx-num text-sm font-extrabold text-nx-navy-200">
+   538→                      {t(T.num(i + 1, bnNum))} / {lang === "bn" ? bnNum(5) : "5"}
+   539→                    </span>
+   540→                  </div>
+   541→                  <h3 className="mt-5 text-lg font-extrabold text-nx-navy-900">
+   542→                    {t(stage.title)}
+   543→                  </h3>
+   544→                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{t(stage.what)}</p>
+   545→                  <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-nx-mist px-3 py-1 text-[11px] font-bold text-nx-navy-600">
+   546→                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+   547→                    {t(VETTING.seeLabel)}: {t(stage.see)}
+   548→                  </span>
+   549→                  <button
+   550→                    onClick={() => navigateTo("vetting", p.slug)}
+   551→                    className="mt-auto w-fit pt-5 text-sm font-bold text-nx-cyan-600 transition-colors hover:text-nx-cyan-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-500"
+   552→                  >
+   553→                    <span className="inline-flex items-center gap-1.5">
+   554→                      {t(T.readPillar)}
+   555→                      <ArrowRight
+   556→                        className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+   557→                        aria-hidden="true"
+   558→                      />
+   559→                    </span>
+   560→                  </button>
+   561→                </motion.article>
+   562→              );
+   563→            })}
+   564→          </div>
+   565→        </section>
+   566→
+   567→        {/* what gets rejected */}
+   568→        <section aria-label={t(T.flagsTitle)} className="mt-16 md:mt-24">
+   569→          <SectionHead eyebrow={T.flagsEyebrow} title={T.flagsTitle} copy={T.flagsCopy} />
+   570→          <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+   571→            {REJECTS.map((f, i) => (
+   572→              <motion.li
+   573→                key={f.en}
+   574→                initial={{ opacity: 0, y: 10 }}
+   575→                animate={{ opacity: 1, y: 0 }}
+   576→                transition={{ delay: i * 0.05, duration: 0.3 }}
+   577→                className="flex items-start gap-3 rounded-3xl border border-nx-navy-100 bg-white p-5 shadow-[0_10px_30px_-18px_rgba(6,31,74,0.14)]"
+   578→              >
+   579→                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+   580→                  <Ban className="h-4 w-4" aria-hidden="true" />
+   581→                </span>
+   582→                <p className="text-sm leading-relaxed font-semibold text-nx-navy-800">{t(f)}</p>
+   583→              </motion.li>
+   584→            ))}
+   585→          </ul>
+   586→
+   587→          {/* the honest part */}
+   588→          <div className="mt-8 flex items-start gap-3 rounded-3xl border border-nx-cyan-200 bg-nx-cyan-50 p-5 md:p-6">
+   589→            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-nx-cyan-700 shadow-[0_8px_18px_-10px_rgba(6,31,74,0.25)]">
+   590→              <Info className="h-4.5 w-4.5" aria-hidden="true" />
+   591→            </span>
+   592→            <div>
+   593→              <p className="nx-eyebrow text-[11px] font-extrabold tracking-[0.22em] text-nx-cyan-700 uppercase">
+   594→                {t(T.honestEyebrow)}
+   595→              </p>
+   596→              <p className="mt-1.5 text-[15px] leading-relaxed font-bold text-nx-navy-900">
+   597→                {t(VETTING.disclaimer)}
+   598→              </p>
+   599→            </div>
+   600→          </div>
+   601→        </section>
+   602→      </PageBody>
+   603→
+   604→      <CtaBand
+   605→        title={T.ctaTitle}
+   606→        copy={T.ctaCopy}
+   607→        actions={
+   608→          <>
+   609→            <CyanButton onClick={() => navigateTo("opportunities")}>{t(T.ctaBtn)}</CyanButton>
+   610→            <OutlineLightButton onClick={() => navigateTo("charter")}>
+   611→              {t(T.ctaBtn2)}
+   612→            </OutlineLightButton>
+   613→          </>
+   614→        }
+   615→      />
+   616→    </>
+   617→  );
+   618→}
+   619→
+   620→/* ── Pillar detail page ──────────────────────────────────────────────── */
+   621→
+   622→function PillarDetail({ slug }: { slug: string }) {
+   623→  const { t, lang } = useLanguage();
+   624→  const idx = PILLARS.findIndex((p) => p.slug === slug);
+   625→  const p = idx >= 0 ? PILLARS[idx] : null;
+   626→
+   627→  if (!p) return <PageNotFound page={slug} />;
+   628→
+   629→  const stage = VETTING.stages[idx];
+   630→  const prev = idx > 0 ? PILLARS[idx - 1] : null;
+   631→  const next = idx < PILLARS.length - 1 ? PILLARS[idx + 1] : null;
+   632→  const n = idx + 1;
+   633→  const Icon = p.icon;
+   634→
+   635→  return (
+   636→    <>
+   637→      <DetailHero
+   638→        crumbs={[
+   639→          { label: { en: "Vetting Standard", bn: "যাচাই মানদণ্ড" }, page: "vetting" },
+   640→          { label: stage.title },
+   641→        ]}
+   642→        eyebrow={T.pillarEyebrow(n, bnNum)}
+   643→        title={stage.title}
+   644→        copy={p.heroCopy}
+   645→        image="/images/page-vetting.png"
+   646→        imageAlt={lang === "bn" ? "যাচাইয়ের কাগজ ও লেন্স" : "Financial documents under a magnifying lens"}
+   647→        meta={
+   648→          <>
+   649→            <MetaChip icon={<ListChecks className="h-3.5 w-3.5 text-nx-cyan-300" aria-hidden="true" />}>
+   650→              {t(T.pillarOf(n, bnNum))}
+   651→            </MetaChip>
+   652→            <MetaChip icon={<Eye className="h-3.5 w-3.5 text-nx-cyan-300" aria-hidden="true" />}>
+   653→              {t(VETTING.seeLabel)}: {t(stage.see)}
+   654→            </MetaChip>
+   655→            <MetaChip icon={<FileText className="h-3.5 w-3.5 text-nx-cyan-300" aria-hidden="true" />}>
+   656→              {t(T.docsChip(p.docs.length, bnNum))}
+   657→            </MetaChip>
+   658→          </>
+   659→        }
+   660→        actions={
+   661→          <>
+   662→            <CyanButton onClick={() => navigateTo("opportunities")}>
+   663→              {t(T.heroCta2)}
+   664→            </CyanButton>
+   665→            <OutlineLightButton onClick={() => navigateTo("contact")}>
+   666→              {t(T.askPillar)}
+   667→            </OutlineLightButton>
+   668→          </>
+   669→        }
+   670→      />
+   671→
+   672→      <PageBody className="py-12 md:py-16">
+   673→        <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+   674→          {/* main column */}
+   675→          <div className="min-w-0 space-y-10">
+   676→            <section aria-label={t(VETTING.checkLabel)}>
+   677→              <SectionHead eyebrow={T.pillarEyebrow(n, bnNum)} title={VETTING.checkLabel} />
+   678→              <ul className="mt-6 space-y-3.5">
+   679→                {p.check.map((c, i) => (
+   680→                  <motion.li
+   681→                    key={c.en}
+   682→                    initial={{ opacity: 0, x: -8 }}
+   683→                    animate={{ opacity: 1, x: 0 }}
+   684→                    transition={{ delay: Math.min(i * 0.05, 0.3), duration: 0.3 }}
+   685→                    className="flex items-start gap-3 rounded-2xl border border-nx-navy-100 bg-white p-4 text-sm leading-relaxed text-slate-600"
+   686→                  >
+   687→                    <CheckCircle2
+   688→                      className="mt-0.5 h-5 w-5 shrink-0 text-nx-cyan-600"
+   689→                      aria-hidden="true"
+   690→                    />
+   691→                    {t(c)}
+   692→                  </motion.li>
+   693→                ))}
+   694→              </ul>
+   695→            </section>
+   696→
+   697→            <section aria-label={t(T.docsTitle)}>
+   698→              <SectionHead eyebrow={T.docsEyebrow} title={T.docsTitle} copy={T.docsIntro} />
+   699→              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+   700→                {p.docs.map((d) => (
+   701→                  <li
+   702→                    key={d.en}
+   703→                    className="flex items-start gap-2.5 rounded-2xl bg-nx-mist p-4 text-sm leading-relaxed font-semibold text-nx-navy-800"
+   704→                  >
+   705→                    <FileText
+   706→                      className="mt-0.5 h-4 w-4 shrink-0 text-nx-navy-400"
+   707→                      aria-hidden="true"
+   708→                    />
+   709→                    {t(d)}
+   710→                  </li>
+   711→                ))}
+   712→              </ul>
+   713→            </section>
+   714→
+   715→            <section
+   716→              aria-label={t(T.flagsPanelTitle)}
+   717→              className="rounded-3xl border border-amber-300/60 bg-amber-50/70 p-6 md:p-7"
+   718→            >
+   719→              <h2 className="flex items-center gap-2 text-lg font-extrabold text-nx-navy-900">
+   720→                <AlertTriangle className="h-5 w-5 text-amber-500" aria-hidden="true" />
+   721→                {t(T.flagsPanelTitle)}
+   722→              </h2>
+   723→              <ul className="mt-4 space-y-2.5">
+   724→                {p.flags.map((f, i) => (
+   725→                  <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-slate-700">
+   726→                    <span
+   727→                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
+   728→                      aria-hidden="true"
+   729→                    />
+   730→                    {t(f)}
+   731→                  </li>
+   732→                ))}
+   733→              </ul>
+   734→            </section>
+   735→
+   736→            <section
+   737→              aria-label={t(T.whyEyebrow)}
+   738→              className="rounded-3xl bg-nx-navy-950 nx-navy-grid p-6 md:p-8"
+   739→            >
+   740→              <p className="nx-eyebrow text-[11px] font-extrabold tracking-[0.22em] text-nx-cyan-300 uppercase">
+   741→                {t(T.whyEyebrow)}
+   742→              </p>
+   743→              <p className="mt-3 max-w-2xl leading-relaxed text-white/85">{t(p.why)}</p>
+   744→            </section>
+   745→          </div>
+   746→
+   747→          {/* side column */}
+   748→          <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+   749→            <div className="rounded-3xl border border-nx-navy-100 bg-white p-6 shadow-[0_12px_30px_-18px_rgba(6,31,74,0.2)]">
+   750→              <p className="flex items-center gap-2 nx-eyebrow text-[11px] font-extrabold tracking-[0.22em] text-nx-navy-600 uppercase">
+   751→                <Icon className="h-4 w-4 text-nx-cyan-600" aria-hidden="true" />
+   752→                {t(VETTING.seeLabel)}
+   753→              </p>
+   754→              <p className="mt-3 text-lg font-extrabold text-nx-navy-900">{t(stage.see)}</p>
+   755→              <p className="mt-2 text-sm leading-relaxed text-slate-600">{t(T.seeNote)}</p>
+   756→            </div>
+   757→
+   758→            {/* pillar rail — jump between the five pillars */}
+   759→            <nav
+   760→              aria-label={t(T.pillarRail)}
+   761→              className="rounded-3xl border border-nx-navy-100 bg-white p-5 shadow-[0_12px_30px_-18px_rgba(6,31,74,0.2)]"
+   762→            >
+   763→              <p className="nx-eyebrow text-[11px] font-extrabold tracking-[0.22em] text-nx-navy-600 uppercase">
+   764→                {t(T.pillarRail)}
+   765→              </p>
+   766→              <ol className="mt-3 space-y-1.5">
+   767→                {PILLARS.map((pillar, i) => {
+   768→                  const active = i === idx;
+   769→                  return (
+   770→                    <li key={pillar.slug}>
+   771→                      <button
+   772→                        onClick={() => navigateTo("vetting", pillar.slug)}
+   773→                        aria-current={active ? "page" : undefined}
+   774→                        className={
+   775→                          active
+   776→                            ? "flex w-full items-center gap-2.5 rounded-xl bg-nx-navy-700 px-3.5 py-2.5 text-left text-[13px] font-bold text-white"
+   777→                            : "flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-[13px] font-semibold text-nx-navy-700 transition-colors hover:bg-nx-navy-50"
+   778→                        }
+   779→                      >
+   780→                        <span
+   781→                          className={
+   782→                            active
+   783→                              ? "nx-num flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nx-cyan-500 text-[11px] font-extrabold text-nx-navy-900"
+   784→                              : "nx-num flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nx-mist text-[11px] font-extrabold text-nx-navy-600"
+   785→                          }
+   786→                        >
+   787→                          {t(T.num(i + 1, bnNum))}
+   788→                        </span>
+   789→                        {t(VETTING.stages[i].title)}
+   790→                      </button>
+   791→                    </li>
+   792→                  );
+   793→                })}
+   794→              </ol>
+   795→            </nav>
+   796→
+   797→            <button
+   798→              onClick={() => navigateTo("vetting")}
+   799→              className="flex w-full items-center justify-center gap-2 rounded-full border border-nx-navy-200 bg-white px-5 py-3 text-sm font-bold text-nx-navy-800 transition-colors hover:border-nx-navy-400"
+   800→            >
+   801→              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+   802→              {t(T.allPillars)}
+   803→            </button>
+   804→          </aside>
+   805→        </div>
+   806→
+   807→        {/* prev / next pillar */}
+   808→        <nav
+   809→          aria-label={lang === "bn" ? "স্তম্ভ নেভিগেশন" : "Pillar navigation"}
+   810→          className="mt-14 grid gap-4 border-t border-nx-navy-100 pt-8 sm:grid-cols-2"
+   811→        >
+   812→          {prev ? (
+   813→            <button
+   814→              onClick={() => navigateTo("vetting", prev.slug)}
+   815→              className="group rounded-3xl border border-nx-navy-100 bg-white p-5 text-left transition-all hover:border-nx-navy-300 hover:shadow-[0_14px_30px_-16px_rgba(6,31,74,0.2)]"
+   816→            >
+   817→              <span className="flex items-center gap-1.5 text-xs font-bold text-nx-navy-500">
+   818→                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+   819→                {t(T.prevPillar)}
+   820→              </span>
+   821→              <span className="mt-1.5 block font-extrabold text-nx-navy-900 group-hover:text-nx-navy-700">
+   822→                {t(VETTING.stages[idx - 1].title)}
+   823→              </span>
+   824→            </button>
+   825→          ) : (
+   826→            <span aria-hidden="true" />
+   827→          )}
+   828→          {next && (
+   829→            <button
+   830→              onClick={() => navigateTo("vetting", next.slug)}
+   831→              className="group rounded-3xl border border-nx-navy-100 bg-white p-5 text-right transition-all hover:border-nx-navy-300 hover:shadow-[0_14px_30px_-16px_rgba(6,31,74,0.2)] sm:col-start-2"
+   832→            >
+   833→              <span className="flex items-center justify-end gap-1.5 text-xs font-bold text-nx-navy-500">
+   834→                {t(T.nextPillar)}
+   835→                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+   836→              </span>
+   837→              <span className="mt-1.5 block font-extrabold text-nx-navy-900 group-hover:text-nx-navy-700">
+   838→                {t(VETTING.stages[idx + 1].title)}
+   839→              </span>
+   840→            </button>
+   841→          )}
+   842→        </nav>
+   843→      </PageBody>
+   844→
+   845→      <CtaBand
+   846→        title={T.detailCtaTitle}
+   847→        copy={T.detailCtaCopy}
+   848→        actions={
+   849→          <>
+   850→            <CyanButton onClick={() => navigateTo("opportunities")}>{t(T.ctaBtn)}</CyanButton>
+   851→            <OutlineLightButton onClick={() => navigateTo("charter")}>
+   852→              {t(T.ctaBtn2)}
+   853→            </OutlineLightButton>
+   854→          </>
+   855→        }
+   856→      />
+   857→    </>
+   858→  );
+   859→}
+   860→

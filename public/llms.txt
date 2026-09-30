@@ -1,12 +1,17 @@
 # NexFund
+
 > Bangladesh-based financial consultancy and matchmaking platform. We connect informed investors with verified, growth-ready Bangladeshi businesses — with due diligence, documentation, and advisory. Proof before promise.
 
-Sections: For Investors | For Entrepreneurs (Raise Capital) | Opportunities (anonymized listings with visible key risks) | 5-Stage Vetting Standard | The NexFund Charter (7 commitments) | Advisory Services | Insights | FAQ.
+Pages: About Us (mission, vision, values, story, team) | Who We Serve: For Investors / For Entrepreneurs | How It Works (4 steps: apply, verify, match, grow) | Vetting Standard (5 pillars) | Opportunities (anonymized verified listings with visible key risks) | Advisory Services (5 services) | Insights (3 in-depth guides) | Impact (live platform numbers + how we count them) | The NexFund Charter (7 commitments) | Glossary (11 terms, Bangla + English) | FAQ | Contact | Legal: Privacy Promise, Terms of Use, Risk Disclosure.
 
 Key facts:
+- Mission: make informed private investment possible for Bangladeshi investors — and patient capital reachable for growth-ready businesses — through verification-first matchmaking, plain-language documents, and fees disclosed in writing.
+- Vision: a Bangladesh where no good business stalls because verified information or the right capital couldn't reach it in time.
 - Every listing shows key risks next to the opportunity; verification progress badges (identity, legal, financials, site visit, advisor review).
-- Fees are disclosed before commitment; NexFund never guarantees returns and does not hold client funds.
+- NexFund never holds client funds; money moves directly between investor and business. No guarantees of returns, ever.
+- Introduction fees are disclosed in writing before any engagement — a fixed amount, never a percentage of returns.
+- Impact page: live database counts (registered investors, verified listings, capital seeking ranges, readiness checks) plus quarterly-verified milestones (capital introduced, data rooms opened, matches made), with a published counting methodology.
 - Bilingual: Bangla (bn-BD default) and English, including documents and support.
 - Contact: hello@nexfund.example · +880 1700-000000 · Gulshan Avenue, Dhaka 1212.
 
-Risk note: Investing involves risk, including possible loss of capital. Verification reduces risk; it does not remove it.
+Risk note: Investing involves risk, including possible loss of capital. Verification reduces risk; it does not remove it. This deployment is a staging showcase — listings and milestone figures are marked demo data for presentation purposes.

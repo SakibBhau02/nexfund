@@ -1,9 +1,20 @@
 "use client";
 
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useLanguage, type Lang } from "@/lib/i18n";
 
-/** NexFund wordmark — wide geometric feel; X carries the rising cyan arrow (logo story §2.1) */
+/* Intrinsic tight-crop size of /images/logo.png (user-supplied brand mark) */
+const LOGO_W = 553;
+const LOGO_H = 274;
+
+/**
+ * R11: the real user-supplied logo — "NE ⌁ FUND" (navy wordmark, cyan arrow).
+ * `variant="dark"` renders the white-background asset directly (for white
+ * surfaces); `variant="light"` wraps it in a white rounded tile so the
+ * wordmark stays legible on navy surfaces (mobile menu, footer).
+ * Size via a height class, e.g. <Logo className="h-10" />.
+ */
 export function Logo({
   className,
   variant = "dark",
@@ -11,36 +22,30 @@ export function Logo({
   className?: string;
   variant?: "dark" | "light";
 }) {
-  const wordColor = variant === "dark" ? "text-nx-navy-900" : "text-white";
-  const subColor = variant === "dark" ? "text-nx-navy-700/70" : "text-white/60";
-  return (
-    <span className={cn("inline-flex items-baseline gap-[0.18em] select-none", wordColor, className)}>
-      <span className="font-extrabold tracking-[0.08em]">NEX</span>
-      <span className="relative inline-block font-extrabold tracking-[0.08em]">
-        {/* the X-arrow mark */}
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="absolute -top-[0.28em] left-1/2 h-[1.15em] w-[1.15em] -translate-x-1/2"
-          fill="none"
-        >
-          {/* crossing path going up-right */}
-          <path
-            d="M4 20 L15 9 M11 9 h4 v4"
-            stroke="#26B7D8"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        X
-      </span>
-      <span className="font-extrabold tracking-[0.08em]">FUND</span>
-      <span className={cn("ml-2 hidden text-[0.5em] font-semibold sm:inline", subColor)}>
-        নেক্সফান্ড
-      </span>
-    </span>
+  const img = (
+    <Image
+      src="/images/logo.png"
+      alt="NexFund"
+      width={LOGO_W}
+      height={LOGO_H}
+      priority
+      draggable={false}
+      className="h-full w-auto"
+    />
   );
+  if (variant === "light") {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center rounded-xl bg-white px-2 py-1.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]",
+          className
+        )}
+      >
+        {img}
+      </span>
+    );
+  }
+  return <span className={cn("inline-flex items-center", className)}>{img}</span>;
 }
 
 /** Icon-only X-arrow mark (favicon / avatar style) */

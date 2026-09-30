@@ -34,6 +34,7 @@ const hindSiliguri = Hind_Siliguri({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://nexfund.example"),
   title: "NexFund — Fund What's Next in Bangladesh | নেক্সফান্ড",
   description:
     "Financial consultancy connecting informed investors with verified, growth-ready Bangladeshi businesses. Vetted, documented, transparent. যাচাইকৃত বাংলাদেশি ব্যবসার সাথে অভিজ্ঞ বিনিয়োগকারীদের সংযোগ।",
@@ -46,8 +47,13 @@ export const metadata: Metadata = {
     "due diligence",
     "বিনিয়োগ",
     "মূলধন সংগ্রহ",
+    "Bangladesh investment platform",
+    "verified business listings",
+    "investor matchmaking",
+    "SME investment Dhaka",
   ],
   authors: [{ name: "NexFund" }],
+  alternates: { canonical: "/" },
   openGraph: {
     title: "NexFund — Fund What's Next in Bangladesh",
     description:
@@ -73,8 +79,11 @@ export const metadata: Metadata = {
   },
 };
 
-/** Structured data for SEO/AEO (blueprint §11.3): FAQPage + Organization */
+/** Structured data for SEO/AEO/GEO (blueprint §11.3 + R11): FAQPage,
+ *  Organization (+logo), AboutPage, WebSite and the glossary DefinedTermSet —
+ *  answer engines get citable, self-contained facts on first render. */
 function StructuredData() {
+  const SITE = "https://nexfund.example";
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -91,8 +100,17 @@ function StructuredData() {
   const orgSchema = {
     "@context": "https://schema.org",
     "@type": "FinancialService",
+    "@id": `${SITE}/#organization`,
     name: "NexFund",
     alternateName: "নেক্সফান্ড",
+    url: SITE,
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE}/images/logo.png`,
+      width: 553,
+      height: 274,
+    },
+    image: `${SITE}/images/og-card.png`,
     slogan: "Proof before promise — প্রতিশ্রুতির আগে প্রমাণ।",
     description:
       "Bangladesh-based financial consultancy and matchmaking platform connecting informed investors with verified, growth-ready businesses.",
@@ -108,6 +126,35 @@ function StructuredData() {
       "https://www.linkedin.com/company/nexfund",
       "https://www.facebook.com/nexfundbd",
     ],
+  };
+  /* R11 AEO: AboutPage with the canonical mission/vision statements, so
+   *  answer engines can answer "what is NexFund / its mission" directly. */
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${SITE}/#about`,
+    name: "About NexFund — mission, vision, values",
+    description:
+      "NexFund is a Dhaka-based financial consultancy and matchmaking platform.",
+    mainEntity: {
+      "@type": "Organization",
+      "@id": `${SITE}/#organization`,
+      name: "NexFund",
+      mission:
+        "To make informed private investment possible for Bangladeshi investors — and patient capital reachable for growth-ready Bangladeshi businesses — through verification-first matchmaking, plain-language documents, and fees disclosed in writing.",
+      slogan: "Proof before promise — প্রতিশ্রুতির আগে প্রমাণ।",
+    },
+    significantLink: `${SITE}/#p/about`,
+  };
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE}/#website`,
+    url: SITE,
+    name: "NexFund",
+    alternateName: "নেক্সফান্ড",
+    inLanguage: ["bn", "en"],
+    publisher: { "@id": `${SITE}/#organization` },
   };
   /* R7: glossary hub as a DefinedTermSet — mirrors the in-page dialog (AEO) */
   const glossarySchema = {
@@ -132,6 +179,14 @@ function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
       <script
         type="application/ld+json"

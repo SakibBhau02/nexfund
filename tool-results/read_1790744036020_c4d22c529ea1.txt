@@ -1,0 +1,502 @@
+    60→    60→  compareTitle: { en: "Different questions, same discipline", bn: "প্রশ্ন ভিন্ন, নিষ্ঠা এক" } as const,
+    61→    61→  compareCopy: {
+    62→    62→    en: "Whichever side of the table you sit on, the rules of engagement don't change — here is exactly what does.",
+    63→    63→    bn: "টেবিলের যে পাশেই বসুন না কেন, খেলার নিয়ম বদলায় না — বদলায় শুধু আপনার প্রশ্নগুলো।",
+    64→    64→  } as const,
+    65→    65→  compareRows: [
+    66→    66→    {
+    67→    67→      label: { en: "First step", bn: "প্রথম ধাপ" } as const,
+    68→    68→      inv: { en: "3-minute investor registration", bn: "৩ মিনিটের বিনিয়োগকারী রেজিস্ট্রেশন" } as const,
+    69→    69→      fdr: { en: "2-minute readiness check", bn: "২ মিনিটের প্রস্তুতি-যাচাই" } as const,
+    70→    70→    },
+    71→    71→    {
+    72→    72→      label: { en: "What you see first", bn: "প্রথমে যা দেখবেন" } as const,
+    73→    73→      inv: { en: "Verified fact-packs & risk summaries", bn: "যাচাইকৃত ফ্যাক্ট-প্যাক ও ঝুঁকি-সারসংক্ষেপ" } as const,
+    74→    74→      fdr: { en: "Readiness score & gap report", bn: "প্রস্তুতি স্কোর ও ঘাটতি রিপোর্ট" } as const,
+    75→    75→    },
+    76→    76→    {
+    77→    77→      label: { en: "Who you meet", bn: "যার সাথে পরিচয়" } as const,
+    78→    78→      inv: { en: "Growth-ready, verified businesses", bn: "প্রবৃদ্ধিমুখী, যাচাইকৃত ব্যবসা" } as const,
+    79→    79→      fdr: { en: "Matched, serious investors", bn: "মানানসই, গুরুত্বপূর্ণ বিনিয়োগকারী" } as const,
+    80→    80→    },
+    81→    81→  ] as const,
+    82→    82→  compareShared: { en: "Always the same on both paths", bn: "দুই পথেই সবসময় একই" } as const,
+    83→    83→  compareSharedLine: {
+    84→    84→    en: "Fees in writing · bilingual documents · evidence before introductions",
+    85→    85→    bn: "লিখিত ফি · দ্বিভাষিক নথি · পরিচয়ের আগে প্রমাণ",
+    86→    86→  } as const,
+    87→    87→  statement: { en: "Both paths meet at the same place: evidence.", bn: "দুই পথের মিলনস্থল একটাই: প্রমাণ।" } as const,
+    88→    88→  ctaTitle: { en: "Ready when you are", bn: "আপনি প্রস্তুত হলেই আমরা আছি" } as const,
+    89→    89→  ctaCopy: {
+    90→    90→    en: "Take the first step today — a three-minute registration or a conversation with an advisor.",
+    91→    91→    bn: "আজই প্রথম ধাপ নিন — তিন মিনিটের নিবন্ধন, বা অ্যাডভাইজরের সাথে কথা।",
+    92→    92→  } as const,
+    93→    93→  /* ── investors detail ── */
+    94→    94→  invHeroTitle: { en: "For Investors", bn: "বিনিয়োগকারীদের জন্য" } as const,
+    95→    95→  invHeroEyebrow: { en: "FOR INVESTORS", bn: "বিনিয়োগকারীদের জন্য" } as const,
+    96→    96→  invHeroCopy: {
+    97→    97→    en: "See real businesses, real documents, real risks — before you commit a single taka. Verified deal-flow, plain-language risk summaries, and a three-step onboarding that respects your time.",
+    98→    98→    bn: "প্রতিটি টাকা দেওয়ার আগে দেখুন আসল ব্যবসা, আসল নথি, আসল ঝুঁকি। যাচাইকৃত ডিল-ফ্লো, সহজ ভাষায় ঝুঁকি-সারসংক্ষেপ, আর সময় সম্মান করে চলা তিন ধাপের অনবোর্ডিং।",
+    99→    99→  } as const,
+   100→   100→  invRegCta: { en: "Start investor registration", bn: "বিনিয়োগকারী রেজিস্ট্রেশন শুরু করুন" } as const,
+   101→   101→  invBrowseCta: { en: "Browse live opportunities", bn: "লাইভ সুযোগ দেখুন" } as const,
+   102→   102→  invGetEyebrow: { en: "WHAT INVESTORS GET", bn: "বিনিয়োগকারীরা যা পান" } as const,
+   103→   103→  invGetTitle: { en: "Facts first, in three parts", bn: "আগে তথ্য — তিন ভাগে" } as const,
+   104→   104→  invGetCopy: {
+   105→   105→    en: "Not a firehose of listings — a quiet, verified shortlist with the paperwork to back every claim.",
+   106→   106→    bn: "প্রচুর তালিকার বন্যা নয় — শান্ত, যাচাইকৃত একটি শর্টলিস্ট, প্রতিটি দাবির পেছনে নথিসহ।",
+   107→   107→  } as const,
+   108→   108→  invCards: [
+   109→   109→    {
+   110→   110→      icon: "shield",
+   111→   111→      title: { en: "Verified deal-flow", bn: "যাচাইকৃত ডিল-ফ্লো" } as const,
+   112→   112→      copy: {
+   113→   113→        en: "Curated, not crowded — only a small number of businesses pass the five-stage vetting each cycle. Names stay anonymized until your NDA is signed.",
+   114→   114→        bn: "বাছাই করা, ভিড় নয় — প্রতি চক্রে মাত্র অল্প কিছু ব্যবসা পাঁচ-ধাপের যাচাই পাস করে। আপনার NDA সই না হওয়া পর্যন্ত নাম গোপন থাকে।",
+   115→   115→      } as const,
+   116→   116→    },
+   117→   117→    {
+   118→   118→      icon: "search",
+   119→   119→      title: { en: "Risk summaries in plain language", bn: "সহজ ভাষায় ঝুঁকি-সারসংক্ষেপ" } as const,
+   120→   120→      copy: {
+   121→   121→        en: "Every listing carries an advisor's risk summary — the material risks in Bangla and English, with the downside scenario always shown, never hidden.",
+   122→   122→        bn: "প্রতিটি তালিকার সাথে থাকে অ্যাডভাইজরের ঝুঁকি-সারসংক্ষেপ — বাংলা ও ইংরেজিতে আসল ঝুঁকিগুলো, ডাউনসাইড পরিসর সবসময় দৃশ্যমান, কখনো লুকানো নয়।",
+   123→   123→      } as const,
+   124→   124→    },
+   125→   125→    {
+   126→   126→      icon: "list",
+   127→   127→      title: { en: "Three-step onboarding", bn: "তিন ধাপের অনবোর্ডিং" } as const,
+   128→   128→      copy: {
+   129→   129→        en: "Account in thirty seconds, a matching profile, secure verification — then a short advisor call and curated opportunities start arriving.",
+   130→   130→        bn: "ত্রিশ সেকেন্ডে অ্যাকাউন্ট, ম্যাচিং প্রোফাইল, সুরক্ষিত যাচাই — তারপর ছোট একটি অ্যাডভাইজার কল, আর বাছাই করা সুযোগ আসতে শুরু করে।",
+   131→   131→      } as const,
+   132→   132→    },
+   133→   133→  ] as const,
+   134→   134→  invMinEyebrow: { en: "MINIMUMS & FEES", bn: "সর্বনিম্ন ও ফি" } as const,
+   135→   135→  invMinTitle: { en: "The numbers, in writing", bn: "সংখ্যাগুলো, লিখিতভাবে" } as const,
+   136→   136→  invMinRows: [
+   137→   137→    {
+   138→   138→      label: { en: "To register & browse", bn: "রেজিস্ট্রেশন ও দেখা" } as const,
+   139→   139→      value: { en: "Free — no fee, no commitment", bn: "ফ্রি — কোনো ফি নেই, বাধ্যবাধকতা নেই" } as const,
+   140→   140→    },
+   141→   141→    {
+   142→   142→      label: { en: "Current ticket range", bn: "বর্তমান টিকেট পরিসর" } as const,
+   143→   143→      value: { en: "৳50 lakh – ৳4 crore, varies by opportunity", bn: "৳৫০ লক্ষ – ৳৪ কোটি, সুযোগভেদে ভিন্ন" } as const,
+   144→   144→    },
+   145→   145→    {
+   146→   146→      label: { en: "What we charge", bn: "আমাদের ফি" } as const,
+   147→   147→      value: {
+   148→   148→        en: "A disclosed introduction fee when a deal completes — never a percentage of your returns",
+   149→   149→        bn: "ডিল সম্পন্ন হলে একটি প্রকাশিত ইন্ট্রোডাকশন ফি — আপনার মুনাফার শতাংশ কখনো নয়",
+   150→   150→      } as const,
+   151→   151→    },
+   152→   152→    {
+   153→   153→      label: { en: "When you know", bn: "কখন জানবেন" } as const,
+   154→   154→      value: { en: "Every fee agreed in writing before anything begins", bn: "প্রতিটি ফি শুরুর আগেই লিখিতভাবে জানানো" } as const,
+   155→   155→    },
+   156→   156→  ] as const,
+   157→   157→  invMatchEyebrow: { en: "HOW MATCHING WORKS", bn: "ম্যাচিং কীভাবে কাজ করে" } as const,
+   158→   158→  invMatchTitle: { en: "You set the criteria — you approve every introduction", bn: "মানদণ্ড আপনার, অনুমোদনও প্রতিটি পরিচয়ে আপনারই" } as const,
+   159→   159→  invMatchSteps: [
+   160→   160→    {
+   161→   161→      title: { en: "You register & set criteria", bn: "আপনি রেজিস্টার করেন, মানদণ্ড দেন" } as const,
+   162→   162→      copy: {
+   163→   163→        en: "Sectors of interest, ticket range, time horizon and risk comfort — five quick questions, no wrong answers.",
+   164→   164→        bn: "আগ্রহের খাত, টিকেট রেঞ্জ, সময়সীমা ও ঝুঁকি-স্বাচ্ছন্দ্য — পাঁচটি ছোট প্রশ্ন, কোনো উত্তরই ভুল নয়।",
+   165→   165→      } as const,
+   166→   166→    },
+   167→   167→    {
+   168→   168→      title: { en: "A short advisor call", bn: "ছোট একটি অ্যাডভাইজার কল" } as const,
+   169→   169→      copy: {
+   170→   170→        en: "A human listens to your goals — not a script. This is where the profile becomes a strategy.",
+   171→   171→        bn: "একজন মানুষ আপনার লক্ষ্য শোনেন — স্ক্রিপ্ট নয়। এখানেই প্রোফাইল পরিণত হয় কৌশলে।",
+   172→   172→      } as const,
+   173→   173→    },
+   174→   174→    {
+   175→   175→      title: { en: "Curated matches arrive", bn: "বাছাই করা ম্যাচ আসে" } as const,
+   176→   176→      copy: {
+   177→   177→        en: "Anonymized opportunities that fit your criteria reach your inbox — new verified listings reach matching investors first.",
+   178→   178→        bn: "আপনার মানদণ্ডে মানানসই বেনামি সুযোগ ইনবক্সে আসে — নতুন যাচাইকৃত তালিকা ম্যাচিং বিনিয়োগকারীর কাছেই আগে পৌঁছায়।",
+   179→   179→      } as const,
+   180→   180→    },
+   181→   181→    {
+   182→   182→      title: { en: "You approve, NDA opens the room", bn: "অনুমোদন আপনার, NDA-তে খোলে ডেটা রুম" } as const,
+   183→   183→      copy: {
+   184→   184→        en: "Interested? You approve the introduction, sign the NDA — and the full data room with the advisor's verification notes unlocks.",
+   185→   185→        bn: "আগ্রহ হলে? আপনি পরিচয় অনুমোদন করেন, NDA সই করেন — আর অ্যাডভাইজরের যাচাই-নোটসহ সম্পূর্ণ ডেটা রুম খুলে যায়।",
+   186→   186→      } as const,
+   187→   187→    },
+   188→   188→  ] as const,
+   189→   189→  invAsideFacts: { en: "Investor quick facts", bn: "বিনিয়োগকারীর সংক্ষিপ্ত তথ্য" } as const,
+   190→   190→  invAsideTalk: { en: "Prefer to talk it through?", bn: "আগে কথা বলে বুঝতে চান?" } as const,
+   191→   191→  invAsideTalkCopy: {
+   192→   192→    en: "Book a free 20-minute conversation — no pressure, no obligation.",
+   193→   193→    bn: "বিনামূল্যে ২০ মিনিটের আলাপ বুক করুন — কোনো চাপ নেই, বাধ্যবাধকতা নেই।",
+   194→   194→  } as const,
+   195→   195→  invAsideTalkCta: { en: "Book a call", bn: "কল বুক করুন" } as const,
+   196→   196→  invBack: { en: "Who we serve", bn: "আমাদের দর্শক" } as const,
+   197→   197→  invCtaTitle: { en: "See what's live right now", bn: "এখন কী লাইভ আছে দেখুন" } as const,
+   198→   198→  invCtaCopy: {
+   199→   199→    en: "Browse the current verified listings — then register to unlock documents and the advisor's verification notes.",
+   200→   200→    bn: "বর্তমান যাচাইকৃত তালিকাগুলো দেখুন — তারপর নথি ও অ্যাডভাইজরের যাচাই-নোট আনলক করতে রেজিস্টার করুন।",
+   201→   201→  } as const,
+   202→   202→  invVettingCta: { en: "How every listing is verified", bn: "প্রতিটি তালিকা কীভাবে যাচাই হয়" } as const,
+   203→   203→  /* ── founders detail ── */
+   204→   204→  fdrHeroEyebrow: { en: "FOR ENTREPRENEURS", bn: "উদ্যোক্তাদের জন্য" } as const,
+   205→   205→  fdrHeroTitle: { en: "For Entrepreneurs", bn: "উদ্যোক্তাদের জন্য" } as const,
+   206→   206→  fdrHeroCopy: {
+   207→   207→    en: "Get investor-ready. Get in front of the right capital. Readiness coaching, document preparation and a curated introduction — so your business is judged on evidence, not on storytelling.",
+   208→   208→    bn: "বিনিয়োগের জন্য প্রস্তুত হোন। সঠিক পুঁজির সামনে দাঁড়ান। প্রস্তুতি কোচিং, ডকুমেন্ট প্রস্তুতি আর সাজানো পরিচয় — যাতে আপনার ব্যবসা বিচার হয় প্রমাণে, গল্পে নয়।",
+   209→   209→  } as const,
+   210→   210→  fdrRegisterCta: { en: "Start founder registration", bn: "উদ্যোক্তা রেজিস্ট্রেশন শুরু করুন" } as const,
+   211→   211→  fdrQuizCta: { en: "Take the 2-minute readiness check", bn: "২ মিনিটের প্রস্তুতি-যাচাই দিন" } as const,
+   212→   212→  fdrReadyEyebrow: { en: "READINESS COACHING", bn: "প্রস্তুতি কোচিং" } as const,
+   213→   213→  fdrReadyTitle: { en: "Know where you stand, in two minutes", bn: "দুই মিনিটেই জানুন আপনি কোথায় দাঁড়িয়ে" } as const,
+   214→   214→  fdrReadyCopy: {
+   215→   215→    en: "Ten honest questions, an instant score, and a clear list of what to strengthen — before you spend a single hour chasing investors.",
+   216→   216→    bn: "দশটি সৎ প্রশ্ন, সাথে সাথে স্কোর, আর কী শক্ত করতে হবে তার স্পষ্ট তালিকা — বিনিয়োগকারীর পেছনে ঘণ্টা নষ্ট করার আগেই।",
+   217→   217→  } as const,
+   218→   218→  fdrReadyCards: [
+   219→   219→    {
+   220→   220→      title: { en: "A score, not a guess", bn: "অনুমান নয়, স্কোর" } as const,
+   221→   221→      copy: {
+   222→   222→        en: "The 2-minute check scores your readiness across registration, books, ownership, use of funds and team — with what's already working, separately listed.",
+   223→   223→        bn: "২ মিনিটের যাচাই নিবন্ধন, হিসাব, মালিকানা, তহবিল পরিকল্পনা ও টিম জুড়ে প্রস্তুতি স্কোর দেয় — যা ইতোমধ্যে ভালো, তা আলাদা করে দেখায়।",
+   224→   224→      } as const,
+   225→   225→    },
+   226→   226→    {
+   227→   227→      title: { en: "Honest feedback", bn: "সৎ মতামত" } as const,
+   228→   228→      copy: {
+   229→   229→        en: "Even when the answer is 'not yet' — especially then. You'll hear it from an advisor, with reasons, not silence.",
+   230→   230→        bn: "উত্তর 'এখনো নয়' হলেও — বিশেষ করে তখনই। নীরবতা নয়, কারণসহ অ্যাডভাইজরের কাছ থেকেই শুনবেন।",
+   231→   231→      } as const,
+   232→   232→    },
+   233→   233→    {
+   234→   234→      title: { en: "A 12-month roadmap", bn: "১২ মাসের রোডম্যাপ" } as const,
+   235→   235→      copy: {
+   236→   236→        en: "Gap analysis turned into a sequenced plan with a document checklist — what to fix first, and what can wait.",
+   237→   237→        bn: "ঘাটতি বিশ্লেষণ থেকে ধারাবাহিক পরিকল্পনা ও ডকুমেন্ট চেকলিস্ট — আগে কী সারবেন, কী পরে হলে চলবে।",
+   238→   238→      } as const,
+   239→   239→    },
+   240→   240→  ] as const,
+   241→   241→  fdrDocsEyebrow: { en: "DOCUMENT PREPARATION", bn: "ডকুমেন্ট প্রস্তুতি" } as const,
+   242→   242→  fdrDocsTitle: { en: "The investor-ready program", bn: "ইনভেস্টর-রেডি প্রোগ্রাম" } as const,
+   243→   243→  fdrDocsCopy: {
+   244→   244→    en: "Valuation, deck, data room — the package that makes serious investors lean in, built with you by our advisors.",
+   245→   245→    bn: "ভ্যালুয়েশন, ডেক, ডেটা রুম — গুরুত্বপূর্ণ বিনিয়োগকারীরা যে প্যাকেজে সোজা হয়ে বসেন, আমাদের অ্যাডভাইজারদের সাথে বসে তৈরি।",
+   246→   246→  } as const,
+   247→   247→  fdrDocsCards: [
+   248→   248→    {
+   249→   249→      title: { en: "Business valuation", bn: "বিজনেস ভ্যালুয়েশন" } as const,
+   250→   250→      copy: {
+   251→   251→        en: "A defensible range with methods and assumptions explained — your reference points in every negotiation.",
+   252→   252→        bn: "পদ্ধতি ও অনুমানসহ সমর্থনযোগ্য রেঞ্জ — প্রতিটি আলোচনায় আপনার রেফারেন্স পয়েন্ট।",
+   253→   253→      } as const,
+   254→   254→    },
+   255→   255→    {
+   256→   256→      title: { en: "Financial model & projections", bn: "ফাইন্যান্সিয়াল মডেল ও প্রজেকশন" } as const,
+   257→   257→      copy: {
+   258→   258→        en: "3–5 year model with base, upside — and the downside always shown, because investors will look there first.",
+   259→   259→        bn: "৩–৫ বছরের মডেল — বেস, আপসাইড আর ডাউনসাইড সবসময় দৃশ্যমান, কারণ বিনিয়োগকারী ওখানেই আগে তাকান।",
+   260→   260→      } as const,
+   261→   261→    },
+   262→   262→    {
+   263→   263→      title: { en: "Pitch deck & Q&A prep", bn: "পিচ ডেক ও প্রশ্নোত্তর প্রস্তুতি" } as const,
+   264→   264→      copy: {
+   265→   265→        en: "An investor-grade deck plus a rehearsal session — the hard questions, asked by a friendly face first.",
+   266→   266→        bn: "ইনভেস্টর-গ্রেড ডেক আর একটি রিহার্সাল — কঠিন প্রশ্নগুলো আগে আপন মানুষের মুখেই শুনুন।",
+   267→   267→      } as const,
+   268→   268→    },
+   269→   269→    {
+   270→   270→      title: { en: "Structured data room", bn: "সুসংগঠিত ডেটা রুম" } as const,
+   271→   271→      copy: {
+   272→   272→        en: "Every document an investor needs, indexed and verifiable — trust is built before the meeting starts.",
+   273→   273→        bn: "বিনিয়োগকারীর দরকারি প্রতিটি নথি, সূচিকৃত ও যাচাইযোগ্য — বৈঠক শুরুর আগেই আস্থা তৈরি।",
+   274→   274→      } as const,
+   275→   275→    },
+   276→   276→  ] as const,
+   277→   277→  fdrServicesCta: { en: "See all advisory services", bn: "সব অ্যাডভাইজরি সেবা দেখুন" } as const,
+   278→   278→  fdrIntroEyebrow: { en: "CURATED INTRODUCTION", bn: "সাজানো পরিচয়" } as const,
+   279→   279→  fdrIntroTitle: { en: "Introduced with your paperwork in order", bn: "নথিপত্র গুছিয়ে, তবেই পরিচয়" } as const,
+   280→   280→  fdrIntroSteps: [
+   281→   281→    {
+   282→   282→      title: { en: "You apply — about 10 minutes", bn: "আবেদন আপনার — প্রায় ১০ মিনিট" } as const,
+   283→   283→      copy: {
+   284→   284→        en: "Registration, ownership, recent financials and a first use-of-funds plan. That's the whole ask.",
+   285→   285→        bn: "নিবন্ধন, মালিকানা, সাম্প্রতিক আর্থিক বিবরণী আর তহবিল ব্যবহারের প্রাথমিক পরিকল্পনা। এটুকুই প্রয়োজন।",
+   286→   286→      } as const,
+   287→   287→    },
+   288→   288→    {
+   289→   289→      title: { en: "Verification makes your case", bn: "যাচাই আপনার পক্ষে জোর দেয়" } as const,
+   290→   290→      copy: {
+   291→   291→        en: "Five stages of checks turn into badges on your listing — investors meet your business already believing its numbers.",
+   292→   292→        bn: "পাঁচ ধাপের যাচাই হয়ে যায় আপনার তালিকার ব্যাজ — বিনিয়োগকারী সংখ্যাগুলো বিশ্বে করেই আপনার ব্যবসার সাথে পরিচিত হন।",
+   293→   293→      } as const,
+   294→   294→    },
+   295→   295→    {
+   296→   296→      title: { en: "Matched, serious investors", bn: "মানানসই, গুরুত্বপূর্ণ বিনিয়োগকারী" } as const,
+   297→   297→      copy: {
+   298→   298→        en: "Introduced by sector, ticket and horizon — with an advisor at the table for term discussions, so clarity replaces pressure.",
+   299→   299→        bn: "খাত, টিকেট ও সময়সীমা মিলিয়ে পরিচয় — শর্তের আলোচনায় অ্যাডভাইজার টেবিলে থাকেন, চাপের জায়গায় স্পষ্টতা আনতে।",
+   300→   300→      } as const,
+   301→   301→    },
+   302→   302→  ] as const,
+   303→   303→  fdrFundsNote: {
+   304→   304→    en: "Money moves directly between parties — we never hold your funds.",
+   305→   305→    bn: "অর্থ সরাসরি দুই পক্ষের মধ্যেই লেনদেন হয় — আমরা কখনো গচ্ছিত রাখি না।",
+   306→   306→  } as const,
+   307→   307→  fdrAsideFacts: { en: "Founder quick facts", bn: "উদ্যোক্তার সংক্ষিপ্ত তথ্য" } as const,
+   308→   308→  fdrAsideFactsRows: [
+   309→   309→    { label: { en: "Application time", bn: "আবেদনে সময়" } as const, value: { en: "About 10 minutes", bn: "প্রায় ১০ মিনিট" } as const },
+   310→   310→    { label: { en: "Readiness check", bn: "প্রস্তুতি-যাচাই" } as const, value: { en: "2 minutes · 10 questions", bn: "২ মিনিট · ১০টি প্রশ্ন" } as const },
+   311→   311→    { label: { en: "Verification", bn: "যাচাই" } as const, value: { en: "Typically 2–3 weeks", bn: "সাধারণত ২–৩ সপ্তাহ" } as const },
+   312→   312→    { label: { en: "Advisory fees", bn: "অ্যাডভাইজরি ফি" } as const, value: { en: "Agreed in writing, before work begins", bn: "কাজ শুরুর আগেই লিখিতভাবে নির্ধারিত" } as const },
+   313→   313→  ] as const,
+   314→   314→  fdrCtaTitle: { en: "Start with the two-minute check", bn: "দুই মিনিটের যাচাই দিয়েই শুরু" } as const,
+   315→   315→  fdrCtaCopy: {
+   316→   316→    en: "Or register straight away — either way, your first conversation with an advisor is free and pressure-free.",
+   317→   317→    bn: "বা সরাসরি রেজিস্টার করুন — দুই পথেই অ্যাডভাইজরের সাথে প্রথম কথা বিনামূল্যে, চাপমুক্ত।",
+   318→   318→  } as const,
+   319→   319→};
+   320→   320→
+   321→   321→/* icons for the data-driven cards */
+   322→   322→const INV_ICONS = { shield: ShieldCheck, search: FileSearch, list: ListChecks } as const;
+   323→   323→
+   324→   324→export default function WhoWeServePage({ detail }: { detail: string | null }) {
+   325→   325→  if (detail === "investors") return <InvestorsDetail />;
+   326→   326→  if (detail === "founders") return <FoundersDetail />;
+   327→   327→  if (detail) return <PageNotFound page={detail} />;
+   328→   328→  return <Landing />;
+   329→   329→}
+   330→   330→
+   331→   331→/* ── Landing ─────────────────────────────────────────────────────────── */
+   332→   332→
+   333→   333→function Landing() {
+   334→   334→  const { t } = useLanguage();
+   335→   335→  return (
+   336→   336→    <>
+   337→   337→      <PageHero
+   338→   338→        crumbs={[{ label: { en: "Who We Serve", bn: "আমাদের দর্শক" } }]}
+   339→   339→        eyebrow={{ en: "WHO WE SERVE", bn: "আমাদের দর্শক" }}
+   340→   340→        title={T.heroTitle}
+   341→   341→        copy={T.heroCopy}
+   342→   342→        image="/images/investor-meeting.png"
+   343→   343→        imageAlt={t({ en: "An investor reviewing verified documents", bn: "যাচাইকৃত নথি পর্যালোচনারত বিনিয়োগকারী" })}
+   344→   344→        badge={
+   345→   345→          <span className="inline-flex items-center gap-1.5 rounded-full border border-nx-cyan-300/40 bg-nx-cyan-500/10 px-3.5 py-1.5 text-[12px] font-bold text-nx-cyan-300">
+   346→   346→            <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+   347→   347→            {t(T.heroBadge)}
+   348→   348→          </span>
+   349→   349→        }
+   350→   350→      />
+   351→   351→
+   352→   352→      <PageBody>
+   353→   353→        <Head
+   354→   354→          id="wvs-paths"
+   355→   355→          eyebrow={T.pathsEyebrow}
+   356→   356→          title={TWO_PATHS.title}
+   357→   357→          copy={TWO_PATHS.sub}
+   358→   358→          center
+   359→   359→        />
+   360→   360→        <div className="mt-12 grid gap-6 md:grid-cols-2">
+   361→   361→          <AudienceCard which="investor" />
+   362→   362→          <AudienceCard which="founder" />
+   363→   363→        </div>
+   364→   364→      </PageBody>
+   365→   365→
+   366→   366→      {/* comparison + statement (full-bleed mist band) */}
+   367→   367→      <section aria-labelledby="wvs-compare" className="bg-nx-mist py-14 md:py-20">
+   368→   368→        <div className="mx-auto max-w-[1200px] px-5 md:px-6">
+   369→   369→          <Head
+   370→   370→            id="wvs-compare"
+   371→   371→            eyebrow={T.compareEyebrow}
+   372→   372→            title={T.compareTitle}
+   373→   373→            copy={T.compareCopy}
+   374→   374→            center
+   375→   375→          />
+   376→   376→          <motion.div
+   377→   377→            initial={{ opacity: 0, y: 14 }}
+   378→   378→            animate={{ opacity: 1, y: 0 }}
+   379→   379→            transition={{ duration: 0.35 }}
+   380→   380→            className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-nx-navy-100 bg-white shadow-[0_14px_40px_-18px_rgba(6,31,74,0.18)]"
+   381→   381→          >
+   382→   382→            {/* header row */}
+   383→   383→            <div className="hidden grid-cols-[150px_1fr_1fr] border-b border-nx-navy-100 bg-nx-navy-50/70 sm:grid">
+   384→   384→              <span className="px-6 py-4" aria-hidden="true" />
+   385→   385→              <span className="px-6 py-4 text-[12px] font-extrabold tracking-wider text-nx-navy-800 uppercase">
+   386→   386→                {t(TWO_PATHS.investor.title)}
+   387→   387→              </span>
+   388→   388→              <span className="px-6 py-4 text-[12px] font-extrabold tracking-wider text-nx-navy-800 uppercase">
+   389→   389→                {t(TWO_PATHS.founder.title)}
+   390→   390→              </span>
+   391→   391→            </div>
+   392→   392→            {T.compareRows.map((row) => (
+   393→   393→              <div
+   394→   394→                key={row.label.en}
+   395→   395→                className="grid gap-3 border-b border-nx-navy-100 px-6 py-5 last:border-b-0 sm:grid-cols-[150px_1fr_1fr] sm:gap-6"
+   396→   396→              >
+   397→   397→                <span className="text-sm font-extrabold text-nx-navy-900">{t(row.label)}</span>
+   398→   398→                <span className="text-sm leading-relaxed text-slate-600">
+   399→   399→                  <span className="mb-1 block text-[11px] font-bold text-nx-cyan-700 sm:hidden">
+   400→   400→                    {t(TWO_PATHS.investor.title)}
+   401→   401→                  </span>
+   402→   402→                  {t(row.inv)}
+   403→   403→                </span>
+   404→   404→                <span className="text-sm leading-relaxed text-slate-600">
+   405→   405→                  <span className="mb-1 block text-[11px] font-bold text-nx-navy-600 sm:hidden">
+   406→   406→                    {t(TWO_PATHS.founder.title)}
+   407→   407→                  </span>
+   408→   408→                  {t(row.fdr)}
+   409→   409→                </span>
+   410→   410→              </div>
+   411→   411→            ))}
+   412→   412→            <div className="border-t border-nx-navy-100 bg-nx-navy-50/70 px-6 py-4">
+   413→   413→              <p className="text-[13px] leading-relaxed text-nx-navy-700">
+   414→   414→                <span className="font-extrabold">{t(T.compareShared)}: </span>
+   415→   415→                {t(T.compareSharedLine)}
+   416→   416→              </p>
+   417→   417→            </div>
+   418→   418→          </motion.div>
+   419→   419→
+   420→   420→          {/* statement */}
+   421→   421→          <motion.blockquote
+   422→   422→            initial={{ opacity: 0, y: 14 }}
+   423→   423→            animate={{ opacity: 1, y: 0 }}
+   424→   424→            transition={{ duration: 0.35, delay: 0.1 }}
+   425→   425→            className="mx-auto mt-8 max-w-4xl rounded-3xl border-l-4 border-nx-cyan-500 bg-white p-6 shadow-[0_14px_40px_-18px_rgba(6,31,74,0.18)] md:p-8"
+   426→   426→          >
+   427→   427→            <p className="text-lg leading-relaxed font-bold text-nx-navy-900 md:text-xl">
+   428→   428→              “{t(T.statement)}”
+   429→   429→            </p>
+   430→   430→            <footer className="mt-3 text-[13px] font-semibold text-nx-navy-500">
+   431→   431→              {t({ en: "— the NexFund charter, in one line", bn: "— নেক্সফান্ড চার্টার, এক লাইনে" })}
+   432→   432→            </footer>
+   433→   433→          </motion.blockquote>
+   434→   434→        </div>
+   435→   435→      </section>
+   436→   436→
+   437→   437→      <CtaBand
+   438→   438→        title={T.ctaTitle}
+   439→   439→        copy={T.ctaCopy}
+   440→   440→        actions={<GetStartedAndContact />}
+   441→   441→      />
+   442→   442→    </>
+   443→   443→  );
+   444→   444→}
+   445→   445→
+   446→   446→function AudienceCard({ which }: { which: "investor" | "founder" }) {
+   447→   447→  const { t } = useLanguage();
+   448→   448→  const data = which === "investor" ? TWO_PATHS.investor : TWO_PATHS.founder;
+   449→   449→  const chip = which === "investor" ? T.invChip : T.fdrChip;
+   450→   450→  const cta = which === "investor" ? T.invCardCta : T.fdrCardCta;
+   451→   451→  const image = which === "investor" ? "/images/hero-tech.png" : "/images/hero-retail.png";
+   452→   452→  const alt =
+   453→   453→    which === "investor"
+   454→   454→      ? { en: "An investor studying a verified fact-pack", bn: "যাচাইকৃত ফ্যাক্ট-প্যাক পড়ছেন একজন বিনিয়োগকারী" }
+   455→   455→      : { en: "A Bangladeshi entrepreneur at her workplace", bn: "কর্মস্থলে একজন বাংলাদেশি উদ্যোক্তা" };
+   456→   456→  const Icon = which === "investor" ? TrendingUp : Handshake;
+   457→   457→
+   458→   458→  return (
+   459→   459→    <motion.article
+   460→   460→      initial={{ opacity: 0, y: 16 }}
+   461→   461→      animate={{ opacity: 1, y: 0 }}
+   462→   462→      transition={{ duration: 0.4, delay: which === "investor" ? 0 : 0.08 }}
+   463→   463→      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-300 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.28)] md:p-8"
+   464→   464→    >
+   465→   465→      <div className="flex items-start justify-between gap-4">
+   466→   466→        <div>
+   467→   467→          <span className="inline-flex items-center gap-1.5 rounded-full bg-nx-navy-50 px-3 py-1 text-[12px] font-bold text-nx-navy-600">
+   468→   468→            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+   469→   469→            {t(chip)}
+   470→   470→          </span>
+   471→   471→          <h3 className="mt-4 text-2xl font-extrabold text-nx-navy-900">{t(data.title)}</h3>
+   472→   472→        </div>
+   473→   473→        <div className="oval oval-ring hidden w-[110px] shrink-0 bg-nx-navy-100 sm:block">
+   474→   474→          <Image src={image} alt={t(alt)} fill sizes="110px" className="object-cover" />
+   475→   475→        </div>
+   476→   476→      </div>
+   477→   477→      <p className="mt-4 leading-relaxed text-slate-600">{t(data.copy)}</p>
+   478→   478→      <ul className="mt-6 space-y-2.5">
+   479→   479→        {data.points.map((p) => (
+   480→   480→          <li key={p.en} className="flex items-start gap-2.5 text-[15px] text-nx-ink">
+   481→   481→            <Check className="mt-1 h-4 w-4 shrink-0 text-nx-verified" aria-hidden="true" />
+   482→   482→            {t(p)}
+   483→   483→          </li>
+   484→   484→        ))}
+   485→   485→      </ul>
+   486→   486→      <div className="mt-8 border-t border-nx-navy-100 pt-6">
+   487→   487→        <button
+   488→   488→          onClick={() => navigateTo("who-we-serve", which === "investor" ? "investors" : "founders")}
+   489→   489→          aria-label={t(cta)}
+   490→   490→          className="nx-arrow-btn inline-flex items-center gap-2 rounded-full bg-nx-navy-700 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-500"
+   491→   491→        >
+   492→   492→          {t(cta)}
+   493→   493→          <span className="nx-arrow">
+   494→   494→            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+   495→   495→          </span>
+   496→   496→        </button>
+   497→   497→      </div>
+   498→   498→    </motion.article>
+   499→   499→  );
+   500→   500→}
+   501→   501→
+   502→   502→/* ── Investors detail ─────────────────────────────────────────────────── */
+   503→   503→
+   504→   504→function InvestorsDetail() {
+   505→   505→  const { t, lang } = useLanguage();
+   506→   506→  const openInvestor = useDialogStore((s) => s.openInvestor);
+   507→   507→
+   508→   508→  return (
+   509→   509→    <>
+   510→   510→      <DetailHero
+   511→   511→        crumbs={[
+   512→   512→          { label: { en: "Who We Serve", bn: "আমাদের দর্শক" }, page: "who-we-serve" },
+   513→   513→          { label: { en: "For Investors", bn: "বিনিয়োগকারীদের জন্য" } },
+   514→   514→        ]}
+   515→   515→        eyebrow={T.invHeroEyebrow}
+   516→   516→        title={T.invHeroTitle}
+   517→   517→        copy={T.invHeroCopy}
+   518→   518→        image="/images/hero-tech.png"
+   519→   519→        imageAlt={t({ en: "Investor reviewing verified deal-flow on screen", bn: "স্ক্রিনে যাচাইকৃত ডিল-ফ্লো দেখছেন বিনিয়োগকারী" })}
+   520→   520→        meta={
+   521→   521→          <>
+   522→   522→            <MetaChip icon={<ShieldCheck className="h-3.5 w-3.5 text-nx-cyan-300" aria-hidden="true" />}>
+   523→   523→              {t({ en: "Verified fact-packs", bn: "যাচাইকৃত ফ্যাক্ট-প্যাক" })}
+   524→   524→            </MetaChip>
+   525→   525→            <MetaChip icon={<Banknote className="h-3.5 w-3.5 text-nx-cyan-300" aria-hidden="true" />}>
+   526→   526→              <span className="nx-num">{t({ en: "Tickets ৳50 lakh – ৳4 crore", bn: "টিকেট ৳৫০ লক্ষ – ৳৪ কোটি" })}</span>
+   527→   527→            </MetaChip>
+   528→   528→            <MetaChip icon={<Languages className="h-3.5 w-3.5 text-nx-cyan-300" aria-hidden="true" />}>
+   529→   529→              {t({ en: "Bangla & English documents", bn: "বাংলা ও ইংরেজি নথি" })}
+   530→   530→            </MetaChip>
+   531→   531→          </>
+   532→   532→        }
+   533→   533→        actions={
+   534→   534→          <>
+   535→   535→            <CyanButton onClick={() => openInvestor("investor")}>{t(T.invRegCta)}</CyanButton>
+   536→   536→            <OutlineLightButton onClick={() => navigateTo("opportunities")}>
+   537→   537→              {t(T.invBrowseCta)}
+   538→   538→            </OutlineLightButton>
+   539→   539→          </>
+   540→   540→        }
+   541→   541→      />
+   542→   542→
+   543→   543→      <PageBody className="py-12 md:py-16">
+   544→   544→        <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+   545→   545→          <div className="min-w-0 space-y-12">
+   546→   546→            {/* what investors get */}
+   547→   547→            <section aria-labelledby="inv-gets">
+   548→   548→              <Head id="inv-gets" eyebrow={T.invGetEyebrow} title={T.invGetTitle} copy={T.invGetCopy} />
+   549→   549→              <div className="mt-8 grid gap-5 md:grid-cols-3">
+   550→   550→                {T.invCards.map((card, i) => {
+   551→   551→                  const Icon = INV_ICONS[card.icon];
+   552→   552→                  return (
+   553→   553→                    <motion.article
+   554→   554→                      key={card.title.en}
+   555→   555→                      initial={{ opacity: 0, y: 14 }}
+   556→   556→                      animate={{ opacity: 1, y: 0 }}
+   557→   557→                      transition={{ duration: 0.35, delay: i * 0.07 }}
+   558→   558→                      className="h-full rounded-3xl border border-nx-navy-100 bg-white p-6 shadow-[0_10px_30px_-16px_rgba(6,31,74,0.15)]"
+   559→   559→                    >
+
+[showing lines 60-559 of 903; use offset=560 with limit to continue reading]

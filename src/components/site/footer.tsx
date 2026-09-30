@@ -26,7 +26,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand + newsletter */}
           <div>
-            <Logo variant="light" className="text-2xl" />
+            <Logo variant="light" className="h-10" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/65">{t(FOOTER.tagline)}</p>
             <div className="mt-5 flex items-center gap-2">
               <a
@@ -142,6 +142,16 @@ export function Footer() {
               {t(FOOTER.company)}
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
+              <li>
+                <button onClick={() => navigateTo("about")} className="text-white/70 transition-colors hover:text-white">
+                  {lang === "bn" ? "আমাদের কথা" : "About Us"}
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo("impact")} className="text-white/70 transition-colors hover:text-white">
+                  {lang === "bn" ? "ইমপ্যাক্ট" : "Impact"}
+                </button>
+              </li>
               <li>
                 <button onClick={() => navigateTo("services")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "সেবাসমূহ" : "Services"}

@@ -6,12 +6,14 @@ import type { L } from "./i18n";
    ──────────────────────────────────────────────────────────────── */
 
 export const NAV: { id: string; label: L }[] = [
+  { id: "about", label: { en: "About Us", bn: "আমাদের কথা" } },
   { id: "paths", label: { en: "Who We Serve", bn: "আমাদের দর্শক" } },
   { id: "how", label: { en: "How It Works", bn: "কীভাবে কাজ করে" } },
   { id: "vetting", label: { en: "Vetting", bn: "যাচাই প্রক্রিয়া" } },
   { id: "opportunities", label: { en: "Opportunities", bn: "সুযোগসমূহ" } },
   { id: "services", label: { en: "Services", bn: "সেবাসমূহ" } },
   { id: "insights", label: { en: "Insights", bn: "ইনসাইটস" } },
+  { id: "impact", label: { en: "Impact", bn: "ইমপ্যাক্ট" } },
   { id: "faq", label: { en: "FAQ", bn: "প্রশ্নোত্তর" } },
 ];
 
@@ -1840,4 +1842,351 @@ export const READER_PRINT = {
     en: "Educational insight from NexFund, the investor–entrepreneur matchmaking platform of Bangladesh. Not investment advice. Figures are illustrative. hello@nexfund.example · nexfund.example",
     bn: "বাংলাদেশের ইনভেস্টর–উদ্যোক্তা ম্যাচমেকিং প্ল্যাটফর্ম নেক্সফান্ডের শিক্ষামূলক ইনসাইট। এটি বিনিয়োগ পরামর্শ নয়। সংখ্যাগুলো উদাহরণমূলক। hello@nexfund.example · nexfund.example",
   } as L,
+} as const;
+
+/* ══════════════════════════════════════════════════════════════════
+   R11 — ABOUT page content (mission, vision, values, story, team)
+   ══════════════════════════════════════════════════════════════════ */
+
+export const ABOUT = {
+  hero: {
+    eyebrow: { en: "ABOUT NEXFUND", bn: "নেক্সফান্ড সম্পর্কে" } as L,
+    title: {
+      en: "The crossing between capital and conviction.",
+      bn: "পুঁজি ও প্রত্যয়ের মিলনবিন্দু।",
+    } as L,
+    copy: {
+      en: "NexFund is a Dhaka-based financial consultancy and matchmaking platform. We exist for one reason: to make private investment in Bangladesh a decision based on proof — not promises. This page is who we are, why we exist, and how we hold ourselves to it.",
+      bn: "নেক্সফান্ড ঢাকা-ভিত্তিক একটি আর্থিক পরামর্শদাতা ও ম্যাচমেকিং প্ল্যাটফর্ম। আমরা একটি কারণে কাজ করি: বাংলাদেশে ব্যক্তিগত বিনিয়োগ যেন হয় প্রমাণনির্ভর — প্রতিশ্রুতিনির্ভর নয়। এই পাতায় আছে আমরা কারা, কেন আছি, আর কীভাবে নিজেদের জবাবদিহি রাখি।",
+    } as L,
+    badge: { en: "Est. 2024 · Dhaka, Bangladesh", bn: "প্রতিষ্ঠান ২০২৪ · ঢাকা, বাংলাদেশ" } as L,
+  },
+  mission: {
+    eyebrow: { en: "OUR MISSION", bn: "আমাদের মিশন" } as L,
+    title: {
+      en: "Make informed private investment possible — for both sides of the table.",
+      bn: "টেবিলের দুই পক্ষের জন্যই তথ্যনির্ভর ব্যক্তিগত বিনিয়োগ সম্ভব করা।",
+    } as L,
+    statement: {
+      en: "To make informed private investment possible for Bangladeshi investors — and patient capital reachable for growth-ready Bangladeshi businesses — through verification-first matchmaking, plain-language documents, and fees disclosed in writing.",
+      bn: "যাচাই-প্রথম ম্যাচমেকিং, সহজভাষার নথি ও লিখিতভাবে জানানো ফি-এর মাধ্যমে বাংলাদেশি বিনিয়োগকারীদের জন্য তথ্যনির্ভর ব্যক্তিগত বিনিয়োগ সম্ভব করা — এবং বৃদ্ধিমুখী বাংলাদেশি ব্যবসার জন্য ধৈর্যশীল পুঁজি পৌঁছে দেওয়া।",
+    } as L,
+    points: [
+      {
+        en: "Verification comes first: no listing goes live before the five-pillar standard is passed.",
+        bn: "যাচাই আগে: পাঁচ-স্তম্ভ মানদণ্ড পাস না হলে কোনো তালিকা প্রকাশই হয় না।",
+      },
+      {
+        en: "Documents in plain Bangla and English — investors read what matters, not jargon.",
+        bn: "সহজ বাংলা ও ইংরেজিতে নথি — বিনিয়োগকারী পড়েন যা দরকার, জার্গন নয়।",
+      },
+      {
+        en: "Fees disclosed before any commitment, never as a percentage of your returns.",
+        bn: "যেকোনো অঙ্গীকারের আগেই ফি জানানো হয় — আপনার মুনাফার শতাংশ হিসেবে কখনোই নয়।",
+      },
+    ] as L[],
+  },
+  vision: {
+    eyebrow: { en: "OUR VISION", bn: "আমাদের ভিশন" } as L,
+    title: {
+      en: "A market where proof travels faster than promises.",
+      bn: "এমন বাজার, যেখানে প্রমাণ পৌঁছায় প্রতিশ্রুতির আগে।",
+    } as L,
+    statement: {
+      en: "A Bangladesh where no good business stalls because verified information or the right capital couldn't reach it in time — and no investor has to commit a single taka without seeing the proof first.",
+      bn: "এমন এক বাংলাদেশ, যেখানে যাচাইকৃত তথ্য বা সঠিক পুঁজি সময়মতো না পৌঁছানোর কারণে কোনো ভালো ব্যবসা থেমে থাকে না — আর কোনো বিনিয়োগকারীকেই প্রমাণ না দেখে এক টাকাও দিতে হয় না।",
+    } as L,
+    points: [
+      {
+        en: "Private capital becomes a normal, documented option for growing SMEs — not a last resort.",
+        bn: "বর্ধনশীল এসএমই-দের জন্য ব্যক্তিগত পুঁজি হয় স্বাভাবিক, নথিভুক্ত বিকল্প — শেষ ভরসা নয়।",
+      },
+      {
+        en: "Verification becomes the default language between investors and businesses.",
+        bn: "বিনিয়োগকারী ও ব্যবসার মধ্যে যাচাই হয়ে ওঠে আদান-প্রদানের প্রথম ভাষা।",
+      },
+      {
+        en: "Bangladeshi savings find productive homes in Bangladeshi businesses.",
+        bn: "বাংলাদেশি সঞ্চয় খুঁজে পায় উৎপাদনশীল ঠিকানা — বাংলাদেশি ব্যবসায়।",
+      },
+    ] as L[],
+  },
+  values: {
+    eyebrow: { en: "WHAT WE STAND ON", bn: "আমাদের ভিত্তি" } as L,
+    title: { en: "Five values, no fine print.", bn: "পাঁচটি মূল্যবোধ, কোনো ছোট অক্ষরে শর্ত নেই।" } as L,
+    sub: {
+      en: "These aren't posters on a wall — each one is enforced by something you can check on this website.",
+      bn: "এগুলো দেয়ালে টাঙানো পোস্টার নয় — প্রতিটির পেছনে আছে এই ওয়েবসাইটেই যাচাই করার মতো কিছু।",
+    } as L,
+    items: [
+      {
+        key: "proof",
+        title: { en: "Proof before promise", bn: "প্রতিশ্রুতির আগে প্রমাণ" } as L,
+        copy: {
+          en: "Every claim links to the check behind it — verification badges, risk notes, document lists. Trust is earned in documents, not adjectives.",
+          bn: "প্রতিটি দাবির পেছনে আছে যাচাই — ব্যাজ, ঝুঁকি-নোট, নথির তালিকা। বিশ্বাস অর্জিত হয় নথিতে, বিশেষণে নয়।",
+        } as L,
+        where: "vetting",
+      },
+      {
+        key: "plain",
+        title: { en: "Plain language, both languages", bn: "সহজ ভাষা, দুই ভাষাতেই" } as L,
+        copy: {
+          en: "Bangla first, English alongside — documents, insights, support. A decision you can't understand is a decision you can't own.",
+          bn: "বাংলা আগে, ইংরেজি পাশে — নথি, ইনসাইট, সহায়তা সবখানেই। যে সিদ্ধান্ত বুঝে নেওয়া যায় না, সেটা আপনার নিজেরও হয় না।",
+        } as L,
+        where: "insights",
+      },
+      {
+        key: "confidential",
+        title: { en: "Confidential by default", bn: "গোপনীয়তা ডিফল্ট" } as L,
+        copy: {
+          en: "Businesses are listed by code name. Names open only under NDA. Aggregated insights leave the room; personal data never does.",
+          bn: "ব্যবসা তালিকাভুক্ত হয় কোড নামে। NDA-এর পরেই কেবল আসল নাম জানা যায়। ঘর থেকে বেরোয় সমষ্টিগত তথ্য; ব্যক্তিগত তথ্য কখনোই নয়।",
+        } as L,
+        where: "privacy",
+      },
+      {
+        key: "no-custody",
+        title: { en: "We never hold your money", bn: "আপনার অর্থ আমাদের হাতে থাকে না" } as L,
+        copy: {
+          en: "Money moves directly between investor and business. We introduce, verify, document — we don't custody, guarantee, or pressure.",
+          bn: "অর্থ চলে সরাসরি বিনিয়োগকারী ও ব্যবসার মধ্যে। আমরা পরিচয় করিয়ে দিই, যাচাই করি, নথি তৈরি করি — গচ্ছিত রাখি না, নিশ্চয়তা দিই না, চাপ দিই না।",
+        } as L,
+        where: "terms",
+      },
+      {
+        key: "fees",
+        title: { en: "Fees in writing", bn: "ফি লিখিতভাবে" } as L,
+        copy: {
+          en: "Our introduction fee is disclosed before any engagement — a fixed amount, never a percentage of your returns. If a number isn't in writing, it isn't ours.",
+          bn: "পরিচয় করিয়ে দেওয়ার ফি যেকোনো কাজ শুরুর আগেই জানানো হয় — নির্দিষ্ট অঙ্কে, আপনার মুনাফার শতাংশ হিসেবে কখনোই নয়। যে অঙ্ক লিখিত নেই, সেটা আমাদের নয়।",
+        } as L,
+        where: "faq",
+      },
+    ],
+  },
+  story: {
+    eyebrow: { en: "WHY WE EXIST", bn: "কেন আমরা আছি" } as L,
+    title: { en: "Two missing pieces, one crossing.", bn: "দুটি অনুপস্থিত কণা, একটি সংযোগ।" } as L,
+    paragraphs: [
+      {
+        en: "Bangladesh runs on its small and medium businesses — the factories, farms, and trading houses that employ most of its people. Many of them are genuinely investable: real revenue, real customers, disciplined books. Yet when they need growth capital, the honest options are thin — and private money rarely reaches them, because it can't see them clearly.",
+        bn: "বাংলাদেশ চলে তার ছোট ও মাঝারি ব্যবসায় — যে কারখানা, খামার ও ট্রেডিং হাউস দেশের বেশিরভাগ মানুষের কর্মসংস্থান ধরে রাখে। এদের অনেকগুলোই সত্যিই বিনিয়োগযোগ্য: আসল রাজস্ব, আসল গ্রাহক, নিয়মানুবর্তিত হিসাব। তবু বৃদ্ধির মূলধন দরকার হলে সৎ পথগুলো সংকীর্ণ — ব্যক্তিগত পুঁজি পৌঁছায় না, কারণ সে তাদের স্পষ্ট দেখতে পায় না।",
+      },
+      {
+        en: "On the other side sit investors — families, professionals, returning expatriates — holding patient capital and willing to take real risk. What they lack isn't money or courage; it's verification. Bank statements they can check, risks stated before returns, documents in a language they trust.",
+        bn: "আর অন্য পাশে আছেন বিনিয়োগকারীরা — পরিবার, পেশাজীবী, দেশে ফেরা প্রবাসীরা — ধৈর্যশীল পুঁজি নিয়ে বসে আছেন, আসল ঝুঁকিও নিতে রাজি। তাঁদের অভাব টাকা বা সাহসের নয়; অভাব যাচাইয়ের। এমন ব্যাংক স্টেটমেন্ট যা মিলিয়ে দেখা যায়, মুনাফার আগে বলা ঝুঁকি, বিশ্বস্ত ভাষার নথি।",
+      },
+      {
+        en: "NexFund is the crossing between those two paths. We built the five-pillar vetting standard, anonymized listings, and bilingual fact-packs so that a serious conversation can start with evidence on the table — and so that a 'no' costs nothing but honesty.",
+        bn: "নেক্সফান্ড সেই দুই পথের মিলনবিন্দু। আমরা পাঁচ-স্তম্ভের যাচাই মানদণ্ড, বেনামি তালিকা ও দ্বিভাষিক ফ্যাক্ট-প্যাক তৈরি করেছি — যেন গুরুত্বপূর্ণ আলাপটা টেবিলে প্রমাণ রেখেই শুরু হয়, আর 'না'-ও যেন কিছু না খরচ করে সৎভাবে বলা যায়।",
+      },
+    ] as L[],
+  },
+  timeline: {
+    eyebrow: { en: "THE ROAD SO FAR", bn: "অবধির পথচলা" } as L,
+    title: { en: "How the platform took shape.", bn: "প্ল্যাটফর্মটি যেভাবে গড়ে উঠল।" } as L,
+    items: [
+      {
+        when: { en: "2024 · Q3", bn: "২০২৪ · তৃতীয় ত্রৈমাসিক" } as L,
+        title: { en: "The question", bn: "প্রশ্নটি" } as L,
+        copy: {
+          en: "A series of conversations with investors and founders kept landing on the same wall: good capital and good businesses exist in the same city and never meet with documents between them.",
+          bn: "বিনিয়োগকারী ও প্রতিষ্ঠাতাদের সাথে ধারাবাহিক আলাপ সবসময় এক জায়গায় গিয়ে থামত — ভালো পুঁজি আর ভালো ব্যবসা একই শহরে থাকে, অথচ মাঝখানে নথি না থাকায় কখনো দেখা হয় না।",
+        } as L,
+      },
+      {
+        when: { en: "2024 · Q4", bn: "২০২৪ · চতুর্থ ত্রৈমাসিক" } as L,
+        title: { en: "The Charter, before the first listing", bn: "প্রথম তালিকার আগেই চার্টার" } as L,
+        copy: {
+          en: "We wrote seven promises — fees in writing, no custody, no pressure — before publishing a single business. Standards first, listings second.",
+          bn: "একটি ব্যবসাও প্রকাশের আগে আমরা লিখে রাখি সাতটি প্রতিশ্রুতি — ফি লিখিতভাবে, অর্থ গচ্ছিত নয়, কোনো চাপ নয়। মানদণ্ড আগে, তালিকা পরে।",
+        } as L,
+      },
+      {
+        when: { en: "2025 · Q1", bn: "২০২৫ · প্রথম ত্রৈমাসিক" } as L,
+        title: { en: "The five-pillar standard", bn: "পাঁচ-স্তম্ভের মানদণ্ড" } as L,
+        copy: {
+          en: "Identity, legal, financial, operations, advisor review — the vetting pipeline was finalized with document checklists published openly on the site.",
+          bn: "পরিচয়, আইনি, আর্থিক, কার্যক্রম, অ্যাডভাইজর পর্যালোচনা — যাচাই পাইপলাইন চূড়ান্ত হয়, আর নথি-চেকলিস্ট প্রকাশ্যে সাইটে তোলা হয়।",
+        } as L,
+      },
+      {
+        when: { en: "2025 · Q2", bn: "২০২৫ · দ্বিতীয় ত্রৈমাসিক" } as L,
+        title: { en: "First verified listings live", bn: "প্রথম যাচাইকৃত তালিকা প্রকাশ" } as L,
+        copy: {
+          en: "Anonymized fact-packs with visible key risks went live; investor registration and the readiness quiz opened on the same day.",
+          bn: "প্রকাশ্য ঝুঁকিসহ বেনামি ফ্যাক্ট-প্যাক চালু হয়; একই দিনে খোলে বিনিয়োগকারী নিবন্ধন ও প্রস্তুতি-কুইজ।",
+        } as L,
+      },
+      {
+        when: { en: "Today", bn: "আজ" } as L,
+        title: { en: "A bilingual platform, growing pipeline", bn: "দ্বিভাষিক প্ল্যাটফর্ম, বাড়ছে পাইপলাইন" } as L,
+        copy: {
+          en: "Verified listings across garments, agri and logistics; an insights library; a glossary that speaks both languages — and every number we can show, on the Impact page.",
+          bn: "গার্মেন্টস, কৃষি ও লজিস্টিক্স জুড়ে যাচাইকৃত তালিকা; ইনসাইট লাইব্রেরি; দুই ভাষায় কথা বলা শব্দকোষ — আর যত সংখ্যা দেখানো সম্ভব, সব ইমপ্যাক্ট পাতায়।",
+        } as L,
+      },
+    ],
+  },
+  team: {
+    eyebrow: { en: "WHO DOES THE WORK", bn: "কাজটি কারা করেন" } as L,
+    title: { en: "A small senior team, a wider advisory bench.", bn: "ছোট অভিজ্ঞ টিম, বড় অ্যাডভাইজরি বেঞ্চ।" } as L,
+    sub: {
+      en: "NexFund runs lean on purpose: a core team that owns the standard, and specialist advisors who deepen it sector by sector.",
+      bn: "নেক্সফান্ড ইচ্ছাকৃতভাবেই ছোট: একটি কোর টিম মানদণ্ডের মালিকানা রাখে, আর খাতভিত্তিক বিশেষজ্ঞ অ্যাডভাইজররা সেটিকে গভীর করেন।",
+    } as L,
+    roles: [
+      {
+        title: { en: "Vetting & Research", bn: "যাচাই ও রিসার্চ" } as L,
+        copy: {
+          en: "Runs the five pillars for every listing — identity to advisor review — and writes the risk summaries investors read before the returns.",
+          bn: "প্রতিটি তালিকার পাঁচ স্তম্ভ পরিচালনা করে — পরিচয় থেকে অ্যাডভাইজর পর্যালোচনা — আর মুনাফার আগে বিনিয়োগকারী যে ঝুঁকি-সারসংক্ষেপ পড়েন, সেটি লেখে।",
+        } as L,
+      },
+      {
+        title: { en: "Financial Advisory", bn: "ফিন্যান্সিয়াল অ্যাডভাইজরি" } as L,
+        copy: {
+          en: "Prepares valuations, three-to-five-year models with downside cases, and the use-of-funds plans you see inside every fact-pack.",
+          bn: "মূল্যায়ন, ডাউনসাইড-কেসসহ তিন-পাঁচ বছরের মডেল, আর প্রতিটি ফ্যাক্ট-প্যাকের তহবিল-ব্যবহার পরিকল্পনা তৈরি করে।",
+        } as L,
+      },
+      {
+        title: { en: "Legal & Compliance", bn: "লিগ্যাল ও কমপ্লায়েন্স" } as L,
+        copy: {
+          en: "Reviews trade licenses, tax and regulatory documents, litigation checks — and keeps NDAs and data-room access in order.",
+          bn: "ট্রেড লাইসেন্স, কর ও নিয়ন্ত্রক নথি, মামলা-সংক্রান্ত অনুসন্ধান দেখে — আর NDA ও ডেটা-রুম অ্যাক্সেস সুষ্ঠু রাখে।",
+        } as L,
+      },
+      {
+        title: { en: "Investor Relations", bn: "ইনভেস্টর রিলেশনস" } as L,
+        copy: {
+          en: "Matches registered investors by sector, ticket size and horizon — then stays through term discussions and documentation.",
+          bn: "খাত, টিকেট সাইজ ও সময়সীমা মিলিয়ে নিবন্ধিত বিনিয়োগকারীদের ম্যাচ করে — তারপর শর্ত-আলোচনা ও ডকুমেন্টেশন জুড়ে পাশে থাকে।",
+        } as L,
+      },
+      {
+        title: { en: "Sector Advisors", bn: "খাতভিত্তিক অ্যাডভাইজর" } as L,
+        copy: {
+          en: "Garments, agri-food and logistics specialists engaged per listing — the people who know what 'normal' looks like in that industry.",
+          bn: "প্রতিটি তালিকা অনুযায়ী নিযুক্ত গার্মেন্টস, কৃষি-খাদ্য ও লজিস্টিক্স বিশেষজ্ঞ — যাঁরা জানেন ওই শিল্পে 'স্বাভাবিক' দেখতে কেমন।",
+        } as L,
+      },
+    ],
+  },
+  whatWeAre: {
+    areTitle: { en: "What we are", bn: "আমরা যা" } as L,
+    areNotTitle: { en: "What we are not", bn: "আমরা যা নই" } as L,
+    are: [
+      { en: "A financial consultancy and matchmaking platform, registered in Bangladesh.", bn: "বাংলাদেশে নিবন্ধিত একটি আর্থিক পরামর্শদাতা ও ম্যাচমেকিং প্ল্যাটফর্ম।" },
+      { en: "A verification-first gate between investors and businesses.", bn: "বিনিয়োগকারী ও ব্যবসার মাঝে যাচাই-প্রথম একটি প্রবেশদ্বার।" },
+      { en: "A documentation house: fact-packs, data rooms, bilingual records.", bn: "নথির ঘর: ফ্যাক্ট-প্যাক, ডেটা রুম, দ্বিভাষিক রেকর্ড।" },
+      { en: "Honest brokers of 'not yet' — readiness feedback is a service, not a rejection.", bn: "'এখনো নয়'-এর সৎ বাহক — প্রস্তুতি-মতামত একটি সেবা, প্রত্যাখ্যান নয়।" },
+    ] as L[],
+    areNot: [
+      { en: "Not a bank, NBFI, or depository — we never hold client funds.", bn: "ব্যাংক, এনবিএফআই বা আমানতকারী নই — গ্রাহকের অর্থ কখনো গচ্ছিত রাখি না।" },
+      { en: "Not a stock exchange or trading venue for listed securities.", bn: "তালিকাভুক্ত সিকিউরিটির জন্য স্টক এক্সচেঞ্জ বা ট্রেডিং ভেন্যু নই।" },
+      { en: "Not a guarantor of returns — no one at NexFund will promise you a profit.", bn: "মুনাফার নিশ্চয়তাদাতা নই — নেক্সফান্ডের কেউই আপনাকে লাভের প্রতিশ্রুতি দেবে না।" },
+      { en: "Not a pressure machine — our Charter commits us to decisions without deadlines.", bn: "চাপের যন্ত্র নই — চার্টার অনুযায়ী আমরা ডেডলাইন দিয়ে সিদ্ধান্ত নিতে বাধ্য করি না।" },
+    ] as L[],
+  },
+} as const;
+
+/* ══════════════════════════════════════════════════════════════════
+   R11 — IMPACT page content (live platform numbers + methodology)
+   ══════════════════════════════════════════════════════════════════ */
+
+export const IMPACT = {
+  hero: {
+    eyebrow: { en: "IMPACT & MARKET", bn: "ইমপ্যাক্ট ও মার্কেট" } as L,
+    title: {
+      en: "Numbers we can show — and how we count them.",
+      bn: "যে সংখ্যাগুলো দেখাতে পারি — আর কীভাবে গোনা হয়।",
+    } as L,
+    copy: {
+      en: "Most platforms publish vanity numbers. This page splits ours in two: live counts straight from the platform database, and curated milestones our team verifies quarterly. If a number isn't here, we don't claim it.",
+      bn: "বেশিরভাগ প্ল্যাটফর্ম প্রকাশ করে আত্মতুষ্টির সংখ্যা। আমরা আমাদেরটা রাখি দুই ভাগে: প্ল্যাটফর্ম ডেটাবেজ থেকে সরাসরি লাইভ গণনা, আর আমাদের টিমের ত্রৈমাসিকভাবে যাচাই করা কিউরেটেড মাইলফলক। কোনো সংখ্যা এখানে না থাকলে, আমরা সেটির দাবিই করি না।",
+    } as L,
+    badge: { en: "Live from the platform database", bn: "প্ল্যাটফর্ম ডেটাবেজ থেকে লাইভ" } as L,
+  },
+  liveSection: {
+    eyebrow: { en: "LIVE FROM THE DATABASE", bn: "ডেটাবেজ থেকে লাইভ" } as L,
+    title: { en: "The platform, right now.", bn: "প্ল্যাটফর্ম, এই মুহূর্তে।" } as L,
+    sub: {
+      en: "Every figure below is computed from the live platform database at the moment you opened this page — registrations, readiness checks, verified listings, expressed interest.",
+      bn: "নিচের প্রতিটি সংখ্যা আপনি এই পাতাটি খোলার মুহূর্তে লাইভ প্ল্যাটফর্ম ডেটাবেজ থেকে গণনা করা — নিবন্ধন, প্রস্তুতি-যাচাই, যাচাইকৃত তালিকা, প্রকাশিত আগ্রহ।",
+    } as L,
+  },
+  milestones: {
+    eyebrow: { en: "CURATED MILESTONES", bn: "কিউরেটেড মাইলফলক" } as L,
+    title: { en: "What has moved through the crossing.", bn: "মিলনবিন্দু দিয়ে যা অতিক্রম করেছে।" } as L,
+    sub: {
+      en: "Verified quarterly by the NexFund team. These are the business-level numbers behind the introductions — capital introduced, data rooms opened, matches made.",
+      bn: "নেক্সফান্ড টিমের ত্রৈমাসিকভাবে যাচাইকৃত। পরিচয়ের পেছনের ব্যবসা-স্তরের সংখ্যাগুলো — পরিচিত মূলধন, খোলা ডেটা রুম, হয়ে যাওয়া ম্যাচ।",
+    } as L,
+  },
+  methodology: {
+    eyebrow: { en: "HOW WE COUNT", bn: "কীভাবে গোনা হয়" } as L,
+    title: { en: "A number is only honest if its method is public.", bn: "পদ্ধতি প্রকাশ না থাকলে সংখ্যাও সৎ নয়।" } as L,
+    points: [
+      {
+        title: { en: "Live counts are computed, not typed", bn: "লাইভ গণনা টাইপ করা নয়, হিসাব করা" } as L,
+        copy: {
+          en: "Registrations, listings and interests are aggregated from the platform database on request. We cannot round them up, and we cannot backdate them.",
+          bn: "নিবন্ধন, তালিকা ও আগ্রহ অনুরোধের মুহূর্তে প্ল্যাটফর্ম ডেটাবেজ থেকে সমষ্টিভুক্ত হয়। বাড়িয়ে বলা বা পেছনের তারিখে বসানো আমাদের পক্ষে সম্ভব নয়।",
+        } as L,
+      },
+      {
+        title: { en: "\"Capital seeking\" is the listed range", bn: "\"সংগ্রহের লক্ষ্য\" মানে তালিকাভুক্ত পরিসর" } as L,
+        copy: {
+          en: "We sum the verified seeking range of every live listing. It is capital businesses are raising now — not money raised, committed, or guaranteed by NexFund.",
+          bn: "প্রতিটি লাইভ তালিকার যাচাইকৃত সংগ্রহ-পরিসর যোগ করা হয়। এটি ব্যবসাগুলো এখন সংগ্রহ করছে — উত্তোলিত, অঙ্গীকৃত বা নেক্সফান্ড-নিশ্চয়িত অর্থ নয়।",
+        } as L,
+      },
+      {
+        title: { en: "\"Appetite\" comes from stated preferences", bn: "\"বিনিয়োগ-মন\" আসে ঘোষিত পছন্দ থেকে" } as L,
+        copy: {
+          en: "Registered investors state a ticket-size preference; we sum the stated ranges. It is intent, not deposits — no money sits with us, ever.",
+          bn: "নিবন্ধিত বিনিয়োগকারীরা টিকেট-সাইজের পছন্দ জানান; ঘোষিত পরিসরগুলো যোগ করা হয়। এটি ইচ্ছার প্রকাশ, আমানত নয় — আমাদের কাছে কখনোই অর্থ জমা থাকে না।",
+        } as L,
+      },
+      {
+        title: { en: "Milestones are verified quarterly", bn: "মাইলফলক ত্রৈমাসিকভাবে যাচাইকৃত" } as L,
+        copy: {
+          en: "Introductions made, data rooms opened and capital introduced are recorded when they happen and re-checked each quarter. Any correction is published, not buried.",
+          bn: "পরিচয়, ডেটা রুম ও পরিচিত মূলধন ঘটনা ঘটার সময়েই নথিভুক্ত হয়, প্রতি ত্রৈমাসিকে পুনঃযাচাই হয়। কোনো সংশোধন চাপা দেওয়া হয় না, প্রকাশ করা হয়।",
+        } as L,
+      },
+      {
+        title: { en: "We don't publish returns", bn: "আমরা মুনাফার হার প্রকাশ করি না" } as L,
+        copy: {
+          en: "You will not find an IRR, a success rate, or a 'portfolio performance' figure on this page. Investments are private contracts between two parties — and past results never promise future ones.",
+          bn: "এই পাতায় আইআরআর, সফলতার হার বা 'পোর্টফোলিও পারফরম্যান্স' খুঁজে পাবেন না। বিনিয়োগ দুই পক্ষের ব্যক্তিগত চুক্তি — আর অতীতের ফলাফল ভবিষ্যতের প্রতিশ্রুতি নয়।",
+        } as L,
+      },
+      {
+        title: { en: "Demo-stage honesty", bn: "ডেমো-পর্যায়ের স্বচ্ছতা" } as L,
+        copy: {
+          en: "This deployment is a staging showcase: listings and milestone figures are marked demo data for presentation purposes. The counting method, however, is production-grade.",
+          bn: "এই ডিপ্লয়মেন্ট একটি স্টেজিং শোকেস: তালিকা ও মাইলফলকের সংখ্যাগুলো উপস্থাপনার জন্য ডেমো হিসেবে চিহ্নিত। তবে গণনার পদ্ধতিটি প্রোডাকশন-মানের।",
+        } as L,
+      },
+    ],
+  },
+  insightStats: {
+    eyebrow: { en: "KNOWLEDGE OUTPUT", bn: "জ্ঞান-উৎপাদন" } as L,
+    title: { en: "What we've published, free for everyone.", bn: "যা প্রকাশ করেছি, সবার জন্য উন্মুক্ত।" } as L,
+    sub: {
+      en: "Insights, glossary terms, FAQs and fact-packs — the library that keeps both sides of the crossing speaking the same language.",
+      bn: "ইনসাইট, শব্দকোষ, প্রশ্নোত্তর ও ফ্যাক্ট-প্যাক — মিলনবিন্দুর দুই পক্ষ যেন এক ভাষায় কথা বলে, সেই লাইব্রেরি।",
+    } as L,
+  },
+  cta: {
+    title: { en: "Numbers start with a conversation.", bn: "সংখ্যা শুরু হয় একটি আলাপ দিয়ে।" } as L,
+    copy: {
+      en: "Register as an investor or bring us your business — the next figure on this page could be yours.",
+      bn: "বিনিয়োগকারী হিসেবে নিবন্ধন করুন বা আপনার ব্যবসা নিয়ে আসুন — এই পাতার পরের সংখ্যাটি হতে পারে আপনার।",
+    } as L,
+  },
 } as const;

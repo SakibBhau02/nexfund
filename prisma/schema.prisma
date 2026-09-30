@@ -123,3 +123,14 @@ model NewsletterSubscriber {
   language  String   @default("bn")
   createdAt DateTime @default(now())
 }
+
+/// R11 — Curated, quarterly-verified platform milestones for the Impact page
+/// (business-reported figures: capital introduced, data rooms opened, …).
+/// Live counts (registrations, listings, interests) are computed directly
+/// from their own tables and never stored here.
+model PlatformStat {
+  key       String   @id // introduced_lakh | rooms_opened | matches_made | businesses_onboarded | ...
+  value     Int
+  note      String? // optional EN note on how the figure was last verified
+  updatedAt DateTime @updatedAt
+}
