@@ -1,0 +1,11 @@
+# Files needed in git but NOT in Vercel deployments
+.next
+qa/
+tool-results/
+download/
+upload/
+db/
+*.log
+*.docx
+build_report.py
+dev-err.log
