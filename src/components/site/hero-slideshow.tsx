@@ -69,7 +69,6 @@ export function HeroSlideshow({
             priority={i === 0}
             loading={i === 0 ? undefined : "lazy"}
             sizes="100vw"
-            quality={80}
             className={cn(
               "object-cover",
               i === active && !reduce && "nx-kenburns"

@@ -253,6 +253,22 @@ export const OPP = {
   seeking: { en: "Seeking", bn: "সংগ্রহের লক্ষ্য" } as L,
   stage: { en: "Stage", bn: "ধাপ" } as L,
   instrument: { en: "Instrument", bn: "ইনস্ট্রুমেন্ট" } as L,
+  /** R13: card fact-sheet additions — revenue + payout/profit-share structure. */
+  revenue: { en: "Revenue", bn: "বার্ষিক রাজস্ব" } as L,
+  payout: { en: "Payout structure", bn: "পে-আউট কাঠামো" } as L,
+  payoutEquity: {
+    en: "Profit share ∝ equity stake",
+    bn: "মুনাফার অংশ ∝ ইক্যুইটি শেয়ার",
+  } as L,
+  payoutRevenue: {
+    en: "Monthly · share of revenue",
+    bn: "মাসিক · রাজস্বের নির্দিষ্ট অংশ",
+  } as L,
+  payoutMixed: {
+    en: "Dividends + interest blend",
+    bn: "ডিভিডেন্ড + সুদের সমন্বয়",
+  } as L,
+  factSheet: { en: "View fact-sheet", bn: "ফ্যাক্ট-শিট দেখুন" } as L,
   keyRisks: { en: "Key risks", bn: "প্রধান ঝুঁকি" } as L,
   viewSummary: { en: "View Summary", bn: "সারসংক্ষেপ দেখুন" } as L,
   registerDocs: { en: "Register for documents", bn: "নথি দেখতে রেজিস্টার করুন" } as L,

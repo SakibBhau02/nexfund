@@ -1,0 +1,605 @@
+     1→"use client";
+     2→
+     3→import Image from "next/image";
+     4→import { useEffect, useMemo, useRef, useState } from "react";
+     5→import { useQuery } from "@tanstack/react-query";
+     6→import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+     7→import {
+     8→  ShieldCheck,
+     9→  AlertTriangle,
+    10→  Check,
+    11→  GitCompareArrows,
+    12→  Lock,
+    13→  MapPin,
+    14→  ArrowUpRight,
+    15→  Info,
+    16→  X,
+    17→} from "lucide-react";
+    18→import { cn } from "@/lib/utils";
+    19→import { useLanguage, type L } from "@/lib/i18n";
+    20→import { useDialogStore } from "@/lib/dialog-store";
+    21→import { OPP, BADGES, BADGE_TIPS, CMP, CMP_SHARE, type BadgeKey } from "@/lib/content";
+    22→import { formatTkRange, bnNum } from "@/lib/format";
+    23→import { SectionHeading } from "./brand";
+    24→import { Reveal } from "./reveal";
+    25→import { G } from "./glossary";
+    26→import { CompareDialog } from "./dialogs/compare-dialog";
+    27→import {
+    28→  Tooltip,
+    29→  TooltipContent,
+    30→  TooltipProvider,
+    31→  TooltipTrigger,
+    32→} from "@/components/ui/tooltip";
+    33→import { Skeleton } from "@/components/ui/skeleton";
+    34→
+    35→export type OpportunityDTO = {
+    36→  id: string;
+    37→  slug: string;
+    38→  codeName: string;
+    39→  sector: string;
+    40→  sectorBn: string;
+    41→  location: string;
+    42→  locationBn: string;
+    43→  headline: string;
+    44→  headlineBn: string;
+    45→  description: string;
+    46→  descriptionBn: string;
+    47→  seekingMin: number;
+    48→  seekingMax: number;
+    49→  stage: number;
+    50→  instrument: string;
+    51→  instrumentBn: string;
+    52→  risks: { en: string; bn: string }[];
+    53→  badges: BadgeKey[];
+    54→  image: string;
+    55→  revenue?: string;
+    56→  revenueBn?: string;
+    57→  // R2 detail-dialog enrichment
+    58→  overview?: string;
+    59→  overviewBn?: string;
+    60→  teamNote?: string;
+    61→  teamNoteBn?: string;
+    62→  financialNote?: string;
+    63→  financialNoteBn?: string;
+    64→  useOfFunds?: { item: { en: string; bn: string }; pct: number }[];
+    65→  advisorNote?: string;
+    66→  advisorNoteBn?: string;
+    67→  modelNote?: string;
+    68→  modelNoteBn?: string;
+    69→};
+    70→
+    71→/** Compare feature limits & tray hint (R5-CMP local copy — CMP covers the rest) */
+    72→const MAX_COMPARE = 3;
+    73→const MIN_TWO: L = {
+    74→  en: "Pick at least 2 listings to compare",
+    75→  bn: "তুলনা করতে অন্তত ২টি তালিকা বাছাই করুন",
+    76→};
+    77→
+    78→/* ── R7: compare shortlist persistence + #cmp= permalink hydration ──────
+    79→   localStorage key for the saved shortlist (survives reloads). */
+    80→const LS_KEY = "nx-compare";
+    81→/** Module-scope (not useRef): the BN⇄EN remount must NOT re-apply the hash —
+    82→   otherwise every language toggle would re-open the shared comparison. */
+    83→let cmpHashApplied = false;
+    84→
+    85→export function Opportunities() {
+    86→  const { t, lang } = useLanguage();
+    87→  const openInvestor = useDialogStore((s) => s.openInvestor);
+    88→  const openOpportunity = useDialogStore((s) => s.openOpportunity);
+    89→  /* R6: sector filter lives in the store so the BN⇄EN cross-fade keeps it */
+    90→  const sector = useDialogStore((s) => s.sectorFilter);
+    91→  const setSector = useDialogStore((s) => s.setSectorFilter);
+    92→
+    93→  /* ── R5-CMP: side-by-side compare state. The shortlist lives in the zustand
+    94→     store so the language cross-fade (key={lang} remount) keeps the picks. ── */
+    95→  const compare = useDialogStore((s) => s.compareSlugs);
+    96→  const setCompare = useDialogStore((s) => s.setCompareSlugs);
+    97→  /* R7: open flag lifted into the store — the cross-fade remount used to
+    98→     close the dialog mid-comparison (and race the #cmp= permalink flow). */
+    99→  const compareOpen = useDialogStore((s) => s.compareOpen);
+   100→  const setCompareOpen = useDialogStore((s) => s.setCompareOpen);
+   101→  const [capToast, setCapToast] = useState(false);
+   102→  const toastTimer = useRef<number | null>(null);
+   103→  const reduce = useReducedMotion();
+   104→
+   105→  /* R7: "loaded a shared comparison ✓" pill in the tray (6s, like #sim=) */
+   106→  const [sharedLoaded, setSharedLoaded] = useState(false);
+   107→  const sharedTimer = useRef<number | null>(null);
+   108→  /* R7: hydrate the shortlist from localStorage exactly once per mount;
+   109→     first save-effect run is skipped so hydration is never overwritten. */
+   110→  const hydratedRef = useRef(false);
+   111→  const skipFirstSaveRef = useRef(true);
+   112→
+   113→  const flashCapToast = () => {
+   114→    setCapToast(true);
+   115→    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+   116→    toastTimer.current = window.setTimeout(() => setCapToast(false), 2800);
+   117→  };
+   118→
+   119→  // clear the pending toast/share timers on unmount
+   120→  useEffect(() => {
+   121→    return () => {
+   122→      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+   123→      if (sharedTimer.current !== null) window.clearTimeout(sharedTimer.current);
+   124→    };
+   125→  }, []);
+   126→
+   127→  const toggleCompare = (slug: string) => {
+   128→    if (compare.includes(slug)) {
+   129→      setCompare(compare.filter((s) => s !== slug));
+   130→    } else if (compare.length >= MAX_COMPARE) {
+   131→      // cap reached — don't add; flash the hint instead
+   132→      flashCapToast();
+   133→    } else {
+   134→      setCompare([...compare, slug]);
+   135→    }
+   136→  };
+   137→
+   138→  const { data, isLoading } = useQuery<OpportunityDTO[]>({
+   139→    queryKey: ["opportunities"],
+   140→    queryFn: async () => {
+   141→      const res = await fetch("/api/opportunities");
+   142→      if (!res.ok) throw new Error("Failed to load");
+   143→      return res.json();
+   144→    },
+   145→    staleTime: 60_000,
+   146→  });
+   147→
+   148→  const sectors = useMemo(() => {
+   149→    if (!data) return [];
+   150→    const set = new Map<string, L>();
+   151→    for (const o of data) set.set(o.sector, { en: o.sector, bn: o.sectorBn });
+   152→    return Array.from(set.entries());
+   153→  }, [data]);
+   154→
+   155→  const filtered = useMemo(() => {
+   156→    if (!data) return [];
+   157→    return sector === "all" ? data : data.filter((o) => o.sector === sector);
+   158→  }, [data, sector]);
+   159→
+   160→  /* selected opportunities in pick order, resolved from the shared cache */
+   161→  const compareItems = useMemo(
+   162→    () =>
+   163→      compare
+   164→        .map((slug) => data?.find((o) => o.slug === slug))
+   165→        .filter((o): o is OpportunityDTO => Boolean(o)),
+   166→    [compare, data]
+   167→  );
+   168→
+   169→  /* ── R7: #cmp=slug1,slug2 permalink → hydrate the shortlist + open the
+   170→     dialog (≥2 valid slugs). Waits for the query cache, applies once per
+   171→     page load via rAF (same post-hydration pattern as #sim=/#insight=). */
+   172→  useEffect(() => {
+   173→    if (cmpHashApplied || !data) return;
+   174→    cmpHashApplied = true;
+   175→    const m = /^#cmp=([a-z0-9-]+(?:,[a-z0-9-]+){0,2})$/i.exec(window.location.hash);
+   176→    if (!m) return;
+   177→    const wanted = m[1].split(",").filter((s) => data.some((o) => o.slug === s));
+   178→    if (wanted.length === 0) return; // stale link → degrade to the normal page
+   179→    const raf = requestAnimationFrame(() => {
+   180→      setCompare(wanted.slice(0, MAX_COMPARE));
+   181→      if (wanted.length >= 2) setCompareOpen(true);
+   182→      setSharedLoaded(true);
+   183→      if (sharedTimer.current !== null) window.clearTimeout(sharedTimer.current);
+   184→      sharedTimer.current = window.setTimeout(() => setSharedLoaded(false), 6000);
+   185→    });
+   186→    return () => cancelAnimationFrame(raf);
+   187→  }, [data, setCompare, setCompareOpen]);
+   188→
+   189→  /* ── R7: restore the saved shortlist from localStorage (a shared #cmp=
+   190→     link wins). Re-runs per BN⇄EN remount, but the store already matches LS
+   191→     because every change is persisted below — so it's a no-op after reload. */
+   192→  useEffect(() => {
+   193→    if (hydratedRef.current) return;
+   194→    hydratedRef.current = true;
+   195→    if (/^#cmp=/i.test(window.location.hash)) return;
+   196→    try {
+   197→      const raw = window.localStorage.getItem(LS_KEY);
+   198→      if (!raw) return;
+   199→      const saved: unknown = JSON.parse(raw);
+   200→      if (Array.isArray(saved)) {
+   201→        const slugs = saved
+   202→          .filter((s): s is string => typeof s === "string")
+   203→          .slice(0, MAX_COMPARE);
+   204→        if (slugs.length > 0) setCompare(slugs);
+   205→      }
+   206→    } catch {
+   207→      /* corrupt/unavailable storage — ignore */
+   208→    }
+   209→  }, [setCompare]);
+   210→
+   211→  /* ── R7: persist every shortlist change (the first post-mount run is
+   212→     skipped so it can't clear storage before hydration has applied). */
+   213→  useEffect(() => {
+   214→    if (skipFirstSaveRef.current) {
+   215→      skipFirstSaveRef.current = false;
+   216→      return;
+   217→    }
+   218→    try {
+   219→      if (compare.length > 0) window.localStorage.setItem(LS_KEY, JSON.stringify(compare));
+   220→      else window.localStorage.removeItem(LS_KEY);
+   221→    } catch {
+   222→      /* storage unavailable — non-fatal */
+   223→    }
+   224→  }, [compare]);
+   225→
+   226→  return (
+   227→    <section id="opportunities" className="bg-nx-mist py-20 md:py-24" aria-labelledby="opp-title">
+   228→      <div className="mx-auto max-w-[1200px] px-5 md:px-6">
+   229→        <Reveal>
+   230→          <SectionHeading titleId="opp-title" eyebrow={t(OPP.eyebrow)} title={t(OPP.title)} sub={t(OPP.sub)} />
+   231→        </Reveal>
+   232→
+   233→        {/* Sector filter chips — with press micro-interaction (R2) */}
+   234→        <Reveal delay={0.05}>
+   235→          <div className="mt-8 flex flex-wrap items-center justify-center gap-2" role="group" aria-label={lang === "bn" ? "খাত ফিল্টার" : "Sector filter"}>
+   236→            {["all", ...sectors.map(([k]) => k)].map((key) => {
+   237→              const label = key === "all" ? t(OPP.allSectors) : t(sectors.find(([k]) => k === key)![1]);
+   238→              const active = sector === key;
+   239→              return (
+   240→                <motion.button
+   241→                  key={key}
+   242→                  onClick={() => setSector(key)}
+   243→                  aria-pressed={active}
+   244→                  whileTap={{ scale: 0.93 }}
+   245→                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+   246→                  className={cn(
+   247→                    "rounded-full border px-4 py-1.5 text-sm font-semibold transition-all duration-200",
+   248→                    active
+   249→                      ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_8px_18px_-8px_rgba(10,58,143,0.6)]"
+   250→                      : "border-nx-navy-200 bg-white text-nx-navy-800 hover:-translate-y-0.5 hover:border-nx-navy-500 hover:shadow-[0_8px_18px_-10px_rgba(10,58,143,0.4)]"
+   251→                  )}
+   252→                >
+   253→                  {label}
+   254→                </motion.button>
+   255→              );
+   256→            })}
+   257→          </div>
+   258→        </Reveal>
+   259→
+   260→        {/* Cards */}
+   261→        <div className="mt-10">
+   262→          {isLoading ? (
+   263→            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+   264→              {[0, 1, 2].map((i) => (
+   265→                <div key={i} className="rounded-3xl border border-nx-navy-100 bg-white p-6">
+   266→                  <div className="flex gap-4">
+   267→                    <Skeleton className="nx-shimmer h-24 w-20 rounded-full" />
+   268→                    <div className="flex-1 space-y-2.5">
+   269→                      <Skeleton className="nx-shimmer h-4 w-3/4" />
+   270→                      <Skeleton className="nx-shimmer h-3 w-1/2" />
+   271→                      <Skeleton className="nx-shimmer h-3 w-2/3" />
+   272→                    </div>
+   273→                  </div>
+   274→                  <Skeleton className="nx-shimmer mt-5 h-16 w-full rounded-xl" />
+   275→                </div>
+   276→              ))}
+   277→            </div>
+   278→          ) : filtered.length === 0 ? (
+   279→            <div className="mx-auto max-w-md rounded-3xl border border-dashed border-nx-navy-200 bg-white p-10 text-center">
+   280→              <p className="font-bold text-nx-navy-900">{t(OPP.emptyTitle)}</p>
+   281→              <button
+   282→                onClick={() => openInvestor("investor")}
+   283→                className="mt-5 rounded-full bg-nx-navy-700 px-6 py-2.5 text-sm font-bold text-white hover:bg-nx-navy-600"
+   284→              >
+   285→                {t(OPP.emptyCta)}
+   286→              </button>
+   287→            </div>
+   288→          ) : (
+   289→            <AnimatePresence mode="popLayout">
+   290→              <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+   291→                {filtered.map((o, idx) => {
+   292→                  const selected = compare.includes(o.slug);
+   293→                  return (
+   294→                  <motion.article
+   295→                    layout
+   296→                    key={o.id}
+   297→                    initial={{ opacity: 0, y: 24 }}
+   298→                    animate={{ opacity: 1, y: 0 }}
+   299→                    exit={{ opacity: 0, scale: 0.96 }}
+   300→                    transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.2, 0.8, 0.2, 1] }}
+   301→                    className={cn(
+   302→                      "nx-card-sheen group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]",
+   303→                      selected
+   304→                        ? "border-nx-cyan-400 ring-2 ring-nx-cyan-400/60"
+   305→                        : "border-nx-navy-100 hover:border-nx-cyan-200"
+   306→                    )}
+   307→                  >
+   308→                    {/* selected corner indicator — scannable compare state */}
+   309→                    <AnimatePresence>
+   310→                      {selected && (
+   311→                        <motion.span
+   312→                          initial={{ scale: 0, opacity: 0 }}
+   313→                          animate={{ scale: 1, opacity: 1 }}
+   314→                          exit={{ scale: 0, opacity: 0 }}
+   315→                          transition={{ type: "spring", stiffness: 500, damping: 28 }}
+   316→                          className="absolute right-3.5 top-3.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-nx-cyan-500 text-nx-navy-900 shadow-[0_6px_14px_-6px_rgba(38,183,216,0.9)]"
+   317→                          aria-hidden="true"
+   318→                        >
+   319→                          <Check className="h-3.5 w-3.5" />
+   320→                        </motion.span>
+   321→                      )}
+   322→                    </AnimatePresence>
+   323→                    <div className="flex gap-4 p-5 pb-0">
+   324→                      <div className="oval oval-ring w-[86px] shrink-0 bg-nx-navy-100">
+   325→                        <Image
+   326→                          src={o.image}
+   327→                          alt={`${o.codeName} — ${lang === "bn" ? o.sectorBn : o.sector}`}
+   328→                          fill
+   329→                          sizes="86px"
+   330→                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+   331→                        />
+   332→                      </div>
+   333→                      <div className="min-w-0">
+   334→                        <p className="flex items-center gap-1.5 truncate text-[11px] font-bold tracking-wide text-nx-cyan-700 uppercase">
+   335→                          <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+   336→                          <span className="truncate">{lang === "bn" ? o.sectorBn : o.sector} · {lang === "bn" ? o.locationBn : o.location}</span>
+   337→                        </p>
+   338→                        <h3 className="nx-num mt-1 text-lg font-extrabold leading-snug text-nx-navy-900">
+   339→                          {o.codeName}
+   340→                        </h3>
+   341→                        <p className="mt-1 line-clamp-2 text-sm leading-snug text-slate-600">
+   342→                          {lang === "bn" ? o.headlineBn : o.headline}
+   343→                        </p>
+   344→                      </div>
+   345→                    </div>
+   346→
+   347→                    <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+   348→                      {/* key facts */}
+   349→                      <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-nx-mist p-4 text-sm">
+   350→                        <div>
+   351→                          <dt className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
+   352→                            {t(OPP.seeking)}
+   353→                          </dt>
+   354→                          <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
+   355→                            {formatTkRange(o.seekingMin, o.seekingMax, lang)}
+   356→                          </dd>
+   357→                        </div>
+   358→                        <div>
+   359→                          <dt className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
+   360→                            {t(OPP.instrument)}
+   361→                          </dt>
+   362→                          <dd className="mt-0.5 font-semibold text-nx-navy-800">
+   363→                            {/* R2: glossary tooltip on instrument (§7 #14) */}
+   364→                            {o.instrument.toLowerCase().includes("equity") ? (
+   365→                              <G term="equity">{lang === "bn" ? o.instrumentBn : o.instrument}</G>
+   366→                            ) : o.instrument.toLowerCase().includes("revenue") ? (
+   367→                              <G term="revenue share">{lang === "bn" ? o.instrumentBn : o.instrument}</G>
+   368→                            ) : (
+   369→                              lang === "bn" ? o.instrumentBn : o.instrument
+   370→                            )}
+   371→                          </dd>
+   372→                        </div>
+   373→                      </dl>
+   374→
+   375→                      {/* verification progress */}
+   376→                      <div className="mt-4">
+   377→                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+   378→                          <span className="uppercase tracking-wide">{t(OPP.verificationProgress)}</span>
+   379→                          <span className="nx-num text-nx-navy-800">
+   380→                            {lang === "bn"
+   381→                              ? `${["১", "২", "৩", "৪", "৫"][o.stage - 1]}/৫`
+   382→                              : `${o.stage}/5`}
+   383→                          </span>
+   384→                        </div>
+   385→                        <div className="mt-1.5 flex gap-1.5" aria-hidden="true">
+   386→                          {[1, 2, 3, 4, 5].map((s) => (
+   387→                            <span
+   388→                              key={s}
+   389→                              className={cn(
+   390→                                "h-1.5 flex-1 rounded-full",
+   391→                                s <= o.stage ? "bg-nx-cyan-500" : "bg-nx-navy-100"
+   392→                              )}
+   393→                            />
+   394→                          ))}
+   395→                        </div>
+   396→                        <TooltipProvider delayDuration={120}>
+   397→                          <div className="mt-2 flex flex-wrap gap-1.5">
+   398→                            {o.badges.map((b) => (
+   399→                              <Tooltip key={b}>
+   400→                                <TooltipTrigger asChild>
+   401→                                  <span className="inline-flex cursor-help items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified-700">
+   402→                                    <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+   403→                                    {t(BADGES[b])}
+   404→                                  </span>
+   405→                                </TooltipTrigger>
+   406→                                <TooltipContent className="max-w-[220px] text-xs leading-relaxed">
+   407→                                  {t(BADGE_TIPS[b])}
+   408→                                </TooltipContent>
+   409→                              </Tooltip>
+   410→                            ))}
+   411→                          </div>
+   412→                        </TooltipProvider>
+   413→                      </div>
+   414→
+   415→                      {/* Key risks — ALWAYS visible (blueprint trust rule) */}
+   416→                      <div className="mt-4 flex-1 rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-4 shadow-[inset_0_1px_0_rgba(183,121,31,0.08),0_12px_32px_-20px_rgba(183,121,31,0.5)]">
+   417→                        <p className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wide text-nx-warn-700 uppercase">
+   418→                          <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+   419→                          {t(OPP.keyRisks)}
+   420→                        </p>
+   421→                        <ul className="mt-2 space-y-1.5">
+   422→                          {o.risks.slice(0, 3).map((r) => (
+   423→                            <li key={r.en} className="flex items-start gap-2 text-[13px] leading-snug text-nx-ink/85">
+   424→                              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-nx-warn" aria-hidden="true" />
+   425→                              {lang === "bn" ? r.bn : r.en}
+   426→                            </li>
+   427→                          ))}
+   428→                        </ul>
+   429→                      </div>
+   430→
+   431→                      {/* R5-CMP: compare toggle — adds/removes this listing from the tray */}
+   432→                      <motion.button
+   433→                        type="button"
+   434→                        whileTap={{ scale: 0.98 }}
+   435→                        onClick={() => toggleCompare(o.slug)}
+   436→                        aria-pressed={selected}
+   437→                        title={selected ? t(CMP.chipAriaOn) : t(CMP.chipAria)}
+   438→                        data-compare-toggle={o.slug}
+   439→                        className={cn(
+   440→                          "mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full border text-xs font-bold transition-all duration-200",
+   441→                          selected
+   442→                            ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_12px_24px_-14px_rgba(10,58,143,0.8)]"
+   443→                            : "border-dashed border-nx-navy-300 bg-white text-nx-navy-600 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+   444→                        )}
+   445→                      >
+   446→                        {selected ? (
+   447→                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+   448→                        ) : (
+   449→                          <GitCompareArrows className="h-3.5 w-3.5" aria-hidden="true" />
+   450→                        )}
+   451→                        {t(CMP.chip)}
+   452→                      </motion.button>
+   453→
+   454→                      {/* actions — open full detail dialog (R2) */}
+   455→                      <div className="mt-5 flex items-center gap-2">
+   456→                        <motion.button
+   457→                          whileTap={{ scale: 0.97 }}
+   458→                          onClick={() => openOpportunity(o.slug)}
+   459→                          className="nx-arrow-btn flex flex-1 items-center justify-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-4 py-2.5 text-sm font-bold text-nx-navy-800 transition-colors hover:border-nx-navy-500"
+   460→                        >
+   461→                          <Info className="h-4 w-4" aria-hidden="true" />
+   462→                          {t(OPP.viewSummary)}
+   463→                          <span className="nx-arrow">
+   464→                            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+   465→                          </span>
+   466→                        </motion.button>
+   467→                        <button
+   468→                          onClick={() => openInvestor("investor")}
+   469→                          aria-label={t(OPP.registerDocs)}
+   470→                          className="inline-flex items-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+   471→                        >
+   472→                          <Lock className="h-4 w-4" aria-hidden="true" />
+   473→                          {lang === "bn" ? "নথি" : "Docs"}
+   474→                        </button>
+   475→                      </div>
+   476→                    </div>
+   477→                  </motion.article>
+   478→                  );
+   479→                })}
+   480→              </motion.div>
+   481→            </AnimatePresence>
+   482→          )}
+   483→        </div>
+   484→
+   485→        {/* anonymization note */}
+   486→        <Reveal>
+   487→          <p className="mt-8 flex items-center justify-center gap-2 text-center text-sm text-slate-600">
+   488→            <Lock className="h-4 w-4 text-nx-navy-500" aria-hidden="true" />
+   489→            {t(OPP.anonymizedNote)}
+   490→          </p>
+   491→        </Reveal>
+   492→      </div>
+   493→
+   494→      {/* ── R5-CMP: cap toast (max 3) — status pill, auto-dismisses ── */}
+   495→      <AnimatePresence>
+   496→        {capToast && (
+   497→          <motion.div
+   498→            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.97 }}
+   499→            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+   500→            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.97 }}
+   501→            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+   502→            className="pointer-events-none fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-[60] flex justify-center px-4 md:bottom-24"
+   503→          >
+   504→            <p
+   505→              role="status"
+   506→              className="flex items-center gap-2 rounded-full bg-nx-navy-900 px-4 py-2.5 text-xs font-bold text-white shadow-[0_18px_40px_-16px_rgba(6,31,74,0.65)]"
+   507→            >
+   508→              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-nx-cyan-400" aria-hidden="true" />
+   509→              {t(CMP.maxToast)}
+   510→            </p>
+   511→          </motion.div>
+   512→        )}
+   513→      </AnimatePresence>
+   514→
+   515→      {/* ── R5-CMP: floating compare tray — sits above the mobile CTA bar ── */}
+   516→      <AnimatePresence>
+   517→        {compare.length > 0 && !compareOpen && (
+   518→          <motion.div
+   519→            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 48 }}
+   520→            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+   521→            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 32 }}
+   522→            transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
+   523→            className="pointer-events-none fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 md:bottom-6"
+   524→          >
+   525→            <div
+   526→              role="group"
+   527→              aria-label={t(CMP.barAria)}
+   528→              data-compare-tray
+   529→              className="pointer-events-auto flex max-w-full items-center gap-2 rounded-full border border-nx-navy-200 bg-white py-2 pl-2.5 pr-2 shadow-[0_24px_50px_-20px_rgba(6,31,74,0.5)]"
+   530→            >
+   531→              <span className="nx-num shrink-0 rounded-full bg-nx-navy-700 px-2.5 py-1.5 text-[11px] font-extrabold text-white">
+   532→                {t(CMP.selected(compare.length))}
+   533→              </span>
+   534→              {/* R7: shown briefly when a shared #cmp= link hydrated the picks */}
+   535→              {sharedLoaded && (
+   536→                <span className="shrink-0 rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1.5 text-[11px] font-bold text-nx-cyan-700">
+   537→                  {t(CMP_SHARE.loadedPill)}
+   538→                </span>
+   539→              )}
+   540→              {/* code names of the picked listings */}
+   541→              <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
+   542→                {compareItems.map((o) => (
+   543→                  <span
+   544→                    key={o.slug}
+   545→                    className="nx-num rounded-full bg-nx-mist px-2.5 py-1.5 text-[11px] font-bold text-nx-navy-800"
+   546→                  >
+   547→                    {o.codeName}
+   548→                  </span>
+   549→                ))}
+   550→              </span>
+   551→              {compare.length < 2 && (
+   552→                <span
+   553→                  className="nx-num shrink-0 text-[11px] font-bold text-slate-500"
+   554→                  title={t(MIN_TWO)}
+   555→                >
+   556→                  {lang === "bn" ? `${bnNum(1)}/${bnNum(2)}` : "1/2"}
+   557→                </span>
+   558→              )}
+   559→              <span
+   560→                className="shrink-0"
+   561→                title={compare.length < 2 ? t(MIN_TWO) : undefined}
+   562→              >
+   563→                <button
+   564→                  type="button"
+   565→                  onClick={() => setCompareOpen(true)}
+   566→                  disabled={compare.length < 2}
+   567→                  className="nx-arrow-btn inline-flex items-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2 text-[13px] font-bold text-white transition-colors hover:bg-nx-navy-600 disabled:cursor-not-allowed disabled:bg-nx-navy-200 disabled:hover:bg-nx-navy-200"
+   568→                >
+   569→                  {t(CMP.open)}
+   570→                  <GitCompareArrows
+   571→                    className="hidden h-3.5 w-3.5 sm:block"
+   572→                    aria-hidden="true"
+   573→                  />
+   574→                </button>
+   575→              </span>
+   576→              <button
+   577→                type="button"
+   578→                onClick={() => setCompare([])}
+   579→                aria-label={t(CMP.clear)}
+   580→                title={t(CMP.clear)}
+   581→                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-nx-mist hover:text-nx-navy-800"
+   582→              >
+   583→                <X className="h-4 w-4" aria-hidden="true" />
+   584→              </button>
+   585→            </div>
+   586→          </motion.div>
+   587→        )}
+   588→      </AnimatePresence>
+   589→
+   590→      {/* ── R5-CMP: side-by-side comparison dialog (local state, not the global store) ── */}
+   591→      <CompareDialog
+   592→        open={compareOpen}
+   593→        onOpenChange={setCompareOpen}
+   594→        items={compareItems}
+   595→        onRemove={(slug) => {
+   596→          const next = compare.filter((s) => s !== slug);
+   597→          setCompare(next);
+   598→          // dialog closes itself when the last pick is removed
+   599→          if (next.length === 0) setCompareOpen(false);
+   600→        }}
+   601→      />
+   602→    </section>
+   603→  );
+   604→}
+   605→

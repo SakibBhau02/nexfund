@@ -952,3 +952,48 @@ R12 HANDOVER DOCUMENT (three sections)
 3. Hero stats are static copies of the seeded milestones — if DB milestones change, hero can drift from Impact page (could wire hero to /api/impact later)
 4. Admin auth still demo-grade (R9 rec, unchanged); print styles for new hero untested (R10 rec); page-registry eager bundling (R10 rec #7)
 5. Suggested next rounds: (a) add icons/chips to remaining section heads on home for further icon coverage; (b) hero A/B of overlay density if user still finds photos too visible; (c) consider a subtle scroll-hint chevron at hero bottom
+
+---
+Task ID: R13-main
+Agent: main (Z.ai Code)
+Task: R13 — User feedback round (Bengali): remove side-images from For Investors/Entrepreneurs boxes, hero-like static photo cards for featured opportunities (no ovals) with sector icons + payout/revenue detail + click-through to detail pages, English font → Open Sans, Bangla font fix (এক breakage) + Noto Serif Bengali, expert UI/UX pass (gapping/spacing/font sizes)
+
+Work Log:
+- DIAGNOSED the "এক ভেঙে যায়" root cause: tracking-[0.18-0.22em] letterspacing utilities applied to BENGALI eyebrow/chip text visually splits conjunct sequences (e.g. "দুই পথ, এ ক মিলনবিন্দু"); Bengali script must never be letterspaced
+- FONTS (layout.tsx + globals.css): Manrope+Inter+Anek Bangla REMOVED → Open Sans (--font-body, weights 400-800; --font-display now = --font-body) for ALL English; Noto_Serif_Bengali (--font-display-bn, 500-800) for Bangla headings (user-suggested); Hind Siliguri kept for Bangla body + added real 700 (bold no longer synthesized); html[lang=bn] * { letter-spacing: normal !important } kills ALL Bengali letterspacing; BN heading line-height 1.3→1.4 (serif needs more room)
+- TWO PATHS (home) redesigned: oval side-images removed; icon-badge cards (Users/Briefcase in rounded-2xl navy-tinted squares), gradient top accent (navy for investors / cyan for entrepreneurs), title+chip+copy+checks+CTA (investor CTA now navigates to #p/opportunities; founder keeps quiz dialog); h-13 icon badges
+- NEW sectorIcon/SectorGlyph helper (src/components/site/sector-icon.ts): keyword map garments→Shirt, agri→Wheat, logistics→Truck, tech→Cpu, retail→Store, health→HeartPulse, dairy→Egg, default→Factory; SectorGlyph uses createElement (react-hooks/static-components-safe)
+- HOME FEATURED OPPORTUNITY CARDS redesigned: static photo banner (h-44, full-bleed, navy gradient overlay — hero-like, NOT oval, no sliding) + sector icon chip (glass) + location chip + codeName/headline over photo; fact grid grew 2→4 cells (Seeking / Instrument / Revenue / Payout structure — equity→"মুনাফার অংশ ∝ ইক্যুইটি শেয়ার", revenue→"মাসিক · রাজস্বের নির্দিষ্ট অংশ", mix→"ডিভিডেন্ড + সুদের সমন্বয়"); stage dots + badges + risks kept; WHOLE CARD clickable → navigateTo("opportunities", slug) (user request: click goes straight to the opportunity); compare/docs buttons stopPropagation; skeleton loader matches new shape (photo banner + lines); "View fact-sheet" primary button (was dialog-opening "View summary")
+- OPPORTUNITIES PAGE cards: same hero-like photo banner treatment (h-36) + sector icon chip + verified chip over photo; body keeps R11-C fact-sheet; stage dots enlarged h-1.5 w-4 → h-2 w-5 (VLM a11y rec)
+- WHO-WE-SERVE audience cards: oval removed → icon badge + gradient top accent (matches Two Paths rhythm); Image import dropped
+- OPPORTUNITY DIALOG header: oval → rounded-2xl rectangle photo tile (h-92 w-104)
+- INSIGHTS cards: category tag promoted (11px→12px, border + shadow chip)
+- Fixed next/image quality warning (removed quality={80} from HeroSlideshow — unconfigured)
+- Dev server crashed mid-round (port 3000 gone) — restarted via nohup bun run dev; healthy since
+- QA (agent-browser + VLM, 16 screenshots qa/r13-*): fonts verified in-DOM (BN h1 = "Noto Serif Bengali", EN body+h1 = "Open Sans", eyebrow letter-spacing = normal incl. "দুই পথ, এক মিলনবিন্দু"); card click → #p/opportunities/rmg-201-denim-knitwear with correct h1/title; compare tray works from new cards + persists across hash navigation + compare dialog opens ("পাশাপাশি তুলনা"); 375px overflowX=0 on home/paths/opportunities/about; VLM reviews ALL PASS (two-paths professional & photo-free; photo banners rectangular-not-oval w/ readable overlay text + visible sector icons; Noto Serif Bengali clean incl. এক/ক্ষ; how/vetting/insights spacing+typography consistent; one initial mobile "FAIL" was a false positive — focused recheck confirmed rounded card corners are fine and grid legible); lint 0 errors; tsc clean; dev.log clean
+
+Stage Summary:
+- User feedback fully delivered: (1) Two Paths boxes are image-free professional cards; (2) featured opportunity cards (home + listing page + dialog) use hero-like static photo banners with sector icons, more financial detail (revenue + payout structure), and click straight through to the fact-sheet page; (3) English font is Open Sans (compact, not airy); (4) Bangla "এক" breakage fixed (letterspacing kill) + Noto Serif Bengali headings per user suggestion; (5) expert pass done — all VLM audits PASS, minor recs applied (stage dots, insight tag)
+- New shared helper: SectorGlyph (sector→icon, createElement-based)
+- Content added: OPP.revenue/payout/payoutEquity/payoutRevenue/payoutMixed/factSheet (bilingual)
+
+════════════════════════════════════════════════════════════════════════
+R13 HANDOVER DOCUMENT (three sections)
+════════════════════════════════════════════════════════════════════════
+
+1) CURRENT PROJECT STATUS / ASSESSMENT
+- NexFund: bilingual single-route site (hash router), 16 landing pages + 20+ details, 8 dialogs, admin, Prisma/SQLite; R12 gave it slideshow heroes + dark header; R13 completed the typography & card system (Open Sans / Noto Serif Bengali / Hind Siliguri, no Bengali letterspacing, photo-banner opportunity cards, icon-based audience cards)
+- Health: lint 0, tsc clean, dev server healthy (restarted once mid-round after a crash), 0 page errors, 375px clean on checked views
+
+2) CURRENT GOALS / COMPLETED MODIFICATIONS / VERIFICATION RESULTS (R13)
+- All five user asks delivered + browser/VLM-verified (see Work Log); 16 QA screenshots qa/r13-01…16
+- Font contract: --font-body = Open Sans 400-800 (EN everything); --font-display-bn = Noto Serif Bengali 500-800 (BN h1-h4); --font-body-bn = Hind Siliguri 400-700 (BN body); html[lang=bn] letter-spacing forced normal
+- Card contract: opportunity cards = photo banner (static, navy gradient, sector icon chip) + fact grid (seeking/instrument/revenue/payout) + stage dots + risks + compare; click anywhere → detail page
+- Payout derivation: instrument string → revenue|mix|+|equity → payoutRevenue|payoutMixed|payoutEquity
+
+3) UNRESOLVED ISSUES / RISKS + NEXT-PHASE PRIORITY RECOMMENDATIONS
+1. The opportunity DETAIL page does not yet show the payout-structure line (cards do); adding a "পে-আউট কাঠামো" row to the detail fact-sheet would complete the story
+2. Old dialogs still referenced: opportunity-dialog now only opens via #opp= permalinks — consider removing or keeping as permalink-only view (it renders fine with the new rounded tile)
+3. Dev server crashed once this round (cause unclear — likely OOM during font compile); watch for recurrence, restart with nohup bun run dev if needed
+4. Admin auth still demo-grade (R9 rec); print styles untested for new cards (R10 rec); page-registry eager bundling (R10 rec)
+5. Suggested next: hero A/B overlay density if photos feel too strong; add sector icons to the compare dialog header; consider Noto Serif Bengali for the logo-lockup moments (footer brand line) for a premium editorial feel

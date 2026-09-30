@@ -1,35 +1,32 @@
 import type { Metadata } from "next";
-import { Manrope, Inter, Anek_Bangla, Hind_Siliguri } from "next/font/google";
+import { Open_Sans, Noto_Serif_Bengali, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/lib/i18n";
 import { FAQ, GLOSSARY, GLOSSARY_LABELS } from "@/lib/content";
 
-const manrope = Manrope({
-  variable: "--font-display-en",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  display: "swap",
-});
-
-const inter = Inter({
+/* R13 (user feedback): Manrope felt too airy/letterspaced → Open Sans for
+ * ALL English text (body + display). Anek Bangla headings → Noto Serif
+ * Bengali (user-suggested second Bangla font — Hind Siliguri stays for body,
+ * now with real 700 so bold isn't synthesized). */
+const openSans = Open_Sans({
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const anekBangla = Anek_Bangla({
+const notoSerifBengali = Noto_Serif_Bengali({
   variable: "--font-display-bn",
   subsets: ["bengali"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
 const hindSiliguri = Hind_Siliguri({
   variable: "--font-body-bn",
   subsets: ["bengali", "latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -204,7 +201,7 @@ export default function RootLayout({
   return (
     <html lang="bn" suppressHydrationWarning>
       <body
-        className={`${manrope.variable} ${inter.variable} ${anekBangla.variable} ${hindSiliguri.variable} antialiased bg-background text-foreground`}
+        className={`${openSans.variable} ${notoSerifBengali.variable} ${hindSiliguri.variable} antialiased bg-background text-foreground`}
       >
         <StructuredData />
         <LanguageProvider>{children}</LanguageProvider>

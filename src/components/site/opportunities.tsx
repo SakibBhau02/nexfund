@@ -12,17 +12,18 @@ import {
   Lock,
   MapPin,
   ArrowUpRight,
-  Info,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage, type L } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
+import { navigateTo } from "@/lib/page-router";
 import { OPP, BADGES, BADGE_TIPS, CMP, CMP_SHARE, type BadgeKey } from "@/lib/content";
 import { formatTkRange, bnNum } from "@/lib/format";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
 import { G } from "./glossary";
+import { SectorGlyph } from "./sector-icon";
 import { CompareDialog } from "./dialogs/compare-dialog";
 import {
   Tooltip,
@@ -85,7 +86,6 @@ let cmpHashApplied = false;
 export function Opportunities() {
   const { t, lang } = useLanguage();
   const openInvestor = useDialogStore((s) => s.openInvestor);
-  const openOpportunity = useDialogStore((s) => s.openOpportunity);
   /* R6: sector filter lives in the store so the BN⇄EN cross-fade keeps it */
   const sector = useDialogStore((s) => s.sectorFilter);
   const setSector = useDialogStore((s) => s.setSectorFilter);
@@ -262,16 +262,14 @@ export function Opportunities() {
           {isLoading ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="rounded-3xl border border-nx-navy-100 bg-white p-6">
-                  <div className="flex gap-4">
-                    <Skeleton className="nx-shimmer h-24 w-20 rounded-full" />
-                    <div className="flex-1 space-y-2.5">
-                      <Skeleton className="nx-shimmer h-4 w-3/4" />
-                      <Skeleton className="nx-shimmer h-3 w-1/2" />
-                      <Skeleton className="nx-shimmer h-3 w-2/3" />
-                    </div>
+                <div key={i} className="overflow-hidden rounded-3xl border border-nx-navy-100 bg-white">
+                  <Skeleton className="nx-shimmer h-44 w-full rounded-none" />
+                  <div className="space-y-2.5 p-5">
+                    <Skeleton className="nx-shimmer h-4 w-3/4" />
+                    <Skeleton className="nx-shimmer h-3 w-1/2" />
+                    <Skeleton className="nx-shimmer h-16 w-full rounded-xl" />
+                    <Skeleton className="nx-shimmer h-10 w-full rounded-full" />
                   </div>
-                  <Skeleton className="nx-shimmer mt-5 h-16 w-full rounded-xl" />
                 </div>
               ))}
             </div>
@@ -290,6 +288,14 @@ export function Opportunities() {
               <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((o, idx) => {
                   const selected = compare.includes(o.slug);
+                  /* R13: sector recognizable by icon; payout structure derived
+                     from the instrument (equity / revenue share / mixed). */
+                  const instr = o.instrument.toLowerCase();
+                  const payout = instr.includes("revenue")
+                    ? OPP.payoutRevenue
+                    : instr.includes("mix") || instr.includes("+")
+                      ? OPP.payoutMixed
+                      : OPP.payoutEquity;
                   return (
                   <motion.article
                     layout
@@ -298,8 +304,11 @@ export function Opportunities() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.2, 0.8, 0.2, 1] }}
+                    /* R13 (user request): clicking a featured opportunity card
+                       goes straight to its full fact-sheet page. */
+                    onClick={() => navigateTo("opportunities", o.slug)}
                     className={cn(
-                      "nx-card-sheen group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]",
+                      "nx-card-sheen group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.3)]",
                       selected
                         ? "border-nx-cyan-400 ring-2 ring-nx-cyan-400/60"
                         : "border-nx-navy-100 hover:border-nx-cyan-200"
@@ -320,35 +329,47 @@ export function Opportunities() {
                         </motion.span>
                       )}
                     </AnimatePresence>
-                    <div className="flex gap-4 p-5 pb-0">
-                      <div className="oval oval-ring w-[86px] shrink-0 bg-nx-navy-100">
-                        <Image
-                          src={o.image}
-                          alt={`${o.codeName} — ${lang === "bn" ? o.sectorBn : o.sector}`}
-                          fill
-                          sizes="86px"
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-                        />
+                    {/* ── R13: static photo banner (hero-like — photo behind a
+                        navy veil, NOT an oval thumb; no sliding here) ── */}
+                    <div className="relative h-44 shrink-0 overflow-hidden">
+                      <Image
+                        src={o.image}
+                        alt={`${o.codeName} — ${lang === "bn" ? o.sectorBn : o.sector}`}
+                        fill
+                        sizes="(min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-gradient-to-t from-nx-navy-950/95 via-nx-navy-950/50 to-nx-navy-950/20"
+                      />
+                      {/* sector (by icon) + location chips */}
+                      <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-bold text-white backdrop-blur-sm">
+                          <SectorGlyph sector={o.sector} className="h-3.5 w-3.5 text-nx-cyan-300" />
+                          {lang === "bn" ? o.sectorBn : o.sector}
+                        </span>
+                        <span className="hidden items-center gap-1 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white/90 backdrop-blur-sm sm:inline-flex">
+                          <MapPin className="h-3 w-3 text-nx-cyan-300" aria-hidden="true" />
+                          {lang === "bn" ? o.locationBn : o.location}
+                        </span>
                       </div>
-                      <div className="min-w-0">
-                        <p className="flex items-center gap-1.5 truncate text-[11px] font-bold tracking-wide text-nx-cyan-700 uppercase">
-                          <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
-                          <span className="truncate">{lang === "bn" ? o.sectorBn : o.sector} · {lang === "bn" ? o.locationBn : o.location}</span>
-                        </p>
-                        <h3 className="nx-num mt-1 text-lg font-extrabold leading-snug text-nx-navy-900">
+                      {/* identity over the photo */}
+                      <div className="absolute inset-x-0 bottom-0 p-5">
+                        <h3 className="nx-num text-xl font-extrabold text-white drop-shadow-[0_2px_10px_rgba(3,12,32,0.7)]">
                           {o.codeName}
                         </h3>
-                        <p className="mt-1 line-clamp-2 text-sm leading-snug text-slate-600">
+                        <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-white/85">
                           {lang === "bn" ? o.headlineBn : o.headline}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
-                      {/* key facts */}
-                      <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-nx-mist p-4 text-sm">
+                    {/* ── fact-sheet body (R13: revenue + payout structure added) ── */}
+                    <div className="flex flex-1 flex-col p-5">
+                      <dl className="grid grid-cols-2 gap-x-4 gap-y-3.5 rounded-2xl bg-nx-mist p-4 text-sm">
                         <div>
-                          <dt className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
+                          <dt className="text-[11px] font-bold text-slate-600 uppercase">
                             {t(OPP.seeking)}
                           </dt>
                           <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
@@ -356,7 +377,7 @@ export function Opportunities() {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
+                          <dt className="text-[11px] font-bold text-slate-600 uppercase">
                             {t(OPP.instrument)}
                           </dt>
                           <dd className="mt-0.5 font-semibold text-nx-navy-800">
@@ -370,12 +391,28 @@ export function Opportunities() {
                             )}
                           </dd>
                         </div>
+                        <div>
+                          <dt className="text-[11px] font-bold text-slate-600 uppercase">
+                            {t(OPP.revenue)}
+                          </dt>
+                          <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
+                            {lang === "bn" ? o.revenueBn : o.revenue}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-[11px] font-bold text-slate-600 uppercase">
+                            {t(OPP.payout)}
+                          </dt>
+                          <dd className="mt-0.5 font-semibold text-nx-navy-800">
+                            {t(payout)}
+                          </dd>
+                        </div>
                       </dl>
 
                       {/* verification progress */}
                       <div className="mt-4">
-                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                          <span className="uppercase tracking-wide">{t(OPP.verificationProgress)}</span>
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
+                          <span className="uppercase">{t(OPP.verificationProgress)}</span>
                           <span className="nx-num text-nx-navy-800">
                             {lang === "bn"
                               ? `${["১", "২", "৩", "৪", "৫"][o.stage - 1]}/৫`
@@ -432,7 +469,10 @@ export function Opportunities() {
                       <motion.button
                         type="button"
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => toggleCompare(o.slug)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCompare(o.slug);
+                        }}
                         aria-pressed={selected}
                         title={selected ? t(CMP.chipAriaOn) : t(CMP.chipAria)}
                         data-compare-toggle={o.slug}
@@ -451,23 +491,29 @@ export function Opportunities() {
                         {t(CMP.chip)}
                       </motion.button>
 
-                      {/* actions — open full detail dialog (R2) */}
+                      {/* actions — R13: primary action goes to the full
+                          fact-sheet page (user request) */}
                       <div className="mt-5 flex items-center gap-2">
                         <motion.button
                           whileTap={{ scale: 0.97 }}
-                          onClick={() => openOpportunity(o.slug)}
-                          className="nx-arrow-btn flex flex-1 items-center justify-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-4 py-2.5 text-sm font-bold text-nx-navy-800 transition-colors hover:border-nx-navy-500"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateTo("opportunities", o.slug);
+                          }}
+                          className="nx-arrow-btn flex flex-1 items-center justify-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
                         >
-                          <Info className="h-4 w-4" aria-hidden="true" />
-                          {t(OPP.viewSummary)}
+                          {t(OPP.factSheet)}
                           <span className="nx-arrow">
                             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                           </span>
                         </motion.button>
                         <button
-                          onClick={() => openInvestor("investor")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openInvestor("investor");
+                          }}
                           aria-label={t(OPP.registerDocs)}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-4 py-2.5 text-sm font-bold text-nx-navy-800 transition-colors hover:border-nx-navy-500"
                         >
                           <Lock className="h-4 w-4" aria-hidden="true" />
                           {lang === "bn" ? "নথি" : "Docs"}

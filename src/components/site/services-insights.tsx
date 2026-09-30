@@ -107,7 +107,7 @@ export function Insights() {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-nx-navy-900/45 to-transparent" aria-hidden="true" />
-                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-nx-navy-800 backdrop-blur">
+                  <span className="absolute left-4 top-4 rounded-full border border-white/50 bg-white/95 px-3 py-1 text-[12px] font-bold text-nx-navy-800 shadow-[0_4px_12px_-4px_rgba(6,31,74,0.35)] backdrop-blur">
                     {catGlossary[a.slug] ? (
                       <G term={catGlossary[a.slug]}>{t(a.category)}</G>
                     ) : (

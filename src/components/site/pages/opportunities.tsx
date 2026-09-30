@@ -34,6 +34,7 @@ import { useLanguage, type L } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
 import { navigateTo } from "@/lib/page-router";
 import { formatTk, formatTkRange, bnNum } from "@/lib/format";
+import { SectorGlyph } from "../sector-icon";
 import { BADGES, BADGE_TIPS, CMP, OPP, type BadgeKey } from "@/lib/content";
 import type { OpportunityDTO } from "../opportunities";
 import { AnimatedNumber } from "../animated-number";
@@ -741,6 +742,7 @@ function OpportunityCard({ o, index }: { o: OpportunityDTO; index: number }) {
   const { t, lang } = useLanguage();
   const riskCount = o.risks?.length ?? 0;
   const verifiedCount = o.badges?.length ?? 0;
+  /* R13: hero-like static photo banner (no oval) — sector shown by icon */
   return (
     <motion.article
       initial={{ opacity: 0, y: 14 }}
@@ -750,97 +752,111 @@ function OpportunityCard({ o, index }: { o: OpportunityDTO; index: number }) {
     >
       <button
         onClick={() => navigateTo("opportunities", o.slug)}
-        className="nx-card-sheen group flex h-full w-full flex-col rounded-3xl border border-nx-navy-100 bg-white p-5 text-left shadow-[0_10px_30px_-16px_rgba(6,31,74,0.15)] transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_26px_52px_-22px_rgba(10,58,143,0.3)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-500"
+        className="nx-card-sheen group flex h-full w-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white text-left shadow-[0_10px_30px_-16px_rgba(6,31,74,0.15)] transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-200 hover:shadow-[0_26px_52px_-22px_rgba(10,58,143,0.3)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-500"
       >
-        {/* identity */}
-        <div className="flex items-start gap-4">
-          <span className="oval oval-ring block w-[84px] shrink-0 bg-nx-navy-100">
-            <Image
-              src={o.image}
-              alt={`${o.codeName} — ${lang === "bn" ? o.sectorBn : o.sector}`}
-              fill
-              sizes="84px"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
-            />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="nx-num truncate text-lg leading-snug font-extrabold text-nx-navy-900">
+        {/* R13: static photo banner (hero-like — no oval thumb) */}
+        <div className="relative h-36 shrink-0 overflow-hidden">
+          <Image
+            src={o.image}
+            alt={`${o.codeName} — ${lang === "bn" ? o.sectorBn : o.sector}`}
+            fill
+            sizes="(min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-nx-navy-950/95 via-nx-navy-950/50 to-nx-navy-950/20"
+          />
+          {/* sector (by icon) + location chips */}
+          <div className="absolute left-4 top-3.5 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-bold text-white backdrop-blur-sm">
+              <SectorGlyph sector={o.sector} className="h-3.5 w-3.5 text-nx-cyan-300" />
+              {lang === "bn" ? o.sectorBn : o.sector}
+            </span>
+            <span className="hidden items-center gap-1 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white/90 backdrop-blur-sm sm:inline-flex">
+              <MapPin className="h-3 w-3 text-nx-cyan-300" aria-hidden="true" />
+              {lang === "bn" ? o.locationBn : o.location}
+            </span>
+          </div>
+          {/* identity over the photo */}
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
+            <h2 className="nx-num text-xl font-extrabold text-white drop-shadow-[0_2px_10px_rgba(3,12,32,0.7)]">
               {o.codeName}
             </h2>
-            <p className="mt-0.5 truncate text-[13px] font-semibold text-nx-navy-600">
-              {lang === "bn" ? o.sectorBn : o.sector} · {lang === "bn" ? o.locationBn : o.location}
-            </p>
-            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified-700">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-nx-verified/50 bg-nx-verified/25 px-2 py-0.5 text-[11px] font-bold text-emerald-100 backdrop-blur-sm">
               <ShieldCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
               <span className="nx-num">{t(T.verifiedOf(verifiedCount))}</span>
             </span>
           </div>
         </div>
 
-        {/* headline */}
-        <p className="mt-4 line-clamp-2 min-h-[3.5em] text-sm leading-relaxed text-slate-600">
-          {lang === "bn" ? o.headlineBn : o.headline}
-        </p>
-
-        {/* fact-sheet metrics */}
-        <div className="mt-4 flex flex-1 flex-col rounded-2xl bg-nx-mist p-4">
-          <p className="text-[11px] font-extrabold tracking-wide text-slate-500 uppercase">
-            {t(T.seeking)}
-          </p>
-          <p className="nx-num mt-1 text-xl font-extrabold text-nx-navy-900">
-            {formatTkRange(o.seekingMin, o.seekingMax, lang)}
+        {/* body */}
+        <div className="flex flex-1 flex-col p-5">
+          {/* headline */}
+          <p className="line-clamp-2 min-h-[3.5em] text-sm leading-relaxed text-slate-600">
+            {lang === "bn" ? o.headlineBn : o.headline}
           </p>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="flex gap-1" aria-hidden="true">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <span
-                    key={s}
-                    className={cn(
-                      "h-1.5 w-4 rounded-full",
-                      s <= o.stage ? "bg-nx-cyan-500" : "bg-nx-navy-200"
-                    )}
-                  />
-                ))}
+          {/* fact-sheet metrics */}
+          <div className="mt-4 flex flex-1 flex-col rounded-2xl bg-nx-mist p-4">
+            <p className="text-[11px] font-extrabold text-slate-500 uppercase">
+              {t(T.seeking)}
+            </p>
+            <p className="nx-num mt-1 text-xl font-extrabold text-nx-navy-900">
+              {formatTkRange(o.seekingMin, o.seekingMax, lang)}
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="flex gap-1" aria-hidden="true">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <span
+                      key={s}
+                      className={cn(
+                        "h-2 w-5 rounded-full",
+                        s <= o.stage ? "bg-nx-cyan-500" : "bg-nx-navy-200"
+                      )}
+                    />
+                  ))}
+                </span>
+                <span className="nx-num text-[11px] font-bold text-nx-navy-700">
+                  {t(T.stageShort(o.stage))}
+                </span>
               </span>
-              <span className="nx-num text-[11px] font-bold text-nx-navy-700">
-                {t(T.stageShort(o.stage))}
+              <span className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border border-nx-navy-200 bg-white px-2.5 py-1 text-[11px] font-bold text-nx-navy-700">
+                <Landmark className="h-3 w-3 shrink-0 text-nx-navy-400" aria-hidden="true" />
+                <span className="truncate">{lang === "bn" ? o.instrumentBn : o.instrument}</span>
               </span>
-            </span>
-            <span className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border border-nx-navy-200 bg-white px-2.5 py-1 text-[11px] font-bold text-nx-navy-700">
-              <Landmark className="h-3 w-3 shrink-0 text-nx-navy-400" aria-hidden="true" />
-              <span className="truncate">{lang === "bn" ? o.instrumentBn : o.instrument}</span>
-            </span>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {o.revenue && (
+                <span className="nx-num inline-flex max-w-full items-center gap-1 rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1 text-[11px] font-bold text-nx-cyan-700">
+                  <Banknote className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{lang === "bn" ? o.revenueBn : o.revenue}</span>
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 rounded-full border border-nx-warn/40 bg-nx-warn-bg px-2.5 py-1 text-[11px] font-bold text-nx-warn-700">
+                <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+                {t(T.riskChip(riskCount))}
+              </span>
+            </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {o.revenue && (
-              <span className="nx-num inline-flex max-w-full items-center gap-1 rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1 text-[11px] font-bold text-nx-cyan-700">
-                <Banknote className="h-3 w-3 shrink-0" aria-hidden="true" />
-                <span className="truncate">{lang === "bn" ? o.revenueBn : o.revenue}</span>
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 rounded-full border border-nx-warn/40 bg-nx-warn-bg px-2.5 py-1 text-[11px] font-bold text-nx-warn-700">
-              <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-              {t(T.riskChip(riskCount))}
+          {/* footer */}
+          <span className="mt-4 flex items-center justify-between border-t border-nx-navy-100 pt-4">
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-nx-cyan-700 transition-colors group-hover:text-nx-cyan-600">
+              {t(T.viewDetails)}
+              <ArrowRight
+                className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
             </span>
-          </div>
+            <span className="nx-num text-[11px] font-bold text-nx-navy-300" aria-hidden="true">
+              {o.codeName}
+            </span>
+          </span>
         </div>
-
-        {/* footer */}
-        <span className="mt-4 flex items-center justify-between border-t border-nx-navy-100 pt-4">
-          <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-nx-cyan-700 transition-colors group-hover:text-nx-cyan-600">
-            {t(T.viewDetails)}
-            <ArrowRight
-              className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
-              aria-hidden="true"
-            />
-          </span>
-          <span className="nx-num text-[11px] font-bold text-nx-navy-300" aria-hidden="true">
-            {o.codeName}
-          </span>
-        </span>
       </button>
     </motion.article>
   );

@@ -238,15 +238,15 @@ export function OpportunityDialog() {
         className="nx-scroll max-h-[90vh] gap-0 overflow-y-auto rounded-3xl p-0 sm:max-w-[680px]"
         aria-describedby={undefined}
       >
-        {/* ── Header: oval + identity + illustrative badge ── */}
+        {/* ── Header: photo tile (R13: rounded rectangle, not oval) + identity + illustrative badge ── */}
         <DialogHeader className="border-b border-nx-navy-100 px-6 pb-4 pt-6">
           <div className="flex items-start gap-4">
-            <div className="oval oval-ring hidden w-[92px] shrink-0 bg-nx-navy-100 sm:block">
+            <div className="relative hidden h-[92px] w-[104px] shrink-0 overflow-hidden rounded-2xl border border-nx-navy-100 bg-nx-navy-100 sm:block">
               <Image
                 src={o.image}
                 alt={`${o.codeName}`}
                 fill
-                sizes="92px"
+                sizes="104px"
                 className="object-cover"
               />
             </div>

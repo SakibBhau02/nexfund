@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -448,11 +447,6 @@ function AudienceCard({ which }: { which: "investor" | "founder" }) {
   const data = which === "investor" ? TWO_PATHS.investor : TWO_PATHS.founder;
   const chip = which === "investor" ? T.invChip : T.fdrChip;
   const cta = which === "investor" ? T.invCardCta : T.fdrCardCta;
-  const image = which === "investor" ? "/images/hero-tech.png" : "/images/hero-retail.png";
-  const alt =
-    which === "investor"
-      ? { en: "An investor studying a verified fact-pack", bn: "যাচাইকৃত ফ্যাক্ট-প্যাক পড়ছেন একজন বিনিয়োগকারী" }
-      : { en: "A Bangladeshi entrepreneur at her workplace", bn: "কর্মস্থলে একজন বাংলাদেশি উদ্যোক্তা" };
   const Icon = which === "investor" ? TrendingUp : Handshake;
 
   return (
@@ -462,16 +456,23 @@ function AudienceCard({ which }: { which: "investor" | "founder" }) {
       transition={{ duration: 0.4, delay: which === "investor" ? 0 : 0.08 }}
       className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-nx-navy-100 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-nx-cyan-300 hover:shadow-[0_28px_60px_-24px_rgba(10,58,143,0.28)] md:p-8"
     >
-      <div className="flex items-start justify-between gap-4">
+      {/* R13: gradient brand accent (side image removed per user feedback) */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-x-0 top-0 h-1 bg-gradient-to-r",
+          which === "investor" ? "from-nx-navy-700 to-nx-navy-500" : "from-nx-cyan-600 to-nx-cyan-400"
+        )}
+      />
+      <div className="flex items-center gap-4">
+        <span className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl border border-nx-navy-100 bg-nx-navy-50 text-nx-navy-700 transition-colors group-hover:border-nx-cyan-200 group-hover:bg-nx-cyan-50 group-hover:text-nx-cyan-700">
+          <Icon className="h-6 w-6" aria-hidden="true" />
+        </span>
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-nx-navy-50 px-3 py-1 text-[12px] font-bold text-nx-navy-600">
-            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-nx-navy-50 px-2.5 py-1 text-[12px] font-bold text-nx-navy-600">
             {t(chip)}
           </span>
-          <h3 className="mt-4 text-2xl font-extrabold text-nx-navy-900">{t(data.title)}</h3>
-        </div>
-        <div className="oval oval-ring hidden w-[110px] shrink-0 bg-nx-navy-100 sm:block">
-          <Image src={image} alt={t(alt)} fill sizes="110px" className="object-cover" />
+          <h3 className="mt-1.5 text-2xl font-extrabold text-nx-navy-900">{t(data.title)}</h3>
         </div>
       </div>
       <p className="mt-4 leading-relaxed text-slate-600">{t(data.copy)}</p>
