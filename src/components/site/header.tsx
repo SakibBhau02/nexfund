@@ -6,15 +6,30 @@ import { Menu, X, Calendar, ArrowUpRight, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
+import { navigateTo, goHome, usePageRoute } from "@/lib/page-router";
 import { NAV, UI, FOOTER } from "@/lib/content";
 import { Logo, LangToggle } from "./brand";
 
 const WHATSAPP_URL = "https://wa.me/8801700000000";
 
+/**
+ * R10: NAV section ids → page-route ids (paths is the only id that differs —
+ * the "Who We Serve" landing page covers the two audiences of that section).
+ */
+const PAGE_FOR_NAV: Record<string, string> = {
+  paths: "who-we-serve",
+  how: "how",
+  vetting: "vetting",
+  opportunities: "opportunities",
+  services: "services",
+  insights: "insights",
+  faq: "faq",
+};
+
 export function Header() {
   const { lang, setLang, t } = useLanguage();
   const open = useDialogStore((s) => s.open);
-  const openInvestor = useDialogStore((s) => s.openInvestor);
+  const route = usePageRoute();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [active, setActive] = useState<string>("");
@@ -22,7 +37,7 @@ export function Header() {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 24);
-      // simple scroll-spy
+      // scroll-spy — only meaningful on the home experience
       let current = "";
       for (const item of NAV) {
         const el = document.getElementById(item.id);
@@ -37,8 +52,11 @@ export function Header() {
 
   const go = (id: string) => {
     setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    navigateTo(PAGE_FOR_NAV[id] ?? id);
   };
+
+  // active page highlight — wins over scroll-spy while a page is open
+  const activePage = route ? route.page : null;
 
   return (
     <>
@@ -57,7 +75,7 @@ export function Header() {
           )}
         >
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            onClick={() => (route ? goHome() : window.scrollTo({ top: 0, behavior: "smooth" }))}
             aria-label="NexFund — home"
             className="shrink-0"
           >
@@ -66,32 +84,36 @@ export function Header() {
 
           {/* Desktop nav */}
           <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
-            {NAV.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => go(item.id)}
-                className={cn(
-                  "rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                  active === item.id
-                    ? "bg-nx-navy-50 text-nx-navy-700"
-                    : "text-slate-600 hover:bg-nx-navy-50 hover:text-nx-navy-700"
-                )}
-              >
-                {t(item.label)}
-              </button>
-            ))}
+            {NAV.map((item) => {
+              const pageId = PAGE_FOR_NAV[item.id] ?? item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => go(item.id)}
+                  aria-current={activePage === pageId ? "page" : undefined}
+                  className={cn(
+                    "rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                    activePage === pageId || (!route && active === item.id)
+                      ? "bg-nx-navy-50 text-nx-navy-700"
+                      : "text-slate-600 hover:bg-nx-navy-50 hover:text-nx-navy-700"
+                  )}
+                >
+                  {t(item.label)}
+                </button>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-2">
             <LangToggle lang={lang} setLang={setLang} className="hidden sm:inline-flex" />
             <button
-              onClick={() => open("contact")}
+              onClick={() => navigateTo("contact")}
               className="hidden rounded-full border border-nx-navy-200 bg-white px-4 py-2 text-sm font-semibold text-nx-navy-800 transition-colors hover:border-nx-navy-500 hover:text-nx-navy-700 md:block"
             >
               {t(UI.bookCall)}
             </button>
             <button
-              onClick={() => openInvestor()}
+              onClick={() => navigateTo("get-started")}
               className="nx-arrow-btn hidden items-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_-10px_rgba(10,58,143,0.55)] transition-all hover:bg-nx-navy-600 md:block"
             >
               {t(UI.getStarted)}
@@ -156,19 +178,19 @@ export function Header() {
               <button
                 onClick={() => {
                   setMenuOpen(false);
-                  openInvestor();
+                  navigateTo("get-started");
                 }}
                 className="nx-arrow-btn flex w-full items-center justify-center gap-2 rounded-full bg-nx-cyan-500 px-5 py-3.5 font-bold text-nx-navy-900"
               >
                 {t(UI.getStarted)}
                 <span className="nx-arrow">
-                  <ArrowUpRight className="h-5 w-5" />
+                  <ArrowUpRight className="h-5 w-5" aria-hidden="true" />
                 </span>
               </button>
               <button
                 onClick={() => {
                   setMenuOpen(false);
-                  open("contact");
+                  navigateTo("contact");
                 }}
                 className="flex w-full items-center justify-center gap-2 rounded-full border border-white/25 px-5 py-3.5 font-semibold text-white"
               >

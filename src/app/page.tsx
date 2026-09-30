@@ -19,6 +19,8 @@ import { Charter, WhyNexFund } from "@/components/site/charter";
 import { Services, Insights } from "@/components/site/services-insights";
 import { Faq, FinalCta } from "@/components/site/faq-cta";
 import { Footer, MobileCtaBar } from "@/components/site/footer";
+import { PageOutlet } from "@/components/site/pages";
+import { usePageRoute } from "@/lib/page-router";
 import { InvestorDialog } from "@/components/site/dialogs/investor-dialog";
 import { QuizDialog } from "@/components/site/dialogs/quiz-dialog";
 import { ContactDialog } from "@/components/site/dialogs/contact-dialog";
@@ -29,6 +31,9 @@ import { AdminDialog } from "@/components/site/dialogs/admin-dialog";
 
 function Page() {
   const { lang } = useLanguage();
+  // R10: #p/<page> hash → dedicated landing page; no hash (or dialog
+  // permalinks like #opp=) → the home landing experience below.
+  const route = usePageRoute();
 
   // lock body scroll when language cross-fade is in flight? No — keep scroll (blueprint §4.2: same page, keep scroll)
   return (
@@ -51,20 +56,26 @@ function Page() {
           transition={{ duration: 0.2 }}
           className="contents"
         >
-          <main id="main" className="flex-1">
-            <Hero />
-            <TwoPaths />
-            <HowItWorks />
-            <Vetting />
-            <Opportunities />
-            <MatchMe />
-            <ScenarioSimulator />
-            <Charter />
-            <WhyNexFund />
-            <Services />
-            <Insights />
-            <Faq />
-            <FinalCta />
+          <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
+            {route ? (
+              <PageOutlet />
+            ) : (
+              <>
+                <Hero />
+                <TwoPaths />
+                <HowItWorks />
+                <Vetting />
+                <Opportunities />
+                <MatchMe />
+                <ScenarioSimulator />
+                <Charter />
+                <WhyNexFund />
+                <Services />
+                <Insights />
+                <Faq />
+                <FinalCta />
+              </>
+            )}
           </main>
         </motion.div>
       </AnimatePresence>

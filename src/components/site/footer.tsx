@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Linkedin, Facebook, Youtube, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Scale, Lock, Send } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
-import { useDialogStore } from "@/lib/dialog-store";
+import { navigateTo } from "@/lib/page-router";
 import { FOOTER, NAV, NEWSLETTER, UI, GLOSSARY_HUB, WHATSAPP_MSG } from "@/lib/content";
 import { Logo } from "./brand";
 
@@ -12,80 +12,13 @@ const WHATSAPP_URL = "https://wa.me/8801700000000";
 const whatsappUrl = (msg: string) =>
   `${WHATSAPP_URL}?text=${encodeURIComponent(msg)}`;
 
-function LegalDialog({
-  open,
-  onOpenChange,
-}: {
-  open: "privacy" | "terms" | "risk" | null;
-  onOpenChange: (v: "privacy" | "terms" | "risk" | null) => void;
-}) {
-  const { t, lang } = useLanguage();
-  const blocks = {
-    privacy: {
-      icon: Lock,
-      title: { en: "Privacy Promise", bn: "গোপনীয়তার প্রতিশ্রুতি" },
-      body: {
-        en: "We collect only what we need to match investors with businesses. Your information is encrypted, shared only with your consent, and never sold. You may request deletion of your data at any time by writing to privacy@nexfund.example.",
-        bn: "আমরা কেবল যতটুকু তথ্য ম্যাচিংয়ের জন্য দরকার তা-ই নিই। আপনার তথ্য এনক্রিপ্টেড থাকে, কেবল আপনার সম্মতিতে শেয়ার হয়, কখনো বিক্রি হয় না। যেকোনো সময় privacy@nexfund.example-এ লিখে আপনার তথ্য মুছে ফেলার অনুরোধ করতে পারেন।",
-      },
-    },
-    terms: {
-      icon: Scale,
-      title: { en: "Terms of Use", bn: "ব্যবহারের শর্তাবলি" },
-      body: {
-        en: "NexFund is a financial consultancy and matchmaking platform — not a bank, fund manager, or investment advisor. We do not hold client money. All investment decisions are yours; please read every opportunity's risk summary before acting.",
-        bn: "নেক্সফান্ড একটি ফাইন্যান্সিয়াল কনসাল্টেন্সি ও ম্যাচমেকিং প্ল্যাটফর্ম — ব্যাংক, ফান্ড ম্যানেজার বা ইনভেস্টমেন্ট অ্যাডভাইজার নয়। আমরা গ্রাহকের অর্থ গচ্ছিত রাখি না। সব বিনিয়োগ সিদ্ধান্ত আপনার; এগোনোর আগে প্রতিটি সুযোগের ঝুঁকি-সারসংক্ষেপ পড়ুন।",
-      },
-    },
-    risk: {
-      icon: AlertTriangle,
-      title: { en: "Risk Disclosure", bn: "ঝুঁকি বিবরণী" },
-      body: {
-        en: "Investing involves risk, including possible loss of capital. NexFund does not guarantee returns. Past performance is not indicative of future results. Verification reduces risk; it does not remove it. Please read our full risk disclosure before making any decision.",
-        bn: "বিনিয়োগে ঝুঁকি আছে, মূলধন হারানোর সম্ভাবনাসহ। নেক্সফান্ড কোনো মুনাফার নিশ্চয়তা দেয় না। অতীতের ফলাফল ভবিষ্যতের নিশ্চয়তা নয়। যাচাই ঝুঁকি কমায়, দূর করে না। সিদ্ধান্তের আগে সম্পূর্ণ ঝুঁকি বিবরণী পড়ুন।",
-      },
-    },
-  };
-  if (!open) return null;
-  const block = blocks[open];
-  const Icon = block.icon;
-  return (
-    <div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-nx-navy-950/60 p-4 backdrop-blur-sm sm:items-center"
-      role="dialog"
-      aria-modal="true"
-      onClick={() => onOpenChange(null)}
-    >
-      <div
-        className="w-full max-w-lg rounded-3xl border border-nx-navy-100 bg-white p-7 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-nx-navy-900 text-nx-cyan-400">
-            <Icon className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <h3 className="text-lg font-extrabold text-nx-navy-900">{lang === "bn" ? block.title.bn : block.title.en}</h3>
-        </div>
-        <p className="mt-4 leading-relaxed text-slate-600">{lang === "bn" ? block.body.bn : block.body.en}</p>
-        <button
-          onClick={() => onOpenChange(null)}
-          className="mt-6 w-full rounded-full bg-nx-navy-700 py-3 text-sm font-bold text-white hover:bg-nx-navy-600"
-        >
-          {lang === "bn" ? "বুঝেছি" : "Understood"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
+/**
+ * R10: every footer button now routes to a dedicated landing page
+ * (#p/<page>) instead of scrolling a section or opening a dialog —
+ * legal trio included (privacy / terms / risk are full pages now).
+ */
 export function Footer() {
   const { t, lang } = useLanguage();
-  const openDialog = useDialogStore((s) => s.open);
-  const openGlossary = useDialogStore((s) => s.openGlossary);
-  const [legal, setLegal] = useState<"privacy" | "terms" | "risk" | null>(null);
-
-  const go = (id: string) =>
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <footer className="relative bg-nx-navy-950 text-white">
@@ -148,22 +81,22 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
-                <button onClick={() => go("paths")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("who-we-serve", "investors")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "বিনিয়োগকারীদের জন্য" : "For Investors"}
                 </button>
               </li>
               <li>
-                <button onClick={() => openDialog("quiz")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("who-we-serve", "founders")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "মূলধন সংগ্রহ" : "Raise Capital"}
                 </button>
               </li>
               <li>
-                <button onClick={() => go("opportunities")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("opportunities")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "সুযোগসমূহ" : "Opportunities"}
                 </button>
               </li>
               <li>
-                <button onClick={() => go("how")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("how")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "কীভাবে কাজ করে" : "How It Works"}
                 </button>
               </li>
@@ -177,25 +110,25 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
-                <button onClick={() => go("vetting")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("vetting")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
                   <ShieldCheck className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "যাচাই মানদণ্ড" : "Vetting Standard"}
                 </button>
               </li>
               <li>
-                <button onClick={() => go("charter")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("charter")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
                   <Scale className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "চার্টার" : "The Charter"}
                 </button>
               </li>
               <li>
-                <button onClick={() => setLegal("risk")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("risk")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
                   <AlertTriangle className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
                   {lang === "bn" ? "ঝুঁকি বিবরণী" : "Risk Disclosure"}
                 </button>
               </li>
               <li>
-                <button onClick={() => setLegal("privacy")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("privacy")} className="flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
                   <Lock className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "গোপনীয়তা নীতি" : "Privacy Promise"}
                 </button>
@@ -210,33 +143,32 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
-                <button onClick={() => go("services")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("services")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "সেবাসমূহ" : "Services"}
                 </button>
               </li>
               <li>
-                <button onClick={() => go("insights")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("insights")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "ইনসাইটস" : "Insights"}
                 </button>
               </li>
               <li>
-                <button onClick={() => go("faq")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("faq")} className="text-white/70 transition-colors hover:text-white">
                   {lang === "bn" ? "প্রশ্নোত্তর" : "FAQ"}
                 </button>
               </li>
-              {/* R7: glossary hub dialog (same terms as the in-page tooltips) */}
               <li>
-                <button onClick={openGlossary} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("glossary")} className="text-white/70 transition-colors hover:text-white">
                   {t(GLOSSARY_HUB.footerLink)}
                 </button>
               </li>
               <li>
-                <button onClick={() => openDialog("contact")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("contact")} className="text-white/70 transition-colors hover:text-white">
                   {t({ en: "Contact", bn: "যোগাযোগ" })}
                 </button>
               </li>
               <li>
-                <button onClick={() => setLegal("terms")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("terms")} className="text-white/70 transition-colors hover:text-white">
                   {t({ en: "Terms of Use", bn: "ব্যবহারের শর্তাবলি" })}
                 </button>
               </li>
@@ -263,9 +195,6 @@ export function Footer() {
           </p>
         </div>
       </div>
-
-      {/* Mobile sticky CTA spacer handled by fixed bar */}
-      <LegalDialog open={legal} onOpenChange={setLegal} />
     </footer>
   );
 }
@@ -348,7 +277,6 @@ function NewsletterForm() {
 /** Mobile sticky bottom bar: WhatsApp + Book a Call (blueprint §4.4) */
 export function MobileCtaBar() {
   const { t } = useLanguage();
-  const open = useDialogStore((s) => s.open);
   const whatsappHref = whatsappUrl(t(WHATSAPP_MSG));
   return (
     <div
@@ -368,7 +296,7 @@ export function MobileCtaBar() {
           {t({ en: "WhatsApp", bn: "হোয়াটসঅ্যাপ" })}
         </a>
         <button
-          onClick={() => open("contact")}
+          onClick={() => navigateTo("contact")}
           className="flex-1 rounded-full bg-nx-navy-700 py-3 text-sm font-bold text-white shadow-[0_10px_24px_-10px_rgba(10,58,143,0.6)]"
         >
           {t({ en: "Book a Call", bn: "কল বুক করুন" })}
