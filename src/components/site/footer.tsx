@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Linkedin, Facebook, Youtube, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Scale, Lock, Send } from "lucide-react";
+import { Linkedin, Facebook, Youtube, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Scale, Lock, Send, Users, TrendingUp, LayoutGrid, Workflow, Info, BarChart3, Wrench, Newspaper, CircleHelp, BookOpen, FileText, Calendar } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { navigateTo } from "@/lib/page-router";
 import { FOOTER, NAV, NEWSLETTER, UI, GLOSSARY_HUB, WHATSAPP_MSG } from "@/lib/content";
@@ -27,7 +27,7 @@ export function Footer() {
           {/* Brand + newsletter */}
           <div>
             <Logo variant="light" className="h-10" />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/65">{t(FOOTER.tagline)}</p>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/75">{t(FOOTER.tagline)}</p>
             <div className="mt-5 flex items-center gap-2">
               <a
                 href="https://www.linkedin.com/company/nexfund"
@@ -57,7 +57,7 @@ export function Footer() {
                 <Youtube className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
-            <address className="mt-6 space-y-2 text-sm not-italic text-white/55">
+            <address className="mt-6 space-y-2 text-sm not-italic text-white/70">
               <p className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-nx-cyan-400" aria-hidden="true" />
                 {t(FOOTER.address)}
@@ -81,22 +81,26 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
-                <button onClick={() => navigateTo("who-we-serve", "investors")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("who-we-serve", "investors")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <Users className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "বিনিয়োগকারীদের জন্য" : "For Investors"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("who-we-serve", "founders")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("who-we-serve", "founders")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <TrendingUp className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "মূলধন সংগ্রহ" : "Raise Capital"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("opportunities")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("opportunities")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <LayoutGrid className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "সুযোগসমূহ" : "Opportunities"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("how")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("how")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <Workflow className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "কীভাবে কাজ করে" : "How It Works"}
                 </button>
               </li>
@@ -143,42 +147,50 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
-                <button onClick={() => navigateTo("about")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("about")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <Info className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "আমাদের কথা" : "About Us"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("impact")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("impact")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <BarChart3 className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "ইমপ্যাক্ট" : "Impact"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("services")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("services")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <Wrench className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "সেবাসমূহ" : "Services"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("insights")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("insights")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <Newspaper className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "ইনসাইটস" : "Insights"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("faq")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("faq")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <CircleHelp className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {lang === "bn" ? "প্রশ্নোত্তর" : "FAQ"}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("glossary")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("glossary")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <BookOpen className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {t(GLOSSARY_HUB.footerLink)}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("contact")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("contact")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <Mail className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {t({ en: "Contact", bn: "যোগাযোগ" })}
                 </button>
               </li>
               <li>
-                <button onClick={() => navigateTo("terms")} className="text-white/70 transition-colors hover:text-white">
+                <button onClick={() => navigateTo("terms")} className="flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+                  <FileText className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
                   {t({ en: "Terms of Use", bn: "ব্যবহারের শর্তাবলি" })}
                 </button>
               </li>
@@ -197,7 +209,7 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/60 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row">
           <p>© {lang === "bn" ? "২০২৬" : "2026"} NexFund · {t(FOOTER.copyright)}</p>
           <p className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
@@ -237,7 +249,7 @@ function NewsletterForm() {
       <h3 className="text-xs font-extrabold tracking-[0.18em] text-nx-cyan-400 uppercase">
         {t(NEWSLETTER.title)}
       </h3>
-      <p className="mt-2 text-[13px] leading-relaxed text-white/60">{t(NEWSLETTER.sub)}</p>
+      <p className="mt-2 text-[13px] leading-relaxed text-white/75">{t(NEWSLETTER.sub)}</p>
       {state === "done" ? (
         <p className="mt-3.5 inline-flex items-center gap-2 rounded-full bg-nx-verified/20 px-4 py-2 text-sm font-bold text-emerald-200">
           <ShieldCheck className="h-4 w-4" aria-hidden="true" />
@@ -279,7 +291,7 @@ function NewsletterForm() {
       {state === "error" && (
         <p className="mt-2 text-xs font-semibold text-rose-300">{t(UI.somethingWrong)}</p>
       )}
-      <p className="mt-2.5 text-[11px] text-white/60">{t(NEWSLETTER.privacy)}</p>
+      <p className="mt-2.5 text-[11px] text-white/70">{t(NEWSLETTER.privacy)}</p>
     </div>
   );
 }
@@ -307,8 +319,9 @@ export function MobileCtaBar() {
         </a>
         <button
           onClick={() => navigateTo("contact")}
-          className="flex-1 rounded-full bg-nx-navy-700 py-3 text-sm font-bold text-white shadow-[0_10px_24px_-10px_rgba(10,58,143,0.6)]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 py-3 text-sm font-bold text-white shadow-[0_10px_24px_-10px_rgba(10,58,143,0.6)]"
         >
+          <Calendar className="h-4 w-4 text-nx-cyan-400" aria-hidden="true" />
           {t({ en: "Book a Call", bn: "কল বুক করুন" })}
         </button>
       </div>

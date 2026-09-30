@@ -46,18 +46,18 @@ export function TrustRibbon() {
           transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
           className="fixed inset-x-0 top-[68px] z-40 flex justify-center px-4"
         >
-          <div className="flex items-center gap-3 rounded-full border border-nx-navy-100 bg-white/95 py-1.5 pl-2 pr-1.5 shadow-[0_16px_40px_-16px_rgba(6,31,74,0.3)] backdrop-blur">
+          <div className="flex items-center gap-3 rounded-full border border-white/20 bg-nx-navy-900/80 py-1.5 pl-2 pr-1.5 shadow-[0_16px_44px_-16px_rgba(0,0,0,0.6)] backdrop-blur-md">
             <button
               onClick={goVetting}
-              className="flex items-center gap-2 rounded-full bg-nx-navy-50 px-3 py-1.5 text-[13px] font-semibold text-nx-navy-800 transition-colors hover:bg-nx-cyan-100"
+              className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-nx-cyan-400/20"
             >
-              <ShieldCheck className="h-4 w-4 text-nx-cyan-600" aria-hidden="true" />
+              <ShieldCheck className="h-4 w-4 text-nx-cyan-400" aria-hidden="true" />
               {t(RIBBON.text)}
             </button>
             <button
               onClick={dismiss}
               aria-label={t(RIBBON.dismiss)}
-              className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-nx-navy-50 hover:text-slate-600"
+              className="rounded-full p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>

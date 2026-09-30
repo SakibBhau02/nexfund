@@ -43,6 +43,34 @@ export const HERO = {
     { en: "Fees disclosed upfront", bn: "ফি আগেই জানানো" },
     { en: "Bangla & English support", bn: "বাংলা ও ইংরেজিতে সহায়তা" },
   ] as L[],
+  /** R12: informative stats strip under the hero copy (quarterly-verified
+   *  milestones, same figures the Impact page shows from PlatformStat). */
+  stats: [
+    {
+      icon: "banknote",
+      value: { en: "৳12.5 crore", bn: "৳১২.৫ কোটি" } as L,
+      label: { en: "capital introduced", bn: "সংযোজিত মূলধন" } as L,
+    },
+    {
+      icon: "building",
+      value: { en: "14", bn: "১৪" } as L,
+      label: { en: "businesses onboarded", bn: "অনবোর্ডেড ব্যবসা" } as L,
+    },
+    {
+      icon: "users",
+      value: { en: "24", bn: "২৪" } as L,
+      label: { en: "registered investors", bn: "নিবন্ধিত বিনিয়োগকারী" } as L,
+    },
+    {
+      icon: "clock",
+      value: { en: "47 hrs", bn: "৪৭ ঘণ্টা" } as L,
+      label: { en: "avg. vetting per deal", bn: "প্রতি ডিলে গড় যাচাই" } as L,
+    },
+  ] as { icon: string; value: L; label: L }[],
+  statsNote: {
+    en: "Quarterly-verified milestones — see how we count on the Impact page",
+    bn: "ত্রৈমাসিক যাচাইকৃত মাইলফলক — হিসাবের পদ্ধতি দেখুন ইমপ্যাক্ট পেজে",
+  } as L,
 };
 
 export const DEAL_CARD = {

@@ -712,7 +712,7 @@ function ScenariosPanel({ o }: { o: OpportunityDTO }) {
         </span>
         <span className="nx-num rounded-full bg-nx-navy-900 px-3 py-1 text-[11px] font-extrabold text-white">
           {formatTk(ticket, lang)}
-          <span className="ml-1.5 font-semibold text-white/60">{t(SCEN.ticketModeled)}</span>
+          <span className="ml-1.5 font-semibold text-white/75">{t(SCEN.ticketModeled)}</span>
         </span>
       </div>
 

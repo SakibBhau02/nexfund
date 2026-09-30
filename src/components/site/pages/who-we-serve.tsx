@@ -812,7 +812,7 @@ function FoundersDetail() {
               <ul className="mt-4 space-y-3.5">
                 {T.fdrAsideFactsRows.map((row) => (
                   <li key={row.label.en} className="flex items-start justify-between gap-3 text-[13px] leading-relaxed">
-                    <span className="text-white/60">{t(row.label)}</span>
+                    <span className="text-white/75">{t(row.label)}</span>
                     <span className="text-right font-bold text-white">{t(row.value)}</span>
                   </li>
                 ))}

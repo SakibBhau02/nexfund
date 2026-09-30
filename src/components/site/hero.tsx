@@ -1,49 +1,44 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, ShieldCheck, Check } from "lucide-react";
+import {
+  ArrowUpRight,
+  Banknote,
+  Building2,
+  Check,
+  ChevronRight,
+  Clock3,
+  ShieldCheck,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { HERO, DEAL_CARD, UI } from "@/lib/content";
+import { navigateTo } from "@/lib/page-router";
+import { cn } from "@/lib/utils";
+import { HERO } from "@/lib/content";
+import { HeroSlideshow, type Slide } from "./hero-slideshow";
 
-/** Oval stack image rotation — 3 images per oval, staggered (blueprint §7.1) */
-const OVAL_SETS: string[][] = [
-  ["/images/hero-retail.png", "/images/hero-agri.png", "/images/hero-tech.png"],
-  ["/images/hero-agri.png", "/images/investor-meeting.png", "/images/hero-garments.png"],
-  ["/images/hero-garments.png", "/images/hero-tech.png", "/images/hero-agri.png"],
+/** R12: photos now live BEHIND the centered copy as a slow, always-sliding
+ *  background — brand-navy veil on top keeps them low-visibility texture
+ *  (replaces the old Oval Portal Stack the user asked to remove). */
+const SLIDES: Slide[] = [
+  {
+    src: "/images/hero-garments.png",
+    alt: "Garments factory floor in Bangladesh — NexFund connects verified manufacturers with investors",
+  },
+  { src: "/images/investor-meeting.png", alt: "Investor meeting" },
+  { src: "/images/hero-tech.png", alt: "Bangladeshi tech startup team" },
+  { src: "/images/hero-agri.png", alt: "Agribusiness in Bangladesh" },
+  { src: "/images/hero-retail.png", alt: "Bangladeshi retail business owner" },
 ];
 
-function Oval({
-  images,
-  className,
-  sizes,
-  priority = false,
-  alt,
-}: {
-  images: string[];
-  className?: string;
-  sizes: string;
-  priority?: boolean;
-  alt: string;
-}) {
-  return (
-    <div className={`oval oval-ring bg-nx-navy-100 ${className ?? ""}`}>
-      {images.map((src, i) => (
-        <Image
-          key={src + i}
-          src={src}
-          alt={i === 0 ? alt : ""}
-          fill
-          priority={priority && i === 0}
-          loading={priority && i === 0 ? undefined : "lazy"}
-          sizes={sizes}
-          className="nx-slide"
-        />
-      ))}
-    </div>
-  );
-}
+const STAT_ICONS: Record<string, LucideIcon> = {
+  banknote: Banknote,
+  building: Building2,
+  users: Users,
+  clock: Clock3,
+};
 
 export function Hero() {
   const { lang, t } = useLanguage();
@@ -51,60 +46,64 @@ export function Hero() {
   const open = useDialogStore((s) => s.open);
   const reduce = useReducedMotion();
 
-  return (
-    <section className="relative overflow-hidden bg-white" aria-labelledby="hero-title">
-      {/* backdrop: dot grid + soft cyan glow */}
-      <div className="nx-dots absolute inset-0" aria-hidden="true" />
-      <div
-        className="absolute -right-40 top-10 h-[540px] w-[540px] rounded-full bg-nx-cyan-100/60 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute -left-32 bottom-0 h-[380px] w-[380px] rounded-full bg-nx-navy-100/70 blur-3xl"
-        aria-hidden="true"
-      />
+  const fade = (delay: number) => ({
+    initial: reduce ? false : ({ opacity: 0, y: 18 } as const),
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.55, delay },
+  });
 
-      <div className="relative mx-auto grid max-w-[1200px] items-center gap-12 px-5 pb-20 pt-32 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-28 lg:pt-40">
-        {/* ── Copy column ── */}
-        <div className="max-w-xl">
+  return (
+    <section
+      className="relative flex min-h-[92svh] items-center overflow-hidden bg-nx-navy-950"
+      aria-labelledby="hero-title"
+    >
+      {/* always-sliding photo backdrop + brand veil (photos stay subtle) */}
+      <HeroSlideshow
+        slides={SLIDES}
+        interval={5200}
+        label={lang === "bn" ? "ব্যাকগ্রাউন্ড স্লাইডশো" : "Background slideshow"}
+      />
+      <div className="nx-hero-overlay absolute inset-0" aria-hidden="true" />
+      <div className="nx-hero-tint absolute inset-0" aria-hidden="true" />
+      {/* faint navy grid keeps the brand texture even over photos */}
+      <div className="nx-navy-grid absolute inset-0 opacity-70" aria-hidden="true" />
+
+      {/* ── Centered copy ── */}
+      <div className="relative mx-auto w-full max-w-[1200px] px-5 py-32 text-center md:px-6 md:py-40">
+        <div className="mx-auto max-w-3xl">
           <motion.p
-            initial={reduce ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 rounded-full border border-nx-cyan-300 bg-nx-cyan-50 px-4 py-2 text-[11px] font-bold tracking-[0.18em] text-nx-cyan-700 uppercase shadow-[0_10px_24px_-12px_rgba(38,183,216,0.55)]"
+            {...fade(0)}
+            className="inline-flex items-center gap-2.5 rounded-full border border-nx-cyan-400/40 bg-nx-cyan-400/10 px-4 py-2 text-[11px] font-bold tracking-[0.2em] text-nx-cyan-300 uppercase backdrop-blur-sm"
           >
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-nx-cyan-500" aria-hidden="true" />
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-nx-cyan-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-nx-cyan-400" />
+            </span>
             {t(HERO.eyebrow)}
           </motion.p>
 
           <motion.h1
             id="hero-title"
-            initial={reduce ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08 }}
-            className="mt-5 text-[2.35rem] font-extrabold leading-[1.12] tracking-tight text-nx-navy-900 md:text-6xl"
+            {...fade(0.08)}
+            className="mt-6 text-[2.5rem] leading-[1.1] font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(3,12,32,0.6)] md:text-[4.2rem]"
           >
             {t(HERO.h1)}
           </motion.h1>
 
           <motion.p
-            initial={reduce ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.16 }}
-            className="mt-5 text-base leading-relaxed text-slate-600 md:text-lg"
+            {...fade(0.16)}
+            className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg"
           >
             {t(HERO.sub)}
           </motion.p>
 
           <motion.div
-            initial={reduce ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.24 }}
-            className="mt-8 flex flex-col gap-3 sm:flex-row"
+            {...fade(0.24)}
+            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
             <button
               onClick={() => openInvestor("investor")}
-              className="nx-arrow-btn group inline-flex items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-7 py-3.5 text-base font-bold text-white shadow-[0_16px_36px_-12px_rgba(10,58,143,0.6)] transition-all hover:bg-nx-navy-600 hover:shadow-[0_20px_44px_-12px_rgba(10,58,143,0.7)]"
+              className="nx-arrow-btn group inline-flex items-center justify-center gap-2 rounded-full bg-nx-cyan-500 px-8 py-4 text-base font-bold text-nx-navy-900 shadow-[0_18px_44px_-12px_rgba(38,183,216,0.65)] transition-all hover:bg-nx-cyan-400 hover:shadow-[0_22px_52px_-12px_rgba(38,183,216,0.8)]"
             >
               {t(HERO.ctaInvestor)}
               <span className="nx-arrow">
@@ -113,7 +112,7 @@ export function Hero() {
             </button>
             <button
               onClick={() => open("quiz")}
-              className="inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 bg-white px-7 py-3.5 text-base font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 hover:text-nx-navy-700"
+              className="inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-white/45 bg-white/[0.1] px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all hover:border-white/80 hover:bg-white/15"
             >
               {t(HERO.ctaFounder)}
             </button>
@@ -121,117 +120,65 @@ export function Hero() {
 
           {/* micro-trust row */}
           <motion.ul
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.36 }}
-            className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2"
+            {...fade(0.34)}
+            className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
             aria-label={lang === "bn" ? "আস্থার সংকেত" : "Trust signals"}
           >
             {HERO.microTrust.map((m) => (
-              <li key={m.en} className="flex items-center gap-1.5 text-sm font-medium text-nx-navy-800">
-                <Check className="h-4 w-4 text-nx-verified" aria-hidden="true" />
+              <li key={m.en} className="flex items-center gap-1.5 text-sm font-medium text-white/85">
+                <Check className="h-4 w-4 text-nx-cyan-400" aria-hidden="true" />
                 {t(m)}
               </li>
             ))}
           </motion.ul>
         </div>
 
-        {/* ── Oval Portal Stack ── */}
-        <div className="relative mx-auto h-[440px] w-full max-w-[460px] sm:h-[500px] lg:h-[560px]">
-          {/* cyan crossing path ↗ */}
-          <svg
-            viewBox="0 0 400 500"
-            fill="none"
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full"
-          >
-            <motion.path
-              d="M-10 470 C 120 430, 130 330, 240 250 S 360 120, 392 58"
-              stroke="#26B7D8"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeDasharray="6 10"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.85 }}
-              transition={{ duration: 1.6, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-            />
-            <motion.path
-              d="M382 74 L392 56 L374 52"
-              stroke="#26B7D8"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.7, duration: 0.4 }}
-            />
-          </svg>
+        {/* ── Informative stats band (glass) ── */}
+        <motion.dl
+          {...fade(0.46)}
+          className="mx-auto mt-14 grid max-w-3xl grid-cols-2 overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-md md:grid-cols-4"
+        >
+          {HERO.stats.map((s, i) => {
+            const Icon = STAT_ICONS[s.icon] ?? Banknote;
+            return (
+              <div
+                key={s.label.en}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 border-white/10 px-4 py-5",
+                  /* mobile 2×2: right column + bottom row dividers */
+                  i % 2 === 1 && "border-l",
+                  i >= 2 && "border-t",
+                  /* desktop single row: left dividers only */
+                  i > 0 && "md:border-l md:border-t-0"
+                )}
+              >
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-nx-cyan-400/30 bg-nx-cyan-400/15 text-nx-cyan-300">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <dd className="nx-num text-xl font-extrabold text-white md:text-2xl">{t(s.value)}</dd>
+                <dt className="text-center text-[12px] leading-snug font-medium text-white/75">{t(s.label)}</dt>
+              </div>
+            );
+          })}
+        </motion.dl>
 
-          {/* small oval — lowest */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="absolute bottom-2 left-0 w-[31%] max-w-[150px]"
+        <motion.p {...fade(0.54)} className="mt-4 text-[12px] font-medium text-white/75">
+          <button
+            onClick={() => navigateTo("impact")}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition-colors hover:text-nx-cyan-300"
           >
-            <Oval images={OVAL_SETS[0]} sizes="150px" alt={lang === "bn" ? "বাংলাদেশি দোকান মালিক" : "Bangladeshi shop owner"} />
-          </motion.div>
-
-          {/* medium oval — middle */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="absolute bottom-24 left-[21%] w-[38%] max-w-[185px]"
-          >
-            <Oval images={OVAL_SETS[1]} sizes="185px" alt={lang === "bn" ? "কৃষিভিত্তিক উদ্যোগ" : "Agri-business"} />
-          </motion.div>
-
-          {/* large oval — top right */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="absolute right-0 top-0 w-[54%] max-w-[260px]"
-          >
-            <Oval
-              images={OVAL_SETS[2]}
-              sizes="(max-width:640px) 54vw, 260px"
-              priority
-              alt={lang === "bn" ? "গার্মেন্টস কারখানার কর্মীরা" : "Garments factory workers"}
-            />
-          </motion.div>
-
-          {/* floating deal card (blueprint: verified badge + stage) */}
-          <motion.div
-            initial={reduce ? false : { opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="nx-float absolute bottom-3 right-0 z-10 w-[220px] rounded-2xl border border-nx-navy-100 bg-white/95 p-4 shadow-[0_24px_48px_-16px_rgba(6,31,74,0.28)] backdrop-blur sm:w-[240px]"
-          >
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified-700">
-                <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                {t(DEAL_CARD.verified)}
-              </span>
-              <span className="text-[11px] font-semibold text-slate-500">
-                {t(DEAL_CARD.stage)} {lang === "bn" ? "৪/৫" : "4/5"}
-              </span>
-            </div>
-            <p className="mt-2.5 text-[13px] font-bold leading-snug text-nx-navy-900">
-              {lang === "bn"
-                ? "রপ্তানিমুখী গার্মেন্টস — RMG-201"
-                : "Export garments manufacturer — RMG-201"}
-            </p>
-            <p className="nx-num mt-1 text-sm font-extrabold text-nx-navy-700">
-              {lang === "bn" ? "৳১.৫–২.৫ কোটি" : "৳1.5–2.5 crore"}
-              <span className="ml-1.5 text-[11px] font-semibold text-slate-500">
-                {t(DEAL_CARD.equity)}
-              </span>
-            </p>
-          </motion.div>
-        </div>
+            <ShieldCheck className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
+            {t(HERO.statsNote)}
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </motion.p>
       </div>
+
+      {/* hairline bottom edge */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-nx-cyan-500/50 to-transparent"
+      />
     </section>
   );
 }

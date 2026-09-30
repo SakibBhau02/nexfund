@@ -906,3 +906,49 @@ R11 HANDOVER DOCUMENT (three sections, per review-round requirements)
 4. Impact page could later add a chart library (recharts is already a shadcn dep) for a time-series — CSS bars chosen deliberately for now
 5. Print styles for the new pages (about/impact/opportunities) untested — R10 rec #2 still open
 6. Performance: page registry eagerly bundles all 16 page components — consider dynamic imports per page if page count grows (R10 rec #7, unchanged)
+
+---
+Task ID: R12-main
+Agent: main (Z.ai Code)
+Task: R12 — Hero redesign per user feedback (Bengali): centered hero copy over always-sliding photo backdrop with brand overlay (remove round/oval images), scrolled "black version" header with white logo, icon audit, text-visibility fixes, enhanced home hero
+
+Work Log:
+- Read worklog R11 handover; identified the Oval Portal Stack (home hero), PageHero/DetailHero oval images (all 16 pages + 20 details) as the "round round" images the user dislikes
+- NEW HeroSlideshow component (src/components/site/hero-slideshow.tsx): stacked next/image layers, cross-fade 1.5s/1.8s, auto-advance (setTimeout keyed on active → manual dot clicks also reset dwell), 7.5s ken-burns drift via .nx-kenburns CSS, dots (real buttons, aria-label "Slide N/M"), first slide carries meaningful alt (SEO), prefers-reduced-motion freezes show
+- globals.css: +@keyframes nx-kenburns, .nx-kenburns, .nx-hero-overlay (layered navy gradients: 0.95 bottom / 0.62 mid / 0.74 top + lateral 0.85 sides — photos stay low-visibility texture), .nx-hero-tint (cyan brand tint)
+- HOME HERO rewritten (hero.tsx): full-bleed min-h-[92svh] centered layout — 5 slides (garments/investor-meeting/tech/agri/retail) + overlay + tint + faint navy grid; centered eyebrow chip (ping dot), h1 up to 4.2rem with drop-shadow, sub white/85, cyan primary CTA + stronger outlined secondary CTA (white/45 border), micro-trust row, NEW glass stats band (4 stats × icons: ৳12.5cr introduced / 14 businesses / 24 investors / 47h vetting) + clickable statsNote → #p/impact; 2×2 responsive grid with divider logic; removed Oval stack/SVG path/deal card
+- CONTENT: HERO.stats[] + HERO.statsNote added to content.ts (bilingual, matches PlatformStat milestones)
+- PAGE SHELL (shell.tsx): PageHero + DetailHero now CENTERED (breadcrumbs centered, badge/eyebrow/h1/copy/meta/actions all justify-center) over HeroBackdrop (page's own image leads slideshow, then shared pool tech/investor-meeting/garments/agri, deduped); oval images gone from heroes; CtaBand copy → white/80; MetaChip → white/90 on white/10 + blur; Breadcrumbs → justify-center, white/75, chevron white/45
+- HEADER: dark theme both states — top: transparent over navy heroes; scrolled: solid nx-navy-950/95 + blur + white/10 border + cyan top hairline ("black version" the user asked for); ALL text white/80→white, active pill white/15 bg; LangToggle new onDark variant (cyan active, white/85 inactive); Book-a-call ghost white; Get Started cyan; hamburger white ghost
+- LOGO: generated true white wordmark public/images/logo-light.png via PIL (alpha from darkness, cyan arrow pixels preserved — 53.8k opaque wordmark px); Logo variant="light" now renders it directly (replaces white tile) — header, footer, mobile menu
+- ICONS: footer Platform column (Users/TrendingUp/LayoutGrid/Workflow) + Company column (Info/BarChart3/Wrench/Newspaper/CircleHelp/BookOpen/Mail/FileText); hero stats icons (Banknote/Building2/Users/Clock3); MobileCtaBar Book-a-call + Calendar icon
+- TEXT VISIBILITY: breadcrumbs white/60→75; PageHero/DetailHero/CtaBand copy white/70→85; footer tagline 65→75, address 55→70, links 70→80, bottom bar 60→70, newsletter sub/privacy bumped; impact stat subs 50→65, notes 60→75; who-we-serve row labels 60→75; opportunities eyebrow chip 45→65, revenue note 60→75; opportunity-dialog ticket note 60→75; hero statsNote 65→75
+- SMALL DETAILS: TrustRibbon restyled dark-glass (navy-900/80 + blur + white/20 border, white text, cyan shield) to match dark hero; secondary hero CTA strengthened (white/45 border, white/10 bg)
+- QA (agent-browser + VLM): home hero renders centered with 5 slides + dots + stats; slideshow auto-advance verified via opacity polling; scrolled header bg lab(7.25)/0.95 navy + white nav text; ALL 13 non-image pages + about/impact/opportunities verified: h1 centered, 0 ovals, 4-5 slides, overflowX=0, titles update; EN toggle flips h1/lang/stats; opportunity detail (rmg-201-denim-knitwear) centered 5 slides; mobile 375px home + scrolled pass (stats 2×2, white logo in dark header); VLM reviews of 11 screenshots ALL PASS (centered, subtle photos, readable white-on-dark, no round hero images, footer icons OK); bun run lint 0 errors; tsc clean; dev.log clean (200s only)
+- Evidence: qa/r12-01…r12-12 (home top/scrolled, about/impact/opportunities heroes, mission detail, footer, mobile home/scrolled, full home, final hero+ribbon, vetting)
+
+Stage Summary:
+- User feedback fully delivered: (1) every hero (home + 16 landing pages + all detail pages) is now centered copy over an always-sliding photo backdrop with brand-navy overlay — zero round images in heroes; (2) scrolled header is the solid dark "black version" with white logo + readable white text; (3) icons added across footer columns, hero stats, mobile CTA; (4) text visibility raised site-wide (white/50-65 → white/65-85 on navy); (5) home hero on load is more professional + informative (stats band with live-matching milestones, clickable methodology note, trust row, refined CTAs)
+- New shared components: HeroSlideshow (reusable, a11y dots, reduced-motion safe); Logo has a true white asset; LangToggle supports onDark
+- Known caveat: hero stats are the seeded quarterly milestones (same figures as Impact page); slideshow adds 3-4 lazy-loaded background images per hero (first is priority)
+
+════════════════════════════════════════════════════════════════════════
+R12 HANDOVER DOCUMENT (three sections)
+════════════════════════════════════════════════════════════════════════
+
+1) CURRENT PROJECT STATUS / ASSESSMENT
+- NexFund: bilingual (BN/EN) investor–entrepreneur matchmaking site, single / route, hash router #p/<page>[/<detail>], 16 landing pages + 20+ details, 8 dialogs, admin dashboard, Prisma/SQLite (9 tables), /api/impact live aggregates
+- R12 transformed the visual system: ALL heroes (home + PageHero + DetailHero) are now centered-text-over-sliding-photo with the brand veil; header is dark-themed in both states with the true-white logo; text contrast raised site-wide
+- Health: lint 0 errors, tsc clean in src/, dev server healthy, 0 page errors, 375px overflow-free on all checked views
+
+2) CURRENT GOALS / COMPLETED MODIFICATIONS / VERIFICATION RESULTS (R12)
+- Delivered all six user asks (see Work Log); 12 QA screenshots, 3 VLM review rounds — all PASS
+- New contracts: HeroSlideshow({slides, interval, dots, label}); Logo variant="light" → /images/logo-light.png; LangToggle onDark prop; PageHero/DetailHero signatures UNCHANGED (pages needed zero edits — the shell upgrade propagated everywhere)
+- CSS additions: .nx-kenburns, .nx-hero-overlay, .nx-hero-tint (globals.css)
+
+3) UNRESOLVED ISSUES / RISKS + NEXT-PHASE PRIORITY RECOMMENDATIONS
+1. Hero slideshow loads 4-5 bg images per hero (first priority, rest lazy) — consider preloading only next slide or adding quality=70 for mobile if bandwidth matters
+2. .oval CSS + small oval card avatars still used in TwoPaths/opportunity cards/dialogs (NOT heroes) — user only asked for heroes; revisit if they want those reshaped too
+3. Hero stats are static copies of the seeded milestones — if DB milestones change, hero can drift from Impact page (could wire hero to /api/impact later)
+4. Admin auth still demo-grade (R9 rec, unchanged); print styles for new hero untested (R10 rec); page-registry eager bundling (R10 rec #7)
+5. Suggested next rounds: (a) add icons/chips to remaining section heads on home for further icon coverage; (b) hero A/B of overlay density if user still finds photos too visible; (c) consider a subtle scroll-hint chevron at hero bottom

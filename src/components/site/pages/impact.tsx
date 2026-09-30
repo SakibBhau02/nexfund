@@ -657,7 +657,7 @@ function LiveBand({ data, loading }: { data: ImpactDTO | null; loading: boolean 
             label={t(T.statListings)}
             value={listings?.count ?? 0}
             format={intFmt(lang)}
-            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/50">{t(T.statListingsSub)}</p>}
+            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/65">{t(T.statListingsSub)}</p>}
           />
           <StatCard
             index={1}
@@ -666,7 +666,7 @@ function LiveBand({ data, loading }: { data: ImpactDTO | null; loading: boolean 
             label={t(T.statSeeking)}
             value={listings?.seekingLakh.min ?? 0}
             format={rangeFmt(listings?.seekingLakh.min ?? 0, listings?.seekingLakh.max ?? 0, lang)}
-            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/50">{t(T.statSeekingSub)}</p>}
+            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/65">{t(T.statSeekingSub)}</p>}
           />
           <StatCard
             index={2}
@@ -676,7 +676,7 @@ function LiveBand({ data, loading }: { data: ImpactDTO | null; loading: boolean 
             value={investors?.total ?? 0}
             format={intFmt(lang)}
             sub={
-              <p className="mt-2.5 text-[12px] leading-relaxed text-white/50">
+              <p className="mt-2.5 text-[12px] leading-relaxed text-white/65">
                 {lang === "bn"
                   ? `${bnNum(byStatus?.new ?? 0)} নতুন · ${bnNum(byStatus?.verified ?? 0)} যাচাইকৃত · ${bnNum(byStatus?.active ?? 0)} সক্রিয়`
                   : `${byStatus?.new ?? 0} new · ${byStatus?.verified ?? 0} verified · ${byStatus?.active ?? 0} active`}
@@ -699,7 +699,7 @@ function LiveBand({ data, loading }: { data: ImpactDTO | null; loading: boolean 
                 <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-1 text-[11px] font-bold text-amber-200">
                   {t(T.intentChip)}
                 </span>
-                <p className="mt-2 text-[12px] leading-relaxed text-white/50">
+                <p className="mt-2 text-[12px] leading-relaxed text-white/65">
                   {T.statedBy(investors?.appetiteInvestors ?? 0, lang)}
                 </p>
               </>
@@ -712,7 +712,7 @@ function LiveBand({ data, loading }: { data: ImpactDTO | null; loading: boolean 
             label={t(T.statReadiness)}
             value={data?.live.readinessChecks ?? 0}
             format={intFmt(lang)}
-            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/50">{t(T.statReadinessSub)}</p>}
+            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/65">{t(T.statReadinessSub)}</p>}
           />
           <StatCard
             index={5}
@@ -721,7 +721,7 @@ function LiveBand({ data, loading }: { data: ImpactDTO | null; loading: boolean 
             label={t(T.statConversations)}
             value={data?.live.conversations ?? 0}
             format={intFmt(lang)}
-            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/50">{t(T.statConversationsSub)}</p>}
+            sub={<p className="mt-2.5 text-[12px] leading-relaxed text-white/65">{t(T.statConversationsSub)}</p>}
           />
         </div>
       </div>
@@ -1072,7 +1072,7 @@ function MethodologyPreview() {
             />
           </span>
           <span className="mt-4 text-[15px] font-extrabold text-white">{t(T.fullMethodBtn)}</span>
-          <span className="mt-2 text-[13px] leading-relaxed text-white/60">
+          <span className="mt-2 text-[13px] leading-relaxed text-white/75">
             {t(T.mDetailCopy)}
           </span>
         </motion.button>

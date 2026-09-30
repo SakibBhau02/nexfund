@@ -10,9 +10,10 @@ const LOGO_H = 274;
 
 /**
  * R11: the real user-supplied logo — "NE ⌁ FUND" (navy wordmark, cyan arrow).
- * `variant="dark"` renders the white-background asset directly (for white
- * surfaces); `variant="light"` wraps it in a white rounded tile so the
- * wordmark stays legible on navy surfaces (mobile menu, footer).
+ * R12: `variant="light"` now renders a true white wordmark
+ * (/images/logo-light.png — cyan arrow preserved) for navy surfaces
+ * (header, footer, mobile menu) instead of the old white tile.
+ * `variant="dark"` renders the white-background asset directly.
  * Size via a height class, e.g. <Logo className="h-10" />.
  */
 export function Logo({
@@ -22,30 +23,19 @@ export function Logo({
   className?: string;
   variant?: "dark" | "light";
 }) {
-  const img = (
-    <Image
-      src="/images/logo.png"
-      alt="NexFund"
-      width={LOGO_W}
-      height={LOGO_H}
-      priority
-      draggable={false}
-      className="h-full w-auto"
-    />
+  return (
+    <span className={cn("inline-flex items-center", className)}>
+      <Image
+        src={variant === "light" ? "/images/logo-light.png" : "/images/logo.png"}
+        alt="NexFund"
+        width={LOGO_W}
+        height={LOGO_H}
+        priority
+        draggable={false}
+        className="h-full w-auto"
+      />
+    </span>
   );
-  if (variant === "light") {
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center rounded-xl bg-white px-2 py-1.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.55)]",
-          className
-        )}
-      >
-        {img}
-      </span>
-    );
-  }
-  return <span className={cn("inline-flex items-center", className)}>{img}</span>;
 }
 
 /** Icon-only X-arrow mark (favicon / avatar style) */
@@ -63,22 +53,26 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-/** Bangla/English segmented language toggle (blueprint §4.2) */
+/** Bangla/English segmented language toggle (blueprint §4.2).
+ * R12: `onDark` renders the white/cyan version for the navy header. */
 export function LangToggle({
   lang,
   setLang,
   className,
+  onDark = false,
 }: {
   lang: Lang;
   setLang: (l: Lang) => void;
   className?: string;
+  onDark?: boolean;
 }) {
   return (
     <div
       role="group"
       aria-label="Language / ভাষা"
       className={cn(
-        "inline-flex items-center rounded-full border border-nx-navy-200 bg-white p-0.5 text-xs font-semibold",
+        "inline-flex items-center rounded-full border p-0.5 text-xs font-semibold",
+        onDark ? "border-white/25 bg-white/10" : "border-nx-navy-200 bg-white",
         className
       )}
     >
@@ -88,9 +82,13 @@ export function LangToggle({
         onClick={() => setLang("bn")}
         className={cn(
           "rounded-full px-2.5 py-1 transition-colors",
-          lang === "bn"
-            ? "bg-nx-navy-700 text-white"
-            : "text-nx-navy-700 hover:bg-nx-navy-50"
+          onDark
+            ? lang === "bn"
+              ? "bg-nx-cyan-500 text-nx-navy-900"
+              : "text-white/85 hover:bg-white/10"
+            : lang === "bn"
+              ? "bg-nx-navy-700 text-white"
+              : "text-nx-navy-700 hover:bg-nx-navy-50"
         )}
       >
         বাং
@@ -101,9 +99,13 @@ export function LangToggle({
         onClick={() => setLang("en")}
         className={cn(
           "rounded-full px-2.5 py-1 transition-colors",
-          lang === "en"
-            ? "bg-nx-navy-700 text-white"
-            : "text-nx-navy-700 hover:bg-nx-navy-50"
+          onDark
+            ? lang === "en"
+              ? "bg-nx-cyan-500 text-nx-navy-900"
+              : "text-white/85 hover:bg-white/10"
+            : lang === "en"
+              ? "bg-nx-navy-700 text-white"
+              : "text-nx-navy-700 hover:bg-nx-navy-50"
         )}
       >
         EN

@@ -69,10 +69,18 @@ export function Header() {
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-all duration-300",
           scrolled
-            ? "border-b border-nx-navy-100/80 bg-white/85 shadow-[0_8px_30px_-12px_rgba(6,31,74,0.15)] backdrop-blur-xl"
-            : "border-b border-transparent bg-white/0"
+            ? "border-b border-white/10 bg-nx-navy-950/95 shadow-[0_10px_36px_-12px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+            : "border-b border-transparent bg-transparent"
         )}
       >
+        {/* subtle top hairline gradient — visible once scrolled */}
+        <div
+          aria-hidden="true"
+          className={cn(
+            "absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-nx-cyan-400/60 to-transparent transition-opacity duration-300",
+            scrolled ? "opacity-100" : "opacity-0"
+          )}
+        />
         <div
           className={cn(
             "mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 transition-all duration-300 md:px-6",
@@ -84,7 +92,9 @@ export function Header() {
             aria-label="NexFund — home"
             className="shrink-0"
           >
-            <Logo className="h-8 md:h-9" />
+            {/* R12: white wordmark — heroes are navy now, and the scrolled
+                header is the solid dark "black version" the user asked for */}
+            <Logo variant="light" className="h-8 md:h-9" />
           </button>
 
           {/* Desktop nav (R11: about + impact added; shown from xl to keep one line) */}
@@ -99,8 +109,8 @@ export function Header() {
                   className={cn(
                     "rounded-full px-3 py-2 text-sm font-medium transition-colors",
                     activePage === pageId || (!route && active === item.id)
-                      ? "bg-nx-navy-50 text-nx-navy-700"
-                      : "text-slate-600 hover:bg-nx-navy-50 hover:text-nx-navy-700"
+                      ? "bg-white/15 text-white"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
                   {t(item.label)}
@@ -110,16 +120,16 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <LangToggle lang={lang} setLang={setLang} className="hidden sm:inline-flex" />
+            <LangToggle lang={lang} setLang={setLang} onDark className="hidden sm:inline-flex" />
             <button
               onClick={() => navigateTo("contact")}
-              className="hidden rounded-full border border-nx-navy-200 bg-white px-4 py-2 text-sm font-semibold text-nx-navy-800 transition-colors hover:border-nx-navy-500 hover:text-nx-navy-700 md:block"
+              className="hidden rounded-full border border-white/30 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:border-white/60 hover:bg-white/10 md:block"
             >
               {t(UI.bookCall)}
             </button>
             <button
               onClick={() => navigateTo("get-started")}
-              className="nx-arrow-btn hidden items-center gap-1.5 rounded-full bg-nx-navy-700 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_-10px_rgba(10,58,143,0.55)] transition-all hover:bg-nx-navy-600 md:block"
+              className="nx-arrow-btn hidden items-center gap-1.5 rounded-full bg-nx-cyan-500 px-4 py-2 text-sm font-bold text-nx-navy-900 shadow-[0_10px_26px_-10px_rgba(38,183,216,0.7)] transition-all hover:bg-nx-cyan-400 md:inline-flex"
             >
               {t(UI.getStarted)}
               <span className="nx-arrow">
@@ -127,9 +137,9 @@ export function Header() {
               </span>
             </button>
             {/* Mobile: lang toggle compact + hamburger */}
-            <LangToggle lang={lang} setLang={setLang} className="sm:hidden" />
+            <LangToggle lang={lang} setLang={setLang} onDark className="sm:hidden" />
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-nx-navy-200 bg-white text-nx-navy-800 xl:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/[0.06] text-white backdrop-blur-sm transition-colors hover:bg-white/10 xl:hidden"
               onClick={() => setMenuOpen(true)}
               aria-label={lang === "bn" ? "মেনু খুলুন" : "Open menu"}
             >

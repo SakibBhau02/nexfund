@@ -926,7 +926,7 @@ function OpportunityDetail({
             </MetaChip>
             {/* verification badges — what has (and hasn't) been verified */}
             <span className="flex w-full flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[10px] font-extrabold tracking-[0.18em] text-white/45 uppercase">
+              <span className="text-[10px] font-extrabold tracking-[0.18em] text-white/65 uppercase">
                 {t(T.verifiedSoFar)}:
               </span>
               {BADGE_KEYS.map((k) => {
@@ -1142,7 +1142,7 @@ function OpportunityDetail({
                 <p className="nx-num mt-2 text-xl font-extrabold">
                   {lang === "bn" ? o.revenueBn : o.revenue}
                 </p>
-                <p className="mt-2 text-[13px] leading-relaxed text-white/60">{t(T.revenueNote)}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/75">{t(T.revenueNote)}</p>
               </div>
             )}
 
