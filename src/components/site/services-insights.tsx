@@ -19,7 +19,7 @@ export function Services() {
     <section id="services" className="bg-white py-20 md:py-24" aria-labelledby="services-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(SERVICES.eyebrow)} title={t(SERVICES.title)} />
+          <SectionHeading titleId="services-title" eyebrow={t(SERVICES.eyebrow)} title={t(SERVICES.title)} />
         </Reveal>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -88,7 +88,7 @@ export function Insights() {
     <section id="insights" className="bg-nx-mist py-20 md:py-24" aria-labelledby="insights-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(INSIGHTS.eyebrow)} title={t(INSIGHTS.title)} sub={t(INSIGHTS.sub)} />
+          <SectionHeading titleId="insights-title" eyebrow={t(INSIGHTS.eyebrow)} title={t(INSIGHTS.title)} sub={t(INSIGHTS.sub)} />
         </Reveal>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -127,7 +127,7 @@ export function Insights() {
                     <p className="mt-1 text-[13px] leading-relaxed text-nx-ink/80">{t(a.short)}</p>
                   </div>
                   <div className="mt-auto flex items-center justify-between pt-5">
-                    <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
                       <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                       {t(INSIGHTS.readTime(a.minutes))}
                     </span>
@@ -149,7 +149,7 @@ export function Insights() {
             </Reveal>
           ))}
         </div>
-        <p className="mt-6 text-center text-xs font-semibold text-slate-500">
+        <p className="mt-6 text-center text-xs font-semibold text-slate-600">
           {lang === "bn"
             ? "প্রতিটি গাইড দুই ভাষাতেই বিনামূল্যে পড়ুন।"
             : "Every guide is free to read — in both languages."}

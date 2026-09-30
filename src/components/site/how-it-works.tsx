@@ -15,7 +15,7 @@ export function HowItWorks() {
     <section id="how" className="relative overflow-hidden bg-white py-20 md:py-24" aria-labelledby="how-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(HOW.eyebrow)} title={t(HOW.title)} sub={t(HOW.sub)} />
+          <SectionHeading titleId="how-title" eyebrow={t(HOW.eyebrow)} title={t(HOW.title)} sub={t(HOW.sub)} />
         </Reveal>
 
         {/* Crossing paths visual (blueprint §7.2) */}
@@ -83,11 +83,16 @@ export function HowItWorks() {
           </svg>
         </div>
 
-        {/* 4 steps */}
+        {/* 4 steps — R8 a11y: Reveal renders the <li> itself (as="li") so the
+            ol's children stay semantic; a wrapper div broke the list rules. */}
         <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {HOW.steps.map((step, i) => (
-            <Reveal key={step.n} delay={0.08 * i}>
-              <li className="group relative h-full rounded-2xl border border-nx-navy-100 bg-nx-mist/60 p-6 transition-all duration-300 hover:border-nx-cyan-300 hover:bg-white hover:shadow-[0_20px_44px_-20px_rgba(10,58,143,0.25)]">
+            <Reveal
+              key={step.n}
+              as="li"
+              delay={0.08 * i}
+              className="group relative h-full rounded-2xl border border-nx-navy-100 bg-nx-mist/60 p-6 transition-all duration-300 hover:border-nx-cyan-300 hover:bg-white hover:shadow-[0_20px_44px_-20px_rgba(10,58,143,0.25)]"
+            >
                 <span className="nx-num inline-flex h-11 w-11 items-center justify-center rounded-full bg-nx-navy-900 text-sm font-extrabold text-nx-cyan-400 transition-colors group-hover:bg-nx-navy-700">
                   {lang === "bn" ? ["০১", "০২", "০৩", "০৪"][i] : step.n}
                 </span>
@@ -103,7 +108,6 @@ export function HowItWorks() {
                     <path d="M4 12h14m0 0-5-5m5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
-              </li>
             </Reveal>
           ))}
         </ol>

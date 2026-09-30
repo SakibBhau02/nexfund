@@ -19,6 +19,7 @@ export function Charter() {
             <div className="lg:sticky lg:top-28">
               <SectionHeading
                 align="left"
+                titleId="charter-title"
                 eyebrow={t(CHARTER.eyebrow)}
                 title={t(CHARTER.title)}
               />
@@ -31,8 +32,13 @@ export function Charter() {
 
           <ol className="space-y-3">
             {CHARTER.items.map((item, i) => (
-              <Reveal key={item.en} delay={0.05 * i}>
-                <li className="group flex items-start gap-4 rounded-2xl border border-nx-navy-100 bg-nx-mist/50 p-5 transition-all duration-300 hover:border-nx-cyan-300 hover:bg-white hover:shadow-[0_18px_40px_-20px_rgba(10,58,143,0.28)]">
+              /* R8 a11y: Reveal renders the <li> itself so ol→li stays semantic */
+              <Reveal
+                key={item.en}
+                as="li"
+                delay={0.05 * i}
+                className="group flex items-start gap-4 rounded-2xl border border-nx-navy-100 bg-nx-mist/50 p-5 transition-all duration-300 hover:border-nx-cyan-300 hover:bg-white hover:shadow-[0_18px_40px_-20px_rgba(10,58,143,0.28)]"
+              >
                   <span className="nx-num flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-nx-navy-900 text-sm font-extrabold text-nx-cyan-400">
                     {lang === "bn" ? ["১", "২", "৩", "৪", "৫", "৬", "৭"][i] : i + 1}
                   </span>
@@ -45,7 +51,6 @@ export function Charter() {
                       {t(item)}
                     </p>
                   </div>
-                </li>
               </Reveal>
             ))}
           </ol>
@@ -61,7 +66,7 @@ export function WhyNexFund() {
     <section id="why" className="bg-nx-mist py-20 md:py-24" aria-labelledby="why-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(WHY.eyebrow)} title={t(WHY.title)} />
+          <SectionHeading titleId="why-title" eyebrow={t(WHY.eyebrow)} title={t(WHY.title)} />
         </Reveal>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {WHY.items.map((item, i) => {

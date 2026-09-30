@@ -227,7 +227,7 @@ export function Opportunities() {
     <section id="opportunities" className="bg-nx-mist py-20 md:py-24" aria-labelledby="opp-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(OPP.eyebrow)} title={t(OPP.title)} sub={t(OPP.sub)} />
+          <SectionHeading titleId="opp-title" eyebrow={t(OPP.eyebrow)} title={t(OPP.title)} sub={t(OPP.sub)} />
         </Reveal>
 
         {/* Sector filter chips — with press micro-interaction (R2) */}
@@ -348,7 +348,7 @@ export function Opportunities() {
                       {/* key facts */}
                       <dl className="grid grid-cols-2 gap-3 rounded-2xl bg-nx-mist p-4 text-sm">
                         <div>
-                          <dt className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
+                          <dt className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
                             {t(OPP.seeking)}
                           </dt>
                           <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
@@ -356,7 +356,7 @@ export function Opportunities() {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
+                          <dt className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
                             {t(OPP.instrument)}
                           </dt>
                           <dd className="mt-0.5 font-semibold text-nx-navy-800">
@@ -398,7 +398,7 @@ export function Opportunities() {
                             {o.badges.map((b) => (
                               <Tooltip key={b}>
                                 <TooltipTrigger asChild>
-                                  <span className="inline-flex cursor-help items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified">
+                                  <span className="inline-flex cursor-help items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified-700">
                                     <ShieldCheck className="h-3 w-3" aria-hidden="true" />
                                     {t(BADGES[b])}
                                   </span>
@@ -414,7 +414,7 @@ export function Opportunities() {
 
                       {/* Key risks — ALWAYS visible (blueprint trust rule) */}
                       <div className="mt-4 flex-1 rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-4 shadow-[inset_0_1px_0_rgba(183,121,31,0.08)]">
-                        <p className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wide text-nx-warn uppercase">
+                        <p className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wide text-nx-warn-700 uppercase">
                           <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
                           {t(OPP.keyRisks)}
                         </p>
@@ -484,7 +484,7 @@ export function Opportunities() {
 
         {/* anonymization note */}
         <Reveal>
-          <p className="mt-8 flex items-center justify-center gap-2 text-center text-sm text-slate-500">
+          <p className="mt-8 flex items-center justify-center gap-2 text-center text-sm text-slate-600">
             <Lock className="h-4 w-4 text-nx-navy-500" aria-hidden="true" />
             {t(OPP.anonymizedNote)}
           </p>

@@ -114,24 +114,30 @@ export function SectionHeading({
   sub,
   align = "center",
   dark = false,
+  titleId,
 }: {
   eyebrow: string;
   title: string;
   sub?: string;
   align?: "center" | "left";
   dark?: boolean;
+  /** R8 a11y: id for the h2 so the parent section's aria-labelledby resolves
+   *  (every section passes "<sectionid>-title"). */
+  titleId?: string;
 }) {
   return (
     <div className={cn("max-w-2xl", align === "center" ? "mx-auto text-center" : "text-left")}>
       <p
         className={cn(
           "nx-eyebrow text-xs font-bold tracking-[0.22em] uppercase",
-          dark ? "text-nx-cyan-400" : "text-nx-cyan-600"
+          /* R8 a11y: cyan-700 keeps the accent but passes 4.5:1 on white/mist */
+          dark ? "text-nx-cyan-400" : "text-nx-cyan-700"
         )}
       >
         {eyebrow}
       </p>
       <h2
+        id={titleId}
         className={cn(
           "mt-3 text-3xl font-extrabold leading-tight md:text-[2.5rem] md:leading-[1.15]",
           dark ? "text-white" : "text-nx-navy-900"

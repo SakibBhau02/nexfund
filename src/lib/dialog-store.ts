@@ -9,6 +9,7 @@ export type DialogKind =
   | "opportunity"
   | "insight"
   | "glossary"
+  | "admin"
   | null;
 
 interface DialogState {
@@ -47,6 +48,8 @@ interface DialogState {
   openOpportunity: (slug: string) => void;
   openInsight: (slug: string) => void;
   openGlossary: () => void;
+  /** R8: hidden admin review workspace (#admin= hash — advisors only) */
+  openAdmin: () => void;
   close: () => void;
 }
 
@@ -61,11 +64,26 @@ export const useDialogStore = create<DialogState>((set) => ({
   setCompareOpen: (open) => set({ compareOpen: open }),
   sectorFilter: "all",
   setSectorFilter: (sector) => set({ sectorFilter: sector }),
-  open: (kind) => set({ dialog: kind, opportunitySlug: undefined, insightSlug: undefined }),
+  /* R8 guard: a global dialog and the compare dialog are both modal —
+     opening one must close the other (matters for the #opp=/#insight= hash
+     flows, which can fire while a shared #cmp= link left compare open). */
+  open: (kind) =>
+    set({ dialog: kind, opportunitySlug: undefined, insightSlug: undefined, compareOpen: false }),
   openInvestor: (prefill) =>
-    set({ dialog: "investor", investorPrefill: prefill, opportunitySlug: undefined, insightSlug: undefined }),
-  openOpportunity: (slug) => set({ dialog: "opportunity", opportunitySlug: slug, insightSlug: undefined }),
-  openInsight: (slug) => set({ dialog: "insight", insightSlug: slug, opportunitySlug: undefined }),
-  openGlossary: () => set({ dialog: "glossary", opportunitySlug: undefined, insightSlug: undefined }),
+    set({
+      dialog: "investor",
+      investorPrefill: prefill,
+      opportunitySlug: undefined,
+      insightSlug: undefined,
+      compareOpen: false,
+    }),
+  openOpportunity: (slug) =>
+    set({ dialog: "opportunity", opportunitySlug: slug, insightSlug: undefined, compareOpen: false }),
+  openInsight: (slug) =>
+    set({ dialog: "insight", insightSlug: slug, opportunitySlug: undefined, compareOpen: false }),
+  openGlossary: () =>
+    set({ dialog: "glossary", opportunitySlug: undefined, insightSlug: undefined, compareOpen: false }),
+  openAdmin: () =>
+    set({ dialog: "admin", opportunitySlug: undefined, insightSlug: undefined, compareOpen: false }),
   close: () => set({ dialog: null, opportunitySlug: undefined, insightSlug: undefined }),
 }));

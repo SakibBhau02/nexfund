@@ -430,7 +430,7 @@ export function OpportunityDialog() {
                 )}
                 {tab === "risks" && (
                   <div className="rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-5">
-                    <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-warn uppercase">
+                    <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-warn-700 uppercase">
                       <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                       {t(OPP.keyRisks)}
                     </p>
@@ -442,7 +442,7 @@ export function OpportunityDialog() {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-4 border-t border-nx-warn/30 pt-3 text-xs leading-relaxed text-nx-warn/90">
+                    <p className="mt-4 border-t border-nx-warn/30 pt-3 text-xs leading-relaxed text-nx-warn-700/90">
                       {t(VETTING_DISCLAIMER)}
                     </p>
                   </div>
@@ -742,7 +742,7 @@ function ScenariosPanel({ o }: { o: OpportunityDTO }) {
                   <Icon className={cn("h-4 w-4", chipClass)} aria-hidden="true" />
                   {t(SIM.scenarios[key].name)}
                   {lead && (
-                    <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn">
+                    <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn-700">
                       {lang === "bn" ? "আগে দেখুন" : "look here first"}
                     </span>
                   )}
@@ -1099,7 +1099,7 @@ function PrintSheet({ o }: { o: OpportunityDTO }) {
               )}
             >
               <p className="text-[13px]">
-                <span className={cn("font-extrabold", key === "down" ? "text-nx-warn" : "text-nx-navy-900")}>
+                <span className={cn("font-extrabold", key === "down" ? "text-nx-warn-700" : "text-nx-navy-900")}>
                   {t(SIM.scenarios[key].name)}
                 </span>
                 <span className="nx-num ml-2 text-[11px] font-semibold text-slate-500">{scenAssumption(a)}</span>

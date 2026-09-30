@@ -255,7 +255,7 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/60 sm:flex-row">
           <p>© {lang === "bn" ? "২০২৬" : "2026"} NexFund · {t(FOOTER.copyright)}</p>
           <p className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-nx-cyan-400" aria-hidden="true" />
@@ -340,7 +340,7 @@ function NewsletterForm() {
       {state === "error" && (
         <p className="mt-2 text-xs font-semibold text-rose-300">{t(UI.somethingWrong)}</p>
       )}
-      <p className="mt-2.5 text-[11px] text-white/40">{t(NEWSLETTER.privacy)}</p>
+      <p className="mt-2.5 text-[11px] text-white/60">{t(NEWSLETTER.privacy)}</p>
     </div>
   );
 }

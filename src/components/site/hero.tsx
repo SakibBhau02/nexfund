@@ -210,7 +210,7 @@ export function Hero() {
             className="nx-float absolute bottom-3 right-0 z-10 w-[220px] rounded-2xl border border-nx-navy-100 bg-white/95 p-4 shadow-[0_24px_48px_-16px_rgba(6,31,74,0.28)] backdrop-blur sm:w-[240px]"
           >
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified">
+              <span className="inline-flex items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified-700">
                 <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                 {t(DEAL_CARD.verified)}
               </span>

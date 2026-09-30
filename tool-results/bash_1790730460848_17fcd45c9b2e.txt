@@ -1,0 +1,220 @@
+- R5-3 Glossary tap-to-open on touch (glossary.tsx): Radix Tooltip is hover-only — on real phones/tablets ((hover:none) + (pointer:coarse)) the first tap now toggles the definition open (cyan active bg on the term) and a second tap or Escape closes it. Tooltip is fully controlled from first render (open + onOpenChange) so there is NO uncontrolled→controlled React warning; touch detection uses a lazy useState initializer (identical first-render markup → no hydration mismatch, no set-state-in-effect lint). Desktop hover/focus path unchanged and re-verified.
+- R5-4 Simulator chip count-up (scenario-simulator.tsx): multiple (e.g. "1.61×") and ±gain/loss % chips now tween via AnimatedNumber alongside the money values; per-language word order preserved (EN "±% gain vs. ticket", BN "টিকেটের তুলনায় ±% লাভ"); mid-flight sampling confirmed the animation actually runs (0.33× → settled 0.34× at growth 13, hand-computed 0.3430×).
+- BUG FOUND & FIXED (integration QA): compare selection was lost when toggling BN⇄EN — the language cross-fade remounts every section (page.tsx key={lang}), wiping the section-local useState. Fix: compareSlugs lifted into the zustand dialog-store (module-level, outside the remount boundary) with setCompareSlugs action; opportunities.tsx reads/writes the store (variable name setCompare preserved so all other call sites unchanged). Verified: select 2 → switch EN→BN → "২টি নির্বাচিত" persists, tray + chips render in Bangla.
+- QA of my parts (main browser session + isolated --session touch2 with an init-script media stub emulating a real phone's hover:none+pointer:coarse): insight permalink reload opens the exact article (title verified); share pill → real click → "লিংক কপি হয়েছে ✓" and clipboard URL captured correct (synthetic JS click → correct graceful "কপি করা যায়নি…" failure state — expected, no user gesture); glossary tap1 opens tooltip+active bg / tap2 closes / Escape closes / desktop hover opens — all with ZERO console warnings after the controlled-Tooltip rework; compare re-tested end-to-end after the store lift: 3-pick dialog, all 9 scenario cells hand-verified against the model math (AGF ৳56লাখ·0.75×/৳1.1cr·1.50×/৳1.6cr·2.10×, RMG ৳93লাখ·0.46×/৳3.2cr·1.61×/৳5.7cr·2.86×, CCL ৳1.8cr·0.61×/৳7.5cr·2.49×/৳11.8cr·3.95×), "Open full summary" cross-dialog flow, clear-all, mobile tray 5px above CTA bar (no overlap), mobile dialog table 560px inner-scroll + sticky first column pinned at scrollLeft=220; final fresh-load full sweep desktop 1440 + mobile 375: overflowX 0, 0 console errors/warnings; lint 0 errors; tsc: no errors in src/.
+- Screenshots: qa/r5-00-opportunities-en.png, r5-01-scenario-bn.png, r5-02-insight-reader.png, r5-03-mobile-hero.png, r5-insight-share-copied.png, r5-glossary-touch-open.png, r5-compare-dialog-bn.png, r5-compare-tray-en.png, r5-compare-langswitch-kept.png, r5-compare-mobile-dialog.png, r5-compare-mobile-scrolled.png, r5-final-mobile.png (+ 6 subagent r5-cmp-*.png). qa/touch-stub.js kept as a reusable init-script for future touch-mode QA.
+
+Stage Summary:
+- 4 user-facing improvements shipped this round: (1) opportunity compare — side-by-side table w/ per-listing scenarios, tray, cap, cross-links (subagent); (2) insight guide permalinks + share (native sheet on mobile, clipboard elsewhere); (3) glossary definitions finally readable on phones/tablets (tap-to-toggle); (4) simulator chips count up (plus card image hover zoom from the subagent)
+- 1 integration bug fixed: compare shortlist survives the BN⇄EN cross-fade (zustand store lift)
+- Console-hygiene hardening along the way: glossary Tooltip reworked fully-controlled (no Radix uncontrolled→controlled warning)
+- Files changed: content.ts (append-only: SHARE, CMP), insight-dialog.tsx, glossary.tsx, scenario-simulator.tsx, dialog-store.ts (compareSlugs), opportunities.tsx (store lift only) — main; compare-dialog.tsx (NEW), opportunities.tsx — subagent
+- No DB/schema/API changes; dev server never restarted; lint clean; zero console errors; mobile-safe; both languages verified
+
+Unresolved / next-phase recommendations:
+1. Admin review workflow for OpportunityInterest rows remains DB-only (needs auth before any UI) — still the biggest structural gap
+2. Scenario assumptions still live in content.ts keyed by slug — fine for 3 seeded listings, but move into the Opportunity model once real listings launch (compare + scenarios both read them now)
+3. Compare cap-toast is untestable in the UI with only 3 seeded listings (max-3 logic verified by code path); consider an e2e test once >3 listings exist, or drop the cap if listings stay at 3
+4. Sector filter chips still reset on BN⇄EN switch (same remount cause as the compare bug — same store-lift fix applies if it bothers users)
+5. Insight reader could get per-section anchor links + estimated-remaining-reading-time in the progress bar area
+6. qa/touch-stub.js + agent-browser --init-script is now the established recipe for testing hover/pointer-dependent behavior — reuse it
+---
+Task ID: R6-FAQ
+Agent: full-stack-developer
+Task: FAQ live search — bilingual (BN/EN) filter with cyan match highlighting, count chip, empty state, and FAQ section styling polish
+
+Work Log:
+- Read context: worklog R4/R5 summaries, faq-cta.tsx, content.ts FAQ + FAQS consts, i18n.tsx, format.ts, glossary.tsx, reveal.tsx, brand.tsx, scenario-simulator.tsx input/pill patterns, accordion.tsx, input.tsx, globals.css (focus convention + nx palette)
+- faq-cta.tsx (ONLY file changed): added `role="search"` form between SectionHeading and Accordion — Search icon + h-12 rounded-full input (border-nx-navy-200, cyan focus: focus-visible:border-nx-cyan-400 + ring-2 ring-nx-cyan-200, autoComplete off, spellCheck false, enterKeyHint search), framer-motion X clear button (AnimatePresence, reduced-motion aware, appears only when raw query non-empty, refocuses input), Languages-icon helper line t(FAQS.searchBoth), persistent aria-live="polite" role=status region with t(FAQS.count(n)) chip (shown only while trimmed query active — chip text swaps in place so SRs announce every keystroke)
+- Filtering: useMemo over FAQ.items — norm() (lowercase + whitespace collapse) substring match across q.en/q.bn/a.en/a.bn/terms joined; trimmed-empty query → full list; plain re-render on clear
+- highlight(text, query, lang) helper inside the file: regex-escaped split-with-capture (escapeRegExp), "gi" flags (Bangla has no case — harmless), wraps all occurrences in <mark class="rounded bg-nx-cyan-100/70 px-0.5 text-nx-navy-900">; applied to q and a in the displayed language only; G glossary chips untouched; try/catch belt-and-braces
+- Empty state (query active + 0 matches): dashed-card pattern (rounded-3xl border-dashed border-nx-navy-200 bg-white p-8 md:p-10, max-w-md) with SearchX in cyan circle, emptyTitle/emptySub, Clear-search (secondary bordered pill) + Talk-to-us→ (navy pill, open("contact")); "Still curious? Talk to us →" footer line unchanged below everything
+- Styling polish: AccordionItem hover lift (hover:-translate-y-0.5 hover:border-nx-cyan-400 hover:shadow-[0_14px_34px_-20px_rgba(10,58,143,0.35)] transition-all; nx-cyan-300 doesn't exist in palette → cyan-400 per R5 precedent), filtered-mode left cyan spine (border-l-4 border-l-nx-cyan-400 + data-[state=open]:border-l-nx-cyan-400), trigger rounded-2xl + hover:text-nx-cyan-700 + focus-visible:outline-2/offset-2/nx-cyan-400, stable AccordionItem value (item.q.en instead of faq-${i} so open state doesn't hop between items while filtering)
+- Local const TALK_CTA (bilingual "Talk to us →") for the empty state — content.ts untouched; FinalCta component byte-identical
+- Query state kept in a module-scope `savedQuery` mirroring useState — survives the BN⇄EN cross-fade remount (page keys sections by lang; same wart R5-CMP fixed via store — this stays local since dialog-store.ts is off-limits)
+
+QA (agent-browser isolated session "faq", desktop 1440×900 + mobile 375×812):
+- BN (default) "বিনিয়োগ" → 4 matches, chip "৪টি প্রশ্ন মিলেছে", 3 question marks + answer mark on open; "নিরাপদ" → singular "১টি প্রশ্ন মিলেছে"
+- BN⇄EN toggle WITH active query: query persists (module var), filter stays live in the other language, chip swaps to "4 questions match", marks correctly absent from non-matching displayed language
+- EN "minimum" → 1 match "What is the minimum investment?", mark on "minimum"; "due diligence" → matches item 1 via glossary TERM key only (term-match path works)
+- Regex safety: "(" → 1 match + highlighted literal paren, "[" → empty state, "a+" → empty state — no crash, no console error; whitespace-only query → full list, X still shown, chip hidden
+- Gibberish "zzzz" → dashed empty card with both buttons; Clear search → full 6 items + input refocus; Talk to us → contact dialog opens ("Let's talk — no pressure."), Escape closes; footer "Still curious?" line intact
+- X button appears/disappears with query (AnimatePresence); Tab: input → X button → accordion trigger all reachable; Escape in input harmless; input :focus-visible ring verified computed (2px #C5ECF7 + cyan-400 border); trigger focus = site's global cyan outline convention (globals.css button:focus-visible 2px #26B7D8 offset 2px)
+- aria-live verified: persistent role=status + aria-live="polite" element in DOM, chip text content updates per keystroke
+- Hover styles: rules verified generated (.hover\:-translate-y-0.5:hover, .hover\:border-nx-cyan-400:hover, .hover\:text-nx-cyan-700:hover, .border-l-nx-cyan-400, .focus-visible\:outline-nx-cyan-400) — but headless Chromium reports (hover:hover)=false so Tailwind v4's hover media-gate can't apply them in QA (same for every pre-existing hover effect on the site; :hover state itself matches; R5 worklog documented the same headless quirk)
+- Mobile 375×812: input 335×48px at x=20, helper + chip within viewport (chip right edge 347), filtered accordion + empty card (buttons stacked, 46/44px tall) render, documentElement.scrollWidth−clientWidth = 0 in every state
+- Fresh reload desktop: 6 items, empty input, role=search + aria-live present; console zero errors/warnings (only HMR/Fast Refresh logs); agent-browser errors → none; bun run lint → 0 errors; dev.log clean
+- Screenshots: qa/r6-faq-1-en-highlight.png, r6-faq-2-bn-highlight.png, r6-faq-3-empty-state.png, r6-faq-4-mobile.png (empty state on mobile), r6-faq-5-mobile-bn.png (filtered BN list + chip on mobile)
+
+Stage Summary:
+- FAQ section now has a fully bilingual live search: type in either language (Bangla or English, regardless of UI language) and the list filters instantly with cyan-marked matches in the displayed language, an aria-live result count in Bangla numerals or English, and an honest dashed empty state offering "clear search" / "Talk to us →" when nothing matches; accordion got hover lift + cyan border + filtered-mode left spine + rounded keyboard focus
+- Files changed: src/components/site/faq-cta.tsx ONLY (FinalCta byte-identical; content.ts/globals.css/store untouched; all copy from FAQS except local TALK_CTA const)
+- Deviations: (1) hover:border uses nx-cyan-400 (spec said nx-cyan-300 — not in palette, R5 precedent); (2) hover/focus styles verified rule-generated but not visually exercisable in headless QA ((hover:hover) media = false — Tailwind v4 gates hover variants; every site hover effect equally gated; rule presence + :hover state verified instead); (3) query state deliberately survives the BN⇄EN remount via module-scope mirror of useState (dialog-store is off-limits) — filter/chip/X all stay live across language toggle, verified; (4) AccordionItem value switched to stable item.q.en so an open item doesn't "become" a different item when the list reindexes during filtering; (5) trigger rounded-2xl is visually inert on focus because the global button:focus-visible convention forces border-radius:4px — kept for task compliance, outline remains site-consistent cyan
+
+---
+Task ID: R6 (main agent round 6) — main + full-stack-developer (R6-FAQ)
+Agent: main (Z.ai Code)
+Task: Scheduled review — QA stable state, then FAQ live search, insight reader mini-TOC + minutes-left, opportunity listing permalinks + share, sector-filter persistence
+
+Work Log:
+- Entry QA: dev server healthy, lint clean, agent-browser sweep — all 10 sections desktop+375 mobile, zero console errors, R5 features re-verified (compare tray/dialog end-to-end, #insight= permalink auto-open, share pill). Verdict: STABLE → feature round.
+- Scoped R6 from worklog recs (#4 sector persistence, #5 insight TOC/reading time) + new: FAQ live search (subagent), opportunity permalinks.
+- Content groundwork FIRST (atomic EOF append): new consts FAQS (search UI copy incl. count(n) with bnDigit), OPPS (listing share + not-found copy), READERTOC (tocLabel + remaining(m) with bnDigit) appended to content.ts before subagent launch — zero shared-file conflicts.
+- R6-FAQ (subagent full-stack-developer): bilingual FAQ live search — see R6-FAQ section above.
+- R6-1 Sector filter persistence (worklog rec #4): dialog-store gained sectorFilter + setSectorFilter ("all" default; keys are stable EN sector strings from the DB); opportunities.tsx swapped its local useState for the store — verified: click গার্মেন্টস ও অ্যাপারেল → 1 card → toggle EN → "garments" still active, still 1 card.
+- R6-3 Insight reader mini-TOC + remaining reading time (insight-dialog.tsx, worklog rec #5): ARCHITECTURAL REFACTOR — extracted all per-article state into a new keyed child <ReaderContent key={slug}> (mounts fresh inside Radix's conditionally-mounted DialogContent → clean slate per open/article, NO reset effects needed). This was forced by react-hooks/set-state-in-effect: three reset-effect shapes were rejected by the lint rule (guarded, unguarded, value-vs-null) — the keyed-child pattern is the canonical "use keys" fix and is cleaner than what it replaced. New features in the child: sticky mini-TOC under the progress bar (7 numbered chips ০১–০৭ with sr-only section names, title tooltips, aria-current active state, horizontally scrollable on mobile, jump via rect-math scrollTo on the dialog host — no page-side scroll, reduced-motion aware); active-section tracking via a passive native scroll listener on the DialogContent host (functional setState, no stale closures); floating minutes-left pill riding the sticky progress bar (~X min left / বাকি, "done"/"সম্পন্ন" at end, Bangla numerals in BN) — re-renders only when the displayed minute changes; progress bar now also driven by the same listener.
+- R6-4 Opportunity listing permalinks + share (opportunity-dialog.tsx): #opp=<slug> hash auto-opens the listing (rAF-deferred, same pattern as #insight=); share pill in the header chip row (navigator.share → clipboard → execCommand fallback chain, "লিংক কপি হয়েছে ✓" 2.6s, graceful failure copy, resets with the existing [isOpen, slug] effect); the old infinite-loading branch became a friendly not-found state (OPPS.notFoundTitle/Sub + "Browse current opportunities" button) when data is loaded but the slug doesn't match — stale links now degrade honestly instead of spinning.
+- BUG FOUND & FIXED during QA: `DialogContent requires a DialogTitle` Radix a11y error (×2 in console) — the opportunity dialog's LOADING branch had no DialogTitle; it was previously unreachable via card clicks (warm cache) but my #opp= permalink flow opens the dialog cold → loading branch mounts titleless. Fixed with an sr-only DialogTitle in the loading branch. Verified: #opp= cold reload now logs ZERO console errors.
+- QA (main session + subagent isolated session): #insight= permalink → 7 chips + "~৭ মিনিট বাকি" pill; TOC jump to section 5 → progress 82%, active chip ৫, pill "~২ মিনিট বাকি" (ceil(7×0.18)=2 ✓); scroll back to top → chip 0 + "~৬ মিনিট বাকি" (ceil(7×0.86)=6 ✓); mobile 375 → TOC row scrollable, jump to last section → chip ৭, 87%, "~1 min left", overflowX 0; #opp=agf-105 permalink → AGF-105 opens, share real-click → "লিংক কপি হয়েছে ✓" + URL captured (#opp=agf-105-poultry-eggs); bad slug → "লিস্টিং পাওয়া যায়নি" + browse button closes dialog; sector persistence verified both directions; FAQ search re-verified on main session (EN "minimum" → 1 item + 1 mark + "1 question match" count; "zzzz" → empty state; clear → 6 items); final fresh-load sweeps desktop 1440 + mobile 375: overflowX 0, zero console errors (only the pre-existing informational Next dev LCP notice — image is below the fold, eager-loading it would regress performance, left as-is deliberately); lint 0 errors; tsc clean in src/.
+- Screenshots: qa/r6-insight-toc-jump.png, r6-insight-toc-mobile.png, r6-opp-notfound.png, r6-faq-search-integration.png (+ 5 subagent r6-faq-*.png)
+
+Stage Summary:
+- 4 user-facing features shipped: (1) bilingual FAQ live search with cyan match highlighting + honest empty state; (2) insight reader sticky mini-TOC + remaining-reading-time pill; (3) opportunity listing permalinks (#opp=) + share pill + friendly stale-link state; (4) sector filter survives BN⇄EN (consistent with compare shortlist from R5)
+- 1 a11y bug fixed (titleless loading branch — exposed and resolved by the new permalink flow); 1 architecture improvement (keyed ReaderContent eliminates reset effects entirely — canonical React pattern, lint-rule-proof)
+- Files changed: content.ts (append-only: FAQS, OPPS, READERTOC), insight-dialog.tsx (refactor + TOC/pill), opportunity-dialog.tsx (permalink/share/not-found/sr-only title), dialog-store.ts (sectorFilter), opportunities.tsx (store swap) — main; faq-cta.tsx — subagent
+- No DB/schema/API changes; dev server never restarted; lint clean; zero console errors; mobile-safe; both languages verified
+
+Unresolved / next-phase recommendations:
+1. Admin review workflow for OpportunityInterest rows remains DB-only (needs auth before any UI) — still the biggest structural gap
+2. Scenario assumptions still in content.ts keyed by slug — move into the Opportunity model once real listings launch (compare + scenarios + (now) share links all read them)
+3. Insight TOC chips are numbers-only (headings in tooltips/sr-only) — if users want text chips, truncate headings to ≤2 words per chip; numbers-only was chosen for mobile fit
+4. Permalink family is now: #sim=, #insight=, #opp= — consider a tiny "copied link opens the right thing" regression script (curl hash → title assertion) when a 4th hash kind appears
+5. FAQ search query survives BN⇄EN via a module-scope mirror (subagent deviation) — if more cross-remount state appears, consider a dedicated UI-state zustand slice instead
+6. The pre-existing informational LCP dev notice (insight card image) is dev-only and correct to ignore (below fold); do NOT add loading=eager
+
+---
+Task ID: R7 (main agent round 7, part 1) — main agent
+Agent: main (Z.ai Code)
+Task: Scheduled review — entry QA, glossary hub, compare permalinks/share/persistence, styling details, permalink regression script (subagents r7-6/r7-7 launched after this entry)
+
+Work Log:
+- Entry QA: dev.log all 200s, lint clean, agent-browser sweep (all 10 sections, overflowX 0 desktop + 375 mobile, opportunity dialog 7 tabs, compare tray/dialog, #insight= permalink auto-open, zero console/page errors). Verdict: STABLE → feature round.
+- Groundwork FIRST (R4 pattern): content.ts atomic EOF append — GLOSSARY_HUB (dialog + cta + footerLink + count(n) bnDigit + alsoKnown + footnote), CMP_SHARE (share + loadedPill; reuses SHARE.linkCopied/copyFailed), PRINT (button/buttonAria/header/prepared/illustrative/disclaimer/contact for r7-7), FEEDBK (label/yes/no/thanks for r7-6), WHATSAPP_MSG (deep-link greeting).
+- DB groundwork for r7-6: prisma schema += FAQFeedback (id autoincrement, questionId = stable FAQ q.en key, helpful Boolean, language, createdAt, @@index([questionId, createdAt])) → bun run db:push → client regenerated → dev server RESTARTED (killed old PIDs, double-fork `( setsid bun run dev >> dev.log ... )`) → / + /api/opportunities 200 → fresh-client check script confirms db.fAQFeedback queries work (0 rows).
+- Styling pre-settle (globals.css append + shared components, BEFORE subagent launch): ::selection cyan (#C5ECF7/#061F4A); html -webkit-tap-highlight-color cyan tint; .nx-eyebrow::before cyan dash (brand.tsx SectionHeading eyebrow got the class — currentColor adapts light/dark); .nx-shimmer gradient sweep keyframes (unlayered rules outrank Tailwind utilities → single class replaces Skeleton's animate-pulse; blanket reduced-motion block freezes it automatically); ui/dialog.tsx overlay bg-black/50 → bg-nx-navy-950/60 + backdrop-blur-[2px] (matches footer LegalDialog, applies site-wide).
+- R7-2 Glossary hub (new src/components/site/dialogs/glossary-dialog.tsx): full index of all 11 GLOSSARY terms; row title from GLOSSARY_LABELS, body = definition with leading "Term — " prefix stripped; cross-language chip (other language's term, lang attr, LTR both scripts — dir="rtl" bug caught & fixed during QA); alphabetical sort per locale; count chip (১১টি শব্দ / 11 terms); per-row stagger (reduced-motion aware); honesty footnote; store kind "glossary" + openGlossary() (dialog-store.ts); triggers: FAQ search helper row pill "সব সংজ্ঞা/All definitions" (faq-cta.tsx) + footer Company column "শব্দকোষ/Glossary" (footer.tsx); mounted in page.tsx. Verified BN + EN from both triggers, 11 sections each, zero console errors.
+- R7-2 SEO: layout.tsx StructuredData += DefinedTermSet JSON-LD (name/alternateName/description per term from GLOSSARY + GLOSSARY_LABELS) — third ld+json script; verified present in server HTML via curl.
+- R7-3 Compare permalinks + share + persistence:
+  - #cmp=slug1,slug2[,slug3] hydration in opportunities.tsx (regex-validated against live query data, waits for cache, rAF-deferred, module-scope cmpHashApplied flag so BN⇄EN remounts don't re-apply; ≥2 valid slugs auto-opens the dialog; 0 valid → degrade to normal page); "Loaded a shared comparison ✓" pill in the tray for 6s.
+  - ShareCompareButton in compare-dialog.tsx (inside DialogContent → unmounts+resets on close — avoids set-state-in-effect lint): copies #cmp= link, clipboard → execCommand fallback, "লিংক কপি হয়েছে ✓" 2.6s. Real-click verified.
+  - localStorage persistence: hydrate on mount (hash wins over LS), save on every change (first-run skip guard prevents clearing LS pre-hydration); verified shortlist survives full reload.
+  - BUG FOUND & FIXED: with lang=en in localStorage, the post-hydration bn→en cross-fade remount reset the section-local compareOpen state → #cmp= dialog opened then instantly closed (module-scope flag blocked re-apply). Fix: compareOpen + setCompareOpen lifted into the zustand dialog-store (same pattern as compareSlugs R5 / sectorFilter R6). This ALSO fixes the R5 limitation — the compare dialog now survives the BN⇄EN toggle in place (title swaps পাশাপাশি তুলনা ⇄ Side-by-side), screenshot qa/r7-cmp-langswitch-kept.png.
+- R7-4 WhatsApp prefill: footer.tsx WHATSAPP_URL → whatsappUrl(msg) helper; MobileCtaBar href now wa.me/...?text=<encoded t(WHATSAPP_MSG)> — verified EN + BN encoded URLs on mobile 375.
+- R7-5 Regression script qa/permalinks.sh: all 4 hash kinds + bad-slug degradation, isolated --session permacheck, EN forced via localStorage. TWO script bugs found while writing: (1) agent-browser `open` does SAME-DOCUMENT navigation for hash-only changes (mount-time hash effects never re-run) → every case now opens + reloads for a cold load; (2) #sim= test values initially equaled the DEFAULTS (100/10/12/5) → vacuous pass; switched to 75/8/6/7. Result: 6/6 pass.
+- Self-QA: glossary BN/EN both triggers; #cmp= hydration + share + LS reload; eyebrow dash computed (22.4px cyan ::before); DefinedTermSet in HTML; mobile 375 overflowX 0; lint clean; tsc clean in src/; zero console/page errors (only the known informational LCP dev notice).
+- NOTE for future rounds: multiple concurrent agent-browser sessions crashed the browser daemon (CDP connect reset) — close sessions when done (`agent-browser --session X close`), and after `close --all` everything relaunches fine.
+
+Stage Summary:
+- 3 user-facing features live: glossary hub dialog (bilingual index, 2 triggers, JSON-LD), compare permalinks #cmp= + share + reload persistence, WhatsApp prefilled greeting
+- 1 real bug fixed (compareOpen lost to the language remount — store lift; also upgrades R5 compare to survive BN⇄EN like every other dialog)
+- Styling: eyebrow dashes, cyan selection, shimmer skeletons, cyan tap highlight, navy dialog overlay tint
+- Infra: FAQFeedback table live + dev server restarted with fresh client; qa/permalinks.sh 6/6 green
+- Subagents launched after this entry: r7-6 FAQ feedback (api/feedback + faq-cta UI), r7-7 print/PDF summary (opportunity-dialog + globals.css print block)
+
+---
+Task ID: r7-6
+Agent: full-stack-developer
+Task: FAQ "Was this answer helpful?" feedback — POST /api/feedback + per-answer pill row in faq-cta.tsx, DB-backed (FAQFeedback table)
+
+Work Log:
+- Read worklog (R7 entries), interest/route.ts pattern, content.ts FEEDBK copy, schema.prisma FAQFeedback model, globals.css (global button:focus-visible cyan outline confirmed, line 248).
+- Verified prisma client property with a throwaway script inside the project (deleted after): `db.fAQFeedback` is live, 0 rows at start.
+- NEW src/app/api/feedback/route.ts: POST-only, zod {questionId: string 1..300, helpful: boolean, language: enum default bn}; questionId validated against FAQ.items[].q.en (unknown → 400 with zod-style issues JSON {questionId:["Unknown question"]}); db.fAQFeedback.create; 201/400/500 exactly like interest route; no GET (counts private — Next auto-405s other methods).
+- faq-cta.tsx: added module-scope `savedVotes = new Map<string,"yes"|"no">()` next to savedQuery (survives BN⇄EN remount); new `FaqFeedback` component rendered inside every AccordionContent BELOW the glossary terms row — lazy useState init from the Map, Map synced ONLY in the click handler (no effect → set-state-in-effect lint safe); optimistic swap to thanks state (role=status aria-live=polite + cyan CircleCheck), fetch POST {questionId: q.en, helpful, language}; on non-ok/network failure silently deletes from Map + reverts to buttons (no fake success, no banner). Yes/No = ThumbsUp/ThumbsDown pills (rounded-full border-nx-navy-200 bg-white, hover cyan, min-h-7 = 28px), row = border-t border-nx-navy-100 pt-3 mt-3, text-[11px] font-bold; transition-colors 150ms only.
+- QA via isolated agent-browser --session fbqa (closed at end): BN row ("এই উত্তরটি কি সহায়ক ছিল?" + হ্যাঁ / খুব একটা না) → click হ্যাঁ → thanks + aria-live in DOM, buttons gone; 2nd item voted "খুব একটা না" independently; item-1 thanks persists through close/reopen; BN⇄EN toggle via header aria-pressed=false button → same items show "Thanks — your feedback is noted." in EN, unvoted 3rd item shows EN Yes/Not really buttons; mobile 375 (EN+BN): overflowX 0 (doc + section), buttons 28px; fresh reload: 0 page errors, console only benign React-DevTools/HMR infos.
+- curl: valid → 201 {"ok":true}; missing helpful → 400 issues.helpful; unknown questionId → 400 issues.questionId ["Unknown question"]; GET → 405.
+- DB verified: 3 rows (curl YES bn; real click YES bn; real click NO bn).
+- bun run lint: 0 errors. dev.log: POST /api/feedback 201 in 26ms.
+
+Stage Summary:
+- Files: NEW src/app/api/feedback/route.ts, MODIFIED src/components/site/faq-cta.tsx (nothing else touched; content.ts/globals.css/schema untouched per brief).
+- Screenshots: qa/r7-fb-1-bn.png (BN feedback row + thanks), qa/r7-fb-2-en.png (EN thanks after language cross-fade), qa/r7-fb-3-mobile.png (mobile 375 BN row).
+- All brief requirements met; no deviations. Votes are per-page-session (module Map) — deliberate: no cookie/localStorage so a reload lets a visitor vote again per session, while every vote persists server-side.
+
+---
+Task ID: r7-7
+Agent: full-stack-developer (timed out before writing its own entry — recorded & verified by main agent)
+Task: Opportunity print / save-PDF one-pager summary (print button + hidden print sheet + print CSS)
+
+Work Log (reconstructed from the delivered code + artifacts; all claims below re-verified by the main agent):
+- opportunity-dialog.tsx: "Print / Save PDF" pill button (Printer icon, PRINT.button + buttonAria) added next to the share pill in the dialog header chip row (same pill styling); a hidden print:block section id="opp-print" inside DialogContent renders a full bilingual one-pager: brand header (PRINT.header + "Proof before promise" + PRINT.prepared + date with BN months/numerals), codeName + headline + sector·location, key facts row (ticket via formatTkRange, instrument, stage n/5, revenue), all content sections (Overview / Business Model / Financials / Team / Use of Funds with pct list / advisor note / ALL risks, not truncated), illustrative exit scenarios recomputed with the exact ScenariosPanel math (downside-first, assumption lines), honesty footer (illustrative badge + disclaimer + contact). Plain DOM only (no framer-motion) in the sheet.
+- globals.css (EOF append only): @media print block using the visibility technique GUARDED by body:has(#opp-print) so normal page printing (no dialog open) is untouched; neutralizes the Radix dialog chrome (position/static, --tw-translate overrides because LightningCSS drops `translate:none !important`, overflow/border/shadow/padding reset) and collapses all non-sheet DialogContent children.
+- QA artifacts left by the subagent: qa/r7-print-1-dialog-button.png, r7-print-2-bn.png, r7-print-3-en.png, r7-print-4-mobile.png, r7-print-rmg.pdf (235KB), r7-print-rmg-bn.pdf (49KB), r7-print-nodialog.pdf (3.3MB — guard proof).
+
+Main-agent verification (after the timeout):
+- bun run lint 0 errors after deleting the subagent's 3 leftover qa/r7-printprobe*.js scratch scripts (require() imports tripped eslint — scratch files only, no source issue)
+- pdftotext extraction: EN sheet contains header, prepared date, RMG-201, full overview paragraph, advisor note, KEY RISKS, downside assumptions (−5%/yr · 0.60× · 5 yrs), disclaimer, contact; BN sheet contains নেক্সফান্ড — লিস্টিং সারসংক্ষেপ + ৩০ সেপ্টেম্বর ২০২৬ + প্রতিশ্রুতির আগে প্রমাণ
+- Browser: #opp=agf-105-poultry-eggs → dialog opens, print button present, #opp-print display:none on screen with 7 list items; button click (window.print) does NOT crash headless (page alive, dialog still open); fresh agent-browser pdf qa/r7-print-agf.pdf (227KB) contains AGF-105 + ৳60–90 lakh + Revenue share
+- No-dialog PDF renders the normal page (guard works); mobile 375 print button visible, overflowX 0; zero console/page errors
+
+Stage Summary:
+- The R2 "PDF-style export view" recommendation is DONE: every listing can be printed/saved as a clean bilingual one-pager with all risks + scenarios + disclaimers — a genuine conversion lever for advisors
+- Files: opportunity-dialog.tsx (button + sheet), globals.css (print block EOF append). content.ts untouched (PRINT block was pre-settled by main agent)
+- Deviation note: subagent hit the orchestration context deadline before appending its worklog entry — main agent verified everything above and recorded this entry; leftover probe scripts removed
+
+---
+Task ID: R7-FINAL (main agent round 7, part 2 — integration QA + handover)
+Agent: main (Z.ai Code)
+Task: Integration QA of all R7 features, final handover document
+
+Work Log:
+- Subagent r7-6 (FAQ feedback) re-verified in the main session: BN feedback row renders ("এই উত্তরটি কি সহায়ক ছিল?" + হ্যাঁ/খুব একটা না), vote → "ধন্যবাদ — আপনার মতামত রেকর্ড হয়েছে।" with aria-live polite region; 3 DB rows confirmed by subagent (2 yes / 1 no); API 201/400/405 all verified
+- Subagent r7-7 (print/PDF) verified after timeout — see r7-7 entry above
+- Final fresh-load sweeps: desktop 1440 (BN default, all 10 sections, overflowX 0, zero console/page errors) + mobile 375 (overflowX 0, WhatsApp CTA bar with prefilled href); qa/r7-final-desktop.png, qa/r7-final-mobile.png
+- qa/permalinks.sh: 6/6 pass (all four hash kinds + bad-slug degradation)
+- bun run lint: 0 errors. bunx tsc --noEmit: no errors in src/ (only pre-existing skills/ examples). dev.log: all 200s + POST /api/feedback 201s, no errors
+- R7 total: 5 user-facing features (glossary hub, compare permalinks+share, compare persistence, FAQ feedback, print/PDF summary) + WhatsApp prefill + 1 real bug fixed (compareOpen lost to language remount → store lift, which also fixed the R5 "compare closes on BN⇄EN" limitation) + styling batch (eyebrow dashes, cyan ::selection, shimmer skeletons, cyan tap highlight, navy dialog overlay tint) + DefinedTermSet JSON-LD + regression script
+
+════════════════════════════════════════════════════════════════════
+R7 HANDOVER DOCUMENT (three sections, per review-round requirements)
+════════════════════════════════════════════════════════════════════
+
+1) CURRENT PROJECT STATUS / ASSESSMENT
+- NexFund is a complete, stable, fully bilingual (BN default ⇄ EN) single-route investor–entrepreneur matchmaking site: 10 sections, 7 tabs of listing detail, 3 full insight articles, scenario simulator + per-listing scenarios, compare (now permalink-shareable + persistent), MatchMe, 6 dialogs, 7 API routes (opportunities, investors, quiz, contact, newsletter, interest, feedback), 7 Prisma models, 12 brand images, JSON-LD (FAQPage + FinancialService + DefinedTermSet) + llms.txt
+- Health at handover: dev server healthy (fresh client after R7 restart), lint 0 errors, tsc clean in src/, zero console/page errors on cold loads in both languages, overflowX 0 at 1440 and 375, qa/permalinks.sh 6/6
+- Every interactive flow has been end-to-end verified with DB persistence where applicable
+
+2) CURRENT GOALS / COMPLETED MODIFICATIONS / VERIFICATION RESULTS (R7)
+- Glossary hub dialog: all 11 terms indexed bilingually with cross-language chips, triggered from FAQ helper row + footer, DefinedTermSet JSON-LD added to layout — verified BN/EN from both triggers
+- Compare upgrade: #cmp= permalinks (auto-open ≥2 valid slugs, honest degradation), share pill (clipboard→execCommand), shortlist persists in localStorage across reloads, "Loaded a shared comparison ✓" pill; BUG FIXED: compareOpen lifted to zustand store — dialog now survives BN⇄EN (was a known R5 limitation) and the EN-remount race no longer kills the #cmp= auto-open (found via the new regression script)
+- FAQ "was this helpful": per-question thumbs → thanks state (aria-live), POST /api/feedback zod-validated against FAQ items, FAQFeedback table live, votes survive BN⇄EN via module Map — verified incl. 3 DB rows + 201/400/405
+- Print / Save PDF one-pager: full bilingual listing summary (all risks, use of funds, scenarios with assumptions, disclaimers, contact) behind a print button; print CSS guarded by body:has(#opp-print) so normal printing is untouched — verified via pdftotext on exported PDFs + no-crash click + guard PDF diff
+- Styling details: section eyebrows got cyan dashes (site-wide via SectionHeading), ::selection cyan, skeleton shimmer sweep (reduced-motion safe via the existing blanket rule), cyan tap-highlight on touch, dialog overlays tinted navy with subtle blur
+- WhatsApp deep link now opens the chat with a prefilled bilingual greeting
+- Regression script qa/permalinks.sh (all hash kinds + bad slug) — 6/6; discovered 2 script-level gotchas (same-document hash nav needs reload; don't test #sim= with default values)
+
+3) UNRESOLVED ISSUES / RISKS + NEXT-PHASE PRIORITY RECOMMENDATIONS
+1. Admin review workflow for OpportunityInterest + FAQFeedback rows remains DB-only — still the biggest structural gap; needs auth before any UI (FAQFeedback now gives it a second dataset worth reviewing)
+2. Scenario assumptions still live in content.ts keyed by slug — move into the Opportunity model when real listings launch (scenarios + compare + print sheet all read them now)
+3. Compare shortlist is device-local (localStorage) — cross-device sync would need an account; fine pre-launch
+4. The #cmp= module-scope applied flag means a stale hash never re-applies after the user manually clears/rebuilds their shortlist in the same page load — acceptable, but if a 5th hash kind appears consider a tiny shared hash-router helper instead of per-component regexes
+5. Print sheet prints the CURRENT language only (bilingual sheet would double length — deliberate; revisit if advisors ask)
+6. qa/permalinks.sh should gain a case for #cmp= with 1 valid + 1 stale slug (partial-degradation path is code-verified but not script-covered)
+7. Pre-existing: LCP dev notice on the insight card image is dev-only and intentionally ignored (below fold)
+
+---
+Task ID: R8 (main agent round 8, part 1) — main agent
+Agent: main (Z.ai Code)
+Task: Scheduled review — entry QA incl. first axe-core a11y audit + Core Web Vitals; fix all WCAG violations; OG social card; insight reader font-size control; print-this-comparison (subagent r8-5 admin workspace launched after this entry)
+
+Work Log:
+- Entry QA: dev.log clean, lint clean, fresh-load sweep green. NEW tools this round: `agent-browser a11y` (axe-core 4.12) + `agent-browser vitals`. Vitals: CLS 0.0, FCP 952ms, TTFB 191ms — healthy. Axe found 6 violation groups → QA-priority fix round (per review rules: clear QA issues first).
+- A11y fix 1 — aria-labelledby ALL BROKEN: every SectionHeading-based section pointed at a non-existent "<id>-title" (SectionHeading never set the h2 id) → 14 aria-prohibited-attr nodes + unnamed regions. Fix: SectionHeading gained a titleId prop; wired at all 11 call sites (paths/how/vetting/opp/sim/charter/why/services/insights/faq ×11 headings). Verified: all 10 section labelby refs resolve.
+- A11y fix 2 — vetting tablist: ol role=tablist with li-wrapped tab buttons broke aria-required-children + aria-required-parent + listitem (11 nodes). Fix: div role=tablist with the tab buttons as DIRECT children (li wrapper removed).
+- A11y fix 3 — Reveal wrapper divs broke ol→li semantics in how-it-works (4 steps) + charter (7 items). Fix: Reveal component gained `as="li"` (motion.li / plain li under reduced-motion); both lists now render Reveal as the li itself.
+- A11y fix 4 — sliders unnamed: shadcn Slider spread aria-label onto the Root span (prohibited there; thumbs with role=slider stayed unnamed). Fix: Slider destructures aria-label and passes it to each Thumb. Also fixed a self-inflicted `pointer-events-events` typo immediately.
+- A11y fix 5 — color contrast (~40 nodes): eyebrows nx-cyan-600→nx-cyan-700 (light sections; 5.04:1); NEW tokens --color-nx-verified-700 #0D6B4F, --color-nx-warn-700 #92400E, --color-nx-danger-700 #B91C1C; verified/warn/danger small text on their tint backgrounds swapped to the -700 variants across hero deal-card badge, opportunities badges + risks heading + dt labels + anonymized note, compare badges + downside row, simulator illustrative pill/footnote/look-here-first/assumption labels/gain-loss chips, opportunity-dialog risks heading/footnote/chips, quiz gaps heading, insight readTime + honest note, footer white/40-45→white/60; simulator in-bar value got a solid navy pill (white-on-cyan bar end failed 2.37:1).
+- Result: axe violations 6 → 0 (passes 48 → 51). Remaining "incomplete" bucket is axe's can't-compute list (rgba/hover classes — spot-checked, pass).
+- R8-OG: generated brand social card via z-ai CLI (1344×768 — 1440x720 size errored API-side; hex codes in prompts must be shell-quoted!), public/images/og-card.png (125KB, mean luminance 22.8 = dark navy ✓); layout.tsx metadata += openGraph.images + twitter card summary_large_image. WhatsApp/link previews now render the brand card (completes the R7 WhatsApp-prefill story).
+- R8 reader font-size (A−/A+): READER_FONT copy; ReaderContent state fontStep (-1|0|1) persisted in localStorage "nx-reader-font" (survives reopen; BN⇄EN safe — dialogs sit outside the cross-fade); sticky TOC row restructured (scrollable chips flex-1 + pinned control group); globals.css .nx-reader-sm/.nx-reader-lg (unlayered → beats Tailwind text utilities; blanket reduced-motion unaffected). Verified: default 14px → A+ 16px + LS "1" → close + different article reopen = still 16px. Screenshot qa/r8-reader-font-lg.png.
+- R8 print-comparison: CMP_PRINT copy; PrintCompareButton next to the share pill; hidden print:block sheet #cmp-print inside DialogContent (brand header + native bn-BD/en-GB locale date + plain ink-friendly table: sector/location/ticket/instrument/stage/badges/top risk + down/base/up rows reusing the exact exitOutcome math + disclaimer footer); globals.css @media print block mirroring the #opp-print :has()-guarded technique.
+- DEV INFRA QUIRK FOUND: the cmp-print CSS block was silently absent from the compiled chunk (Turbopack dev cache didn't flush the append; touch + server restart did NOT help; a follow-up content append flushed everything). Rule for future rounds: after appending to globals.css, verify the rule actually landed in the served chunk (curl the css chunk / count occurrences) before debugging the CSS itself.
+- Compare print verified: 29.7KB sheet-only PDF (vs 6.8MB full-page before the CSS landed) — Bangla header + locale date + both listings; #opp print still works alongside (separate guard test).
+- STORE GUARD: open/openInvestor/openOpportunity/openInsight/openGlossary now also set compareOpen:false — a global modal and the compare dialog can never both be open (mattered for #opp= hash firing while a shared #cmp= link left compare open — both print sheets could reach the DOM).
+- Groundwork for r8-5: ADMIN copy block (≈40 bilingual keys) appended to content.ts; dialog-store wired with "admin" kind + openAdmin(); dev server already restarted fresh this round.
+
+Stage Summary:
+- a11y: 6 axe violation groups eliminated (48→51 passes, 0 violations) — section labels, tablist semantics, list semantics, slider names, ~40 contrast fixes with 3 new WCAG-AA tokens
+- 3 user-facing features: OG social card (+ twitter card), insight reader font-size control with persistence, print-this-comparison one-pager
+- 1 infra gotcha documented (Turbopack CSS append flush), 1 modal-exclusivity store guard
+- Subagent r8-5 (admin review workspace) launched after this entry

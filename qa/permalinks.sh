@@ -68,6 +68,11 @@ cold "$BASE/#opp=does-not-exist"
 out=$(agent-browser --session "$S" eval "(() => { const d=document.querySelector('[role=dialog]'); return d ? (d.textContent.includes('Listing not found') ? 'not-found' : d.textContent.slice(0,40)) : 'no-dialog'; })()" 2>&1 | tail -1)
 check "#opp=<bad slug> shows not-found" "not-found" "$out"
 
+# ── #admin= → locked admin workspace (R8; locked view title) ────────────────
+cold "$BASE/#admin="
+out=$(agent-browser --session "$S" eval "(() => { const d=document.querySelector('[role=dialog]'); return d ? (d.textContent.includes('Review workspace') || d.textContent.includes('রিভিউ ওয়ার্কস্পেস') ? 'admin-locked' : d.textContent.slice(0,40)) : 'no-dialog'; })()" 2>&1 | tail -1)
+check "#admin= opens locked workspace" "admin-locked" "$out"
+
 agent-browser --session "$S" close >/dev/null 2>&1
 echo ""
 echo "Permalink regression: $pass passed, $fail failed"

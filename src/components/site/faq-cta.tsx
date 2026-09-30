@@ -191,7 +191,7 @@ export function Faq() {
     <section id="faq" className="bg-white py-20 md:py-24" aria-labelledby="faq-title">
       <div className="mx-auto max-w-[820px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(FAQ.eyebrow)} title={t(FAQ.title)} />
+          <SectionHeading titleId="faq-title" eyebrow={t(FAQ.eyebrow)} title={t(FAQ.title)} />
         </Reveal>
 
         {/* R6: bilingual live search */}

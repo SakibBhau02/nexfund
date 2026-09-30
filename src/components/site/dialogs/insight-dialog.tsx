@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
+  AArrowDown,
+  AArrowUp,
   ArrowUpRight,
   BookMarked,
   Calendar,
@@ -16,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE, READERTOC } from "@/lib/content";
+import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE, READERTOC, READER_FONT } from "@/lib/content";
 import { bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { G } from "@/components/site/glossary";
@@ -113,6 +115,28 @@ function ReaderContent({
   /* ── R5: share — native share sheet where available, clipboard fallback ── */
   const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
   const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* ── R8: font-size control (A−/A+) — 3 steps, persisted so the choice
+     survives reopen. State lives in the keyed ReaderContent, which keeps it
+     across BN⇄EN (dialogs sit outside the language cross-fade). */
+  const [fontStep, setFontStep] = useState<"-1" | "0" | "1">(() => {
+    try {
+      const v = window.localStorage.getItem("nx-reader-font");
+      return v === "-1" || v === "1" ? v : "0";
+    } catch {
+      return "0";
+    }
+  });
+  const changeFont = (dir: -1 | 1) => {
+    const next = Math.max(-1, Math.min(1, Number(fontStep) + dir));
+    const v = (next === 0 ? "0" : next === -1 ? "-1" : "1") as "-1" | "0" | "1";
+    setFontStep(v);
+    try {
+      window.localStorage.setItem("nx-reader-font", v);
+    } catch {
+      /* storage unavailable — the step still applies for this session */
+    }
+  };
 
   useEffect(
     () => () => {
@@ -303,42 +327,80 @@ function ReaderContent({
           </div>
         </DialogHeader>
 
-        {/* ── R6: sticky mini-TOC — numbered jump chips per section ── */}
+        {/* ── R6: sticky mini-TOC — numbered jump chips per section ──
+            R8: row restructured — scrollable chips (flex-1) + pinned A−/A+
+            font-size control on the right, always reachable on mobile. */}
         <nav
           aria-label={t(READERTOC.tocLabel)}
           className="sticky top-[3px] z-10 border-b border-nx-navy-100 bg-white/92 px-6 py-2.5 backdrop-blur sm:px-8"
         >
-          <div className="nx-scroll flex items-center gap-1.5 overflow-x-auto pb-0.5">
-            <span className="shrink-0 pr-1 text-[10px] font-extrabold tracking-[0.14em] text-slate-400 uppercase">
-              {t(READERTOC.tocLabel)}
-            </span>
-            {article.sections.map((sec, i) => {
-              const num = String(i + 1).padStart(2, "0");
-              const active = activeSec === i;
-              return (
-                <button
-                  key={sec.h.en}
-                  type="button"
-                  aria-current={active ? "true" : undefined}
-                  title={t(sec.h)}
-                  onClick={() => jumpTo(i)}
-                  className={cn(
-                    "nx-num shrink-0 rounded-full border px-3 py-1 text-[11px] font-extrabold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400",
-                    active
-                      ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_8px_18px_-8px_rgba(10,58,143,0.7)]"
-                      : "border-nx-navy-200 bg-white text-nx-navy-600 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
-                  )}
-                >
-                  <span className="sr-only">{t(sec.h)}</span>
-                  {lang === "bn" ? bnNum(num) : num}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2">
+            <div className="nx-scroll flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
+              <span className="shrink-0 pr-1 text-[10px] font-extrabold tracking-[0.14em] text-slate-400 uppercase">
+                {t(READERTOC.tocLabel)}
+              </span>
+              {article.sections.map((sec, i) => {
+                const num = String(i + 1).padStart(2, "0");
+                const active = activeSec === i;
+                return (
+                  <button
+                    key={sec.h.en}
+                    type="button"
+                    aria-current={active ? "true" : undefined}
+                    title={t(sec.h)}
+                    onClick={() => jumpTo(i)}
+                    className={cn(
+                      "nx-num shrink-0 rounded-full border px-3 py-1 text-[11px] font-extrabold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400",
+                      active
+                        ? "border-nx-navy-700 bg-nx-navy-700 text-white shadow-[0_8px_18px_-8px_rgba(10,58,143,0.7)]"
+                        : "border-nx-navy-200 bg-white text-nx-navy-600 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+                    )}
+                  >
+                    <span className="sr-only">{t(sec.h)}</span>
+                    {lang === "bn" ? bnNum(num) : num}
+                  </button>
+                );
+              })}
+            </div>
+            {/* R8: reading-comfort font-size control */}
+            <div
+              role="group"
+              aria-label={t(READER_FONT.label)}
+              title={t(READER_FONT.reset)}
+              className="flex shrink-0 items-center gap-1"
+            >
+              <button
+                type="button"
+                onClick={() => changeFont(-1)}
+                disabled={fontStep === "-1"}
+                aria-label={t(READER_FONT.smaller)}
+                title={t(READER_FONT.smaller)}
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-nx-navy-200 bg-white text-nx-navy-600 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-nx-navy-200 disabled:hover:text-nx-navy-600"
+              >
+                <AArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => changeFont(1)}
+                disabled={fontStep === "1"}
+                aria-label={t(READER_FONT.larger)}
+                title={t(READER_FONT.larger)}
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-nx-navy-200 bg-white text-nx-navy-600 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-nx-navy-200 disabled:hover:text-nx-navy-600"
+              >
+                <AArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         </nav>
 
-        {/* ── Article body ── */}
-        <div className="px-6 pb-6 pt-4 sm:px-8">
+        {/* ── Article body (R8: scales with the A−/A+ control) ── */}
+        <div
+          className={cn(
+            "px-6 pb-6 pt-4 sm:px-8",
+            fontStep === "-1" && "nx-reader-sm",
+            fontStep === "1" && "nx-reader-lg"
+          )}
+        >
           {article.sections.map((sec, i) => {
             const num = String(i + 1).padStart(2, "0");
             return (

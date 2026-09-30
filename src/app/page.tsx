@@ -25,6 +25,7 @@ import { ContactDialog } from "@/components/site/dialogs/contact-dialog";
 import { OpportunityDialog } from "@/components/site/dialogs/opportunity-dialog";
 import { InsightDialog } from "@/components/site/dialogs/insight-dialog";
 import { GlossaryDialog } from "@/components/site/dialogs/glossary-dialog";
+import { AdminDialog } from "@/components/site/dialogs/admin-dialog";
 
 function Page() {
   const { lang } = useLanguage();
@@ -77,6 +78,7 @@ function Page() {
       <OpportunityDialog />
       <InsightDialog />
       <GlossaryDialog />
+      <AdminDialog />
     </div>
   );
 }

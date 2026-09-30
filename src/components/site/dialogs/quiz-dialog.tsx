@@ -246,7 +246,7 @@ export function QuizDialog() {
                 {/* gaps */}
                 {gaps.length > 0 && (
                   <div className="mt-6 rounded-2xl border border-nx-warn/40 bg-nx-warn-bg/60 p-4">
-                    <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-warn uppercase">
+                    <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-warn-700 uppercase">
                       <TrendingDown className="h-4 w-4" aria-hidden="true" />
                       {t(QUIZ.gapsTitle)}
                     </p>

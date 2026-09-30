@@ -68,6 +68,11 @@
   --color-nx-warn: #B7791F;
   --color-nx-warn-bg: #FBF3E2;
   --color-nx-danger: #C53030;
+  /* R8 a11y (WCAG AA): darker text variants for small text on the light
+     verified/warn tint backgrounds — the base tokens stay for icons/borders */
+  --color-nx-verified-700: #0D6B4F;
+  --color-nx-warn-700: #92400E;
+  --color-nx-danger-700: #B91C1C;
 
   --ease-nx: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -379,4 +384,47 @@ html {
 
   /* collapse the dialog's screen UI — only the sheet stays in flow */
   body:has(#opp-print) [data-slot="dialog-content"] > *:not(#opp-print) { display: none !important; }
+}
+
+/* ── R8: insight reader font-size control (A−/A+) ──────────────────────────
+   Applied to the reader body container. Unlayered rules outrank Tailwind's
+   text utilities; headings keep their own scale — only body copy resizes. */
+.nx-reader-sm p,
+.nx-reader-sm li {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.nx-reader-lg p,
+.nx-reader-lg li {
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+/* ── R8: compare print sheet (#cmp-print) — same display:none technique as
+   the R7 #opp-print block: hijacks printing ONLY while the compare dialog is
+   open; normal page printing is untouched (the :has() guards fail). */
+@media print {
+  body:has(#cmp-print) > * { display: none !important; }
+  body:has(#cmp-print) > *:has(#cmp-print) { display: block !important; }
+  body:has(#cmp-print) [data-slot="dialog-overlay"] { display: none !important; }
+  body:has(#cmp-print) [data-slot="dialog-content"] {
+    position: static !important;
+    inset: auto !important;
+    --tw-translate-x: 0 !important;
+    --tw-translate-y: 0 !important;
+    translate: 0 0 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  body:has(#cmp-print) [data-slot="dialog-content"] > *:not(#cmp-print) { display: none !important; }
 }

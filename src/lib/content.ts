@@ -1734,3 +1734,68 @@ export const WHATSAPP_MSG: L = {
   en: "Hello NexFund — I'd like to talk about investing in verified Bangladeshi businesses.",
   bn: "হ্যালো নেক্সফান্ড — যাচাইকৃত বাংলাদেশি ব্যবসায় বিনিয়োগ নিয়ে কথা বলতে চাই।",
 };
+
+/* ── R8: insight reader font-size control (reading comfort) ── */
+export const READER_FONT = {
+  label: { en: "Text size", bn: "লেখার আকার" },
+  smaller: { en: "Smaller text", bn: "ছোট লেখা" } as L,
+  larger: { en: "Larger text", bn: "বড় লেখা" } as L,
+  reset: { en: "Reset text size", bn: "লেখার আকার রিসেট" } as L,
+} as const;
+
+/* ── R8: compare print (print this comparison) ── */
+export const CMP_PRINT = {
+  button: { en: "Print comparison", bn: "তুলনা প্রিন্ট করুন" } as L,
+  header: { en: "NexFund — Opportunity Comparison", bn: "নেক্সফান্ড — সুযোগের তুলনা" } as L,
+  prepared: { en: "Prepared", bn: "প্রস্তুতকরণ" } as L,
+  disclaimer: {
+    en: "Illustrative listings, compared side by side. Figures are illustrative scenarios, not forecasts. Read each listing's full risk summary before any decision.",
+    bn: "উদাহরণমূলক লিস্টিং, পাশাপাশি তুলনা করা। সংখ্যাগুলো উদাহরণমূলক সিনারিও, পূর্বাভাস নয়। সিদ্ধান্তের আগে প্রতিটি লিস্টিংয়ের সম্পূর্ণ ঝুঁকি-সারসংক্ষেপ পড়ুন।",
+  } as L,
+  contact: {
+    en: "Questions? hello@nexfund.example · nexfund.example",
+    bn: "প্রশ্ন আছে? hello@nexfund.example · nexfund.example",
+  } as L,
+} as const;
+
+/* ── R8: admin review workspace (hidden, passphrase-gated) ── */
+export const ADMIN = {
+  entryHint: { en: "NexFund review workspace", bn: "নেক্সফান্ড রিভিউ ওয়ার্কস্পেস" } as L,
+  title: { en: "Review workspace", bn: "রিভিউ ওয়ার্কস্পেস" } as L,
+  sub: {
+    en: "For NexFund advisors only. Interest records and FAQ feedback, in one place.",
+    bn: "শুধু নেক্সফান্ড অ্যাডভাইজরদের জন্য। আগ্রহের রেকর্ড ও FAQ ফিডব্যাক, এক জায়গায়।",
+  } as L,
+  passLabel: { en: "Workspace passphrase", bn: "ওয়ার্কস্পেস পাসফ্রেজ" } as L,
+  passPlaceholder: { en: "Passphrase", bn: "পাসফ্রেজ" } as L,
+  unlock: { en: "Unlock workspace", bn: "ওয়ার্কস্পেস খুলুন" } as L,
+  wrongPass: { en: "Wrong passphrase — try again.", bn: "ভুল পাসফ্রেজ — আবার চেষ্টা করুন।" } as L,
+  locked: {
+    en: "Workspace is locked. Set ADMIN_PASSPHRASE on the server to enable.",
+    bn: "ওয়ার্কস্পেস লক করা। চালু করতে সার্ভারে ADMIN_PASSPHRASE সেট করুন।",
+  } as L,
+  interestsTab: { en: "Expressed interest", bn: "প্রকাশিত আগ্রহ" } as L,
+  feedbackTab: { en: "FAQ feedback", bn: "FAQ ফিডব্যাক" } as L,
+  empty: { en: "No records yet.", bn: "এখনো কোনো রেকর্ড নেই।" } as L,
+  refresh: { en: "Refresh", bn: "রিফ্রেশ" } as L,
+  logout: { en: "Lock again", bn: "আবার লক করুন" } as L,
+  colListing: { en: "Listing", bn: "লিস্টিং" } as L,
+  colEmail: { en: "Email", bn: "ইমেইল" } as L,
+  colName: { en: "Name", bn: "নাম" } as L,
+  colNote: { en: "Note", bn: "নোট" } as L,
+  colLang: { en: "Lang", bn: "ভাষা" } as L,
+  colDate: { en: "Received", bn: "গৃহীত" } as L,
+  colStatus: { en: "Status", bn: "অবস্থা" } as L,
+  statusLabels: {
+    new: { en: "New", bn: "নতুন" } as L,
+    reviewed: { en: "Reviewed", bn: "রিভিউ করা" } as L,
+    introduced: { en: "Introduced", bn: "পরিচিত করা" } as L,
+    declined: { en: "Declined", bn: "বাতিল" } as L,
+  } as Record<string, L>,
+  statusChanged: { en: "Status updated ✓", bn: "অবস্থা আপডেট হয়েছে ✓" } as L,
+  feedbackSummary: (yes: number, no: number): L => ({
+    en: `${yes} helpful · ${no} not helpful`,
+    bn: `${bnDigit(yes)} জন সহায়ক · ${bnDigit(no)} জন সহায়ক নয়`,
+  }) as L,
+  loadErr: { en: "Couldn't load records. Try refresh.", bn: "রেকর্ড লোড করা যায়নি। রিফ্রেশ করুন।" } as L,
+} as const;

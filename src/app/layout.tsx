@@ -54,6 +54,22 @@ export const metadata: Metadata = {
       "Proof before promise. Verified, growth-ready Bangladeshi businesses — with the due diligence, documentation, and advisory to decide with confidence.",
     siteName: "NexFund",
     type: "website",
+    /* R8: social card — WhatsApp/link previews now render the brand card */
+    images: [
+      {
+        url: "/images/og-card.png",
+        width: 1344,
+        height: 768,
+        alt: "NexFund — Proof before promise. Verified Bangladeshi businesses.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NexFund — Fund What's Next in Bangladesh",
+    description:
+      "Verified, growth-ready Bangladeshi businesses — proof before promise.",
+    images: ["/images/og-card.png"],
   },
 };
 

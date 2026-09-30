@@ -18,6 +18,7 @@ export function TwoPaths() {
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
           <SectionHeading
+            titleId="paths-title"
             eyebrow={t(TWO_PATHS.eyebrow)}
             title={t(TWO_PATHS.title)}
             sub={t(TWO_PATHS.sub)}

@@ -57,6 +57,7 @@ export function Vetting() {
         <Reveal>
           <SectionHeading
             dark
+            titleId="vetting-title"
             eyebrow={t(VETTING.eyebrow)}
             title={t(VETTING.title)}
             sub={t(VETTING.sub)}
@@ -66,13 +67,16 @@ export function Vetting() {
         <div className="mt-14 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           {/* Step list */}
           <Reveal className="order-2 lg:order-1">
-            <ol className="relative space-y-2.5" role="tablist" aria-label={t(VETTING.eyebrow)}>
+            {/* R8 a11y: role=tablist must contain the tab buttons as DIRECT
+                children — the old ol/li wrappers broke aria-required-children,
+                aria-required-parent and the list rules at once. */}
+            <div className="relative space-y-2.5" role="tablist" aria-label={t(VETTING.eyebrow)}>
               {VETTING.stages.map((s, i) => {
                 const StageIcon = STAGE_ICONS[i];
                 const done = i < active;
                 return (
-                  <li key={s.key}>
                     <button
+                      key={s.key}
                       role="tab"
                       aria-selected={active === i}
                       aria-controls="vetting-panel"
@@ -110,10 +114,9 @@ export function Vetting() {
                         </span>
                       </span>
                     </button>
-                  </li>
                 );
               })}
-            </ol>
+            </div>
           </Reveal>
 
           {/* Detail panel */}

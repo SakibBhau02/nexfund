@@ -446,3 +446,93 @@ R7 HANDOVER DOCUMENT (three sections, per review-round requirements)
 5. Print sheet prints the CURRENT language only (bilingual sheet would double length — deliberate; revisit if advisors ask)
 6. qa/permalinks.sh should gain a case for #cmp= with 1 valid + 1 stale slug (partial-degradation path is code-verified but not script-covered)
 7. Pre-existing: LCP dev notice on the insight card image is dev-only and intentionally ignored (below fold)
+
+---
+Task ID: R8 (main agent round 8, part 1) — main agent
+Agent: main (Z.ai Code)
+Task: Scheduled review — entry QA incl. first axe-core a11y audit + Core Web Vitals; fix all WCAG violations; OG social card; insight reader font-size control; print-this-comparison (subagent r8-5 admin workspace launched after this entry)
+
+Work Log:
+- Entry QA: dev.log clean, lint clean, fresh-load sweep green. NEW tools this round: `agent-browser a11y` (axe-core 4.12) + `agent-browser vitals`. Vitals: CLS 0.0, FCP 952ms, TTFB 191ms — healthy. Axe found 6 violation groups → QA-priority fix round (per review rules: clear QA issues first).
+- A11y fix 1 — aria-labelledby ALL BROKEN: every SectionHeading-based section pointed at a non-existent "<id>-title" (SectionHeading never set the h2 id) → 14 aria-prohibited-attr nodes + unnamed regions. Fix: SectionHeading gained a titleId prop; wired at all 11 call sites (paths/how/vetting/opp/sim/charter/why/services/insights/faq ×11 headings). Verified: all 10 section labelby refs resolve.
+- A11y fix 2 — vetting tablist: ol role=tablist with li-wrapped tab buttons broke aria-required-children + aria-required-parent + listitem (11 nodes). Fix: div role=tablist with the tab buttons as DIRECT children (li wrapper removed).
+- A11y fix 3 — Reveal wrapper divs broke ol→li semantics in how-it-works (4 steps) + charter (7 items). Fix: Reveal component gained `as="li"` (motion.li / plain li under reduced-motion); both lists now render Reveal as the li itself.
+- A11y fix 4 — sliders unnamed: shadcn Slider spread aria-label onto the Root span (prohibited there; thumbs with role=slider stayed unnamed). Fix: Slider destructures aria-label and passes it to each Thumb. Also fixed a self-inflicted `pointer-events-events` typo immediately.
+- A11y fix 5 — color contrast (~40 nodes): eyebrows nx-cyan-600→nx-cyan-700 (light sections; 5.04:1); NEW tokens --color-nx-verified-700 #0D6B4F, --color-nx-warn-700 #92400E, --color-nx-danger-700 #B91C1C; verified/warn/danger small text on their tint backgrounds swapped to the -700 variants across hero deal-card badge, opportunities badges + risks heading + dt labels + anonymized note, compare badges + downside row, simulator illustrative pill/footnote/look-here-first/assumption labels/gain-loss chips, opportunity-dialog risks heading/footnote/chips, quiz gaps heading, insight readTime + honest note, footer white/40-45→white/60; simulator in-bar value got a solid navy pill (white-on-cyan bar end failed 2.37:1).
+- Result: axe violations 6 → 0 (passes 48 → 51). Remaining "incomplete" bucket is axe's can't-compute list (rgba/hover classes — spot-checked, pass).
+- R8-OG: generated brand social card via z-ai CLI (1344×768 — 1440x720 size errored API-side; hex codes in prompts must be shell-quoted!), public/images/og-card.png (125KB, mean luminance 22.8 = dark navy ✓); layout.tsx metadata += openGraph.images + twitter card summary_large_image. WhatsApp/link previews now render the brand card (completes the R7 WhatsApp-prefill story).
+- R8 reader font-size (A−/A+): READER_FONT copy; ReaderContent state fontStep (-1|0|1) persisted in localStorage "nx-reader-font" (survives reopen; BN⇄EN safe — dialogs sit outside the cross-fade); sticky TOC row restructured (scrollable chips flex-1 + pinned control group); globals.css .nx-reader-sm/.nx-reader-lg (unlayered → beats Tailwind text utilities; blanket reduced-motion unaffected). Verified: default 14px → A+ 16px + LS "1" → close + different article reopen = still 16px. Screenshot qa/r8-reader-font-lg.png.
+- R8 print-comparison: CMP_PRINT copy; PrintCompareButton next to the share pill; hidden print:block sheet #cmp-print inside DialogContent (brand header + native bn-BD/en-GB locale date + plain ink-friendly table: sector/location/ticket/instrument/stage/badges/top risk + down/base/up rows reusing the exact exitOutcome math + disclaimer footer); globals.css @media print block mirroring the #opp-print :has()-guarded technique.
+- DEV INFRA QUIRK FOUND: the cmp-print CSS block was silently absent from the compiled chunk (Turbopack dev cache didn't flush the append; touch + server restart did NOT help; a follow-up content append flushed everything). Rule for future rounds: after appending to globals.css, verify the rule actually landed in the served chunk (curl the css chunk / count occurrences) before debugging the CSS itself.
+- Compare print verified: 29.7KB sheet-only PDF (vs 6.8MB full-page before the CSS landed) — Bangla header + locale date + both listings; #opp print still works alongside (separate guard test).
+- STORE GUARD: open/openInvestor/openOpportunity/openInsight/openGlossary now also set compareOpen:false — a global modal and the compare dialog can never both be open (mattered for #opp= hash firing while a shared #cmp= link left compare open — both print sheets could reach the DOM).
+- Groundwork for r8-5: ADMIN copy block (≈40 bilingual keys) appended to content.ts; dialog-store wired with "admin" kind + openAdmin(); dev server already restarted fresh this round.
+
+Stage Summary:
+- a11y: 6 axe violation groups eliminated (48→51 passes, 0 violations) — section labels, tablist semantics, list semantics, slider names, ~40 contrast fixes with 3 new WCAG-AA tokens
+- 3 user-facing features: OG social card (+ twitter card), insight reader font-size control with persistence, print-this-comparison one-pager
+- 1 infra gotcha documented (Turbopack CSS append flush), 1 modal-exclusivity store guard
+- Subagent r8-5 (admin review workspace) launched after this entry
+---
+Task ID: r8-5
+Agent: full-stack-developer
+Task: Admin review workspace — passphrase-gated APIs + hidden #admin= dialog for reviewing OpportunityInterest records and FAQ feedback (closes R7 recommendation #1)
+
+Work Log:
+- Read worklog (R7/R7-FINAL/R8 entries), interest+feedback route patterns, insight-dialog #insight= rAF hash pattern, glossary/compare/opportunity dialog patterns, dialog-store (openAdmin pre-wired), prisma schema, existing test rows (4 interests, 4 feedback votes).
+- .env: appended ADMIN_PASSPHRASE=nexfund-dev-admiral-2026 (dev-only value; documented here + in .env only — never logged/echoed elsewhere).
+- NEW src/app/api/admin/overview/route.ts: POST only; 503 {locked:true} when env unset; zod {passphrase 1..200}; sha256+timingSafeEqual compare (length never leaks); 401 generic "Unauthorized" (no hint whether env exists); 200 returns interests (createdAt desc, all fields) + feedback (take 50 desc) + feedbackAgg built from groupBy(questionId,helpful) with FAQ.items[].q (en/bn) attached per question (null = stale id), sorted by total votes desc. No GET → auto-405.
+- NEW src/app/api/admin/interests/[id]/route.ts: PATCH only (Next 16 async params); same 503/401 gate; zod status enum ("new"|"reviewed"|"introduced"|"declined") → 400 on garbage; findUnique guard → 404 unknown id; 200 returns the updated row. Passphrase only ever in the request BODY.
+- NEW src/components/site/dialogs/admin-dialog.tsx: store-driven (dialog === "admin") + #admin= cold-load opener (insight-dialog rAF regex pattern, /^#admin=?$/i). AdminWorkspace lives INSIDE DialogContent → unmounts on close/lock-again, wiping passphrase + data (memory only, never localStorage). All setState in event handlers (unlock submit / refresh / status select) — zero effect-driven setState (react-hooks/set-state-in-effect clean). Locked view: centered Logo wordmark + entryHint eyebrow + title/sub + password Input (autoFocus, Enter submits) + navy unlock pill + role=alert wrongPass/locked/loadErr. Unlocked view: header (icon tile, entryHint cyan chip, Refresh + Lock-again pills), ARIA tablist/tabs/tabpanels (opportunity-dialog pattern) for interests + feedback. Interests tab: semantic border-separate table (th scope, caption, zebra mist rows, min-w-0 chain) with colListing/Email/Name/Note/Lang/Date/Status; per-row native select (4 statusLabels, status-tinted text, PATCH on change, optimistic ADMIN.statusChanged flash via aria-live role=status 2.5s, silent revert on failure); notes truncated + title tooltip; dates via toLocaleDateString(bn-BD|en-GB). Feedback tab: per-question aggregate cards (question text in current lang + feedbackSummary(yes,no) cyan chip + verified/danger ratio bar role=img) + recent votes list (CircleCheck/CircleX with labeled icons, questionId truncate+title, lang chip, date). Skeleton (nx-shimmer), ADMIN.empty, loadErr + retry states. BN/EN fully from ADMIN copy via t().
+- page.tsx: one import + one <AdminDialog /> line after <GlossaryDialog /> (only edit).
+- Dev server restarted (double-fork setsid recipe) so the new env loads; / → 200, "Environments: .env" confirmed.
+- QA (isolated agent-browser --session admqa, closed at end):
+  - curl matrix: overview wrong pass → 401 {"error":"Unauthorized"}; correct → 200 {interests[4], feedback[4], feedbackAgg[2] incl. q en/bn}; PATCH valid → 200 + DB row verified "reviewed" via prisma script in project dir; invalid status → 400 zod issue; unknown id → 404; GET → 405.
+  - Browser: #admin= + reload → locked BN view (wordmark + পাসফ্রেজ input + ওয়ার্কস্পেস খুলুন disabled-until-typed); wrong pass → role=alert "ভুল পাসফ্রেজ — আবার চেষ্টা করুন।"; correct (typed + Enter) → unlocked, interests table renders 4 existing test rows (RMG-201 ×4, BN dates "২৯ সেপ, ২০২৬", status select); select → "introduced" → "অবস্থা আপডেট হয়েছে ✓" flash + DB verified introduced; feedback tab: 2 aggregate cards (৩ জন সহায়ক / ০ জন সহায়ক নয়) + 4 recent rows; BN⇄EN storage-event swap WHILE OPEN — title/tabs/chips/summary all swap (EN screenshot too); আবার লক করুন → back to empty locked gate; hash removed + reload → dialog does NOT open; mobile 375: dialog 343px, table wrapper scrolls internally (cw 307 / sw 780), page overflowX 0; axe 4.12: 0 violations on locked + interests + feedback tabs (2 "incomplete" = the site's known can't-compute Radix/hover bucket); found & fixed during audit: slug sub-line slate-500 on mist rows = 4.49:1 → slate-600; found & fixed during mobile audit: grid-item min-width:auto blew the dialog content to 814px inside a 343px dialog (DialogContent overflow-y-auto was absorbing the horizontal scroll) → min-w-0 on the motion wrapper + panel container (compare-dialog's pattern); fresh reload: zero console/page errors.
+- bun run lint: 0 errors.
+
+Stage Summary:
+- R7 recommendation #1 closed: advisors can now review expressed-interest records (with a real new→reviewed→introduced/declined workflow that persists to the DB) and FAQ feedback aggregates/votes — both previously DB-only.
+- Files: NEW src/app/api/admin/overview/route.ts, NEW src/app/api/admin/interests/[id]/route.ts, NEW src/components/site/dialogs/admin-dialog.tsx, MODIFIED src/app/page.tsx (import + render line), .env (+1 line). content.ts / dialog-store.ts / globals.css / prisma untouched, per brief.
+- Security posture: passphrase only in POST/PATCH bodies, no GET endpoints, generic 401 (existence never leaked), constant-time compare, passphrase never persisted client-side, workspace state wiped on close/lock-again. 503 locked branch code-verified (not live-tested, per brief).
+- QA evidence: qa/r8-admin-1-locked-bn.png, qa/r8-admin-2-interests.png, qa/r8-admin-2-en.png (bonus EN), qa/r8-admin-3-feedback.png, qa/r8-admin-4-mobile.png; dev.log shows POST /api/admin/overview 200s + PATCH 200; axe 0 violations; lint 0 errors.
+- Deviations: none from the brief. Two self-caught fixes during QA (mist-row contrast 4.49→slate-600, min-w-0 grid overflow) — both within my allowed file set.
+
+---
+Task ID: R8-FINAL (main agent round 8, part 2 — integration QA + handover)
+Agent: main (Z.ai Code)
+Task: Integration QA of all R8 work, final handover document
+
+Work Log:
+- Subagent r8-5 (admin workspace) verified complete: POST /api/admin/overview + PATCH /api/admin/interests/[id] (sha256 + timingSafeEqual passphrase compare, 401/404/400/405 verified, DB row updates confirmed), #admin= locked dialog → interests table with status select → feedback aggregates; BN⇄EN while open; mobile-safe; its own axe check 0 violations; screenshots qa/r8-admin-*.png
+- qa/permalinks.sh gained a 7th case (#admin= → locked workspace) — regression now 7/7
+- Final sweeps: fresh desktop load axe 0 violations / 51 passes; zero page errors; mobile 375 overflowX 0 with all 10 sections; lint 0 errors; tsc clean in src/; dev server healthy post-restart (all 200s); qa/r8-final-desktop.png + qa/r8-final-mobile.png
+- R8 totals: 0 axe violations (was 6 groups), 4 user-facing features (admin workspace, OG social card, reader font-size control, print-comparison), 1 store guard, 3 new WCAG tokens, regression 7/7
+
+════════════════════════════════════════════════════════════════════
+R8 HANDOVER DOCUMENT (three sections, per review-round requirements)
+════════════════════════════════════════════════════════════════════
+
+1) CURRENT PROJECT STATUS / ASSESSMENT
+- NexFund is a fully bilingual (BN ⇄ EN), WCAG-AA-clean, single-route matchmaking platform: 10 sections + MatchMe, 8 dialogs (incl. the new hidden admin workspace), 9 API routes, 7 Prisma models, JSON-LD ×3, OG social card, 12+ brand images
+- Health: axe-core 0 violations / 51 passes; Core Web Vitals CLS 0.0 / FCP 952ms / TTFB 191ms; lint 0 errors; tsc clean in src/; zero console/page errors in both languages; overflowX 0 at 1440 + 375; qa/permalinks.sh 7/7; dev server freshly restarted (env loaded)
+- The admin review workflow — the #1 structural gap since R3 — is now CLOSED (passphrase-gated, sha256 + timing-safe, dev passphrase in .env)
+
+2) CURRENT GOALS / COMPLETED MODIFICATIONS / VERIFICATION RESULTS (R8)
+- Accessibility (QA-first round): 6 axe violation groups → 0 — all 11 section headings now carry ids (aria-labelledby resolved), vetting tablist restructured to spec, Reveal renders semantic <li>, Slider thumbs named, ~40 contrast fixes via nx-cyan-700 + 3 new tokens (verified-700/warn-700/danger-700), simulator bar values in solid navy pills
+- Admin workspace (subagent r8-5): #admin= hash → passphrase gate → interests table (status PATCH w/ optimistic flash + DB verify) + FAQ feedback aggregates; fully bilingual; 0 axe violations of its own
+- OG social card: z-ai generated 1344×768 navy/cyan brand card + openGraph.images + twitter card — WhatsApp link previews now render branding
+- Insight reader A−/A+ font control: 3 steps persisted (localStorage), pinned in the sticky TOC row, verified 14→16px + reopen persistence
+- Print-this-comparison: #cmp-print one-pager (BN native locale date, plain ink table, downside-first scenarios) — 29.7KB sheet-only PDF verified, #opp print unaffected, :has()-guarded so normal printing is untouched
+- Store guard: global dialogs and the compare dialog are now mutually exclusive (hash-flow edge case)
+- Infra gotcha documented: Turbopack dev cache may not flush a plain globals.css append — verify the served chunk after appending (curl + count) before debugging the CSS
+
+3) UNRESOLVED ISSUES / RISKS + NEXT-PHASE PRIORITY RECOMMENDATIONS
+1. Admin auth is demo-grade (single shared passphrase in .env; no per-user accounts, no rate limit on the gate — brute-force a production concern). Before launch: per-advisor accounts + rate limiting + audit log of status changes
+2. Scenario assumptions still in content.ts keyed by slug (compare + scenarios + both print sheets read them) — move into the Opportunity model when real listings launch
+3. Compare shortlist remains device-local (localStorage); cross-device needs accounts
+4. The axe "incomplete" bucket (~140 nodes) is can't-compute (rgba/hover/gradients) — spot-checked as passing; re-run `agent-browser a11y` after any new UI to keep the 0-violation bar
+5. Print sheets print the CURRENT language only (deliberate — length doubling avoided)
+6. qa/permalinks.sh covers #sim/#insight/#opp/#cmp/#admin + bad-slug; a partial-degradation #cmp= case (1 valid + 1 stale slug) is code-verified but not script-covered
+7. Known cosmetic: pre-existing LCP dev notice (insight card image, below fold) — intentionally ignored
+8. If a 6th hash kind appears, consider the tiny shared hash-router helper (per-component regexes are multiplying: 5 now)

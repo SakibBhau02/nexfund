@@ -184,9 +184,9 @@ export function ScenarioSimulator() {
     <section id="simulator" className="bg-nx-mist py-20 md:py-24" aria-labelledby="sim-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
         <Reveal>
-          <SectionHeading eyebrow={t(SIM.eyebrow)} title={t(SIM.title)} sub={t(SIM.sub)} />
+          <SectionHeading titleId="sim-title" eyebrow={t(SIM.eyebrow)} title={t(SIM.title)} sub={t(SIM.sub)} />
           {/* honesty pill — always visible, never dismissed */}
-          <p className="mx-auto mt-5 flex w-fit items-center gap-1.5 rounded-full border border-nx-warn/50 bg-nx-warn-bg px-4 py-1.5 text-xs font-bold text-nx-warn">
+          <p className="mx-auto mt-5 flex w-fit items-center gap-1.5 rounded-full border border-nx-warn/50 bg-nx-warn-bg px-4 py-1.5 text-xs font-bold text-nx-warn-700">
             <Info className="h-3.5 w-3.5" aria-hidden="true" />
             {t(SIM.illustrative)}
           </p>
@@ -204,7 +204,7 @@ export function ScenarioSimulator() {
 
                 {/* R4-2: quick-start presets */}
                 <div className="mt-4">
-                  <p className="text-[11px] font-bold tracking-[0.14em] text-slate-400 uppercase">
+                  <p className="text-[11px] font-bold tracking-[0.14em] text-slate-600 uppercase">
                     {t(SIM.presetsLabel)}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -286,7 +286,7 @@ export function ScenarioSimulator() {
 
                 {/* implied valuation — teaches what the ticket buys */}
                 <div className="mt-7 rounded-2xl bg-nx-mist p-4">
-                  <p className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
+                  <p className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
                     {t(SIM.impliedValuation)}
                   </p>
                   <p className="nx-num mt-1 text-lg font-extrabold text-nx-navy-900">
@@ -295,7 +295,7 @@ export function ScenarioSimulator() {
                       format={(v) => formatTk(Math.round(v), lang)}
                     />
                   </p>
-                  <p className="mt-1 text-[11px] leading-snug text-slate-500">
+                  <p className="mt-1 text-[11px] leading-snug text-slate-600">
                     <G term="valuation">{lang === "bn" ? "ভ্যালুয়েশন" : "Valuation"}</G>
                     {" · "}
                     <G term="exit multiple">{lang === "bn" ? "এক্সিট মাল্টিপল" : "Exit multiple"}</G>
@@ -339,7 +339,7 @@ export function ScenarioSimulator() {
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      className="mb-4 flex w-fit items-center gap-1.5 rounded-full border border-nx-verified/40 bg-nx-verified-bg px-3.5 py-1.5 text-xs font-bold text-nx-verified"
+                      className="mb-4 flex w-fit items-center gap-1.5 rounded-full border border-nx-verified/40 bg-nx-verified-bg px-3.5 py-1.5 text-xs font-bold text-nx-verified-700"
                     >
                       <Check className="h-3.5 w-3.5" aria-hidden="true" />
                       {t(SIM.sharedApplied)}
@@ -368,7 +368,7 @@ export function ScenarioSimulator() {
                             <Icon className={cn("h-4 w-4", chipClass)} aria-hidden="true" />
                             {t(scen.name)}
                             {lead && (
-                              <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn">
+                              <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn-700">
                                 {lang === "bn" ? "আগে দেখুন" : "look here first"}
                               </span>
                             )}
@@ -393,7 +393,7 @@ export function ScenarioSimulator() {
                               className={cn("flex h-full items-center justify-end rounded-xl pr-2.5", barClass)}
                             >
                               {widthPct > 24 && (
-                                <span className="nx-num text-[11px] font-extrabold text-white">
+                                <span className="nx-num rounded-md bg-nx-navy-900/85 px-1.5 py-0.5 text-[11px] font-extrabold text-white">
                                   {formatTk(Math.round(res.proceeds), lang)}
                                 </span>
                               )}
@@ -412,7 +412,7 @@ export function ScenarioSimulator() {
                         </div>
 
                         <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                          <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">
+                          <p className="text-[11px] font-bold tracking-wide text-slate-600 uppercase">
                             {t(SIM.exitValue)}
                           </p>
                           <p className="flex items-baseline gap-2.5">
@@ -425,7 +425,7 @@ export function ScenarioSimulator() {
                             <span
                               className={cn(
                                 "nx-num rounded-full px-2 py-0.5 text-[11px] font-extrabold",
-                                isLoss ? "bg-nx-danger/10 text-nx-danger" : "bg-nx-verified-bg text-nx-verified"
+                                isLoss ? "bg-nx-danger/10 text-nx-danger-700" : "bg-nx-verified-bg text-nx-verified-700"
                               )}
                             >
                               {/* R5: chips count up alongside the money values (rec #5).
@@ -465,7 +465,7 @@ export function ScenarioSimulator() {
                   })}
                 </div>
 
-                <p className="mt-5 flex items-start gap-2 rounded-2xl border border-nx-warn/40 bg-nx-warn-bg px-4 py-3 text-[11px] leading-relaxed text-nx-warn">
+                <p className="mt-5 flex items-start gap-2 rounded-2xl border border-nx-warn/40 bg-nx-warn-bg px-4 py-3 text-[11px] leading-relaxed text-nx-warn-700">
                   <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   {t(SIM.footnote)}
                 </p>
