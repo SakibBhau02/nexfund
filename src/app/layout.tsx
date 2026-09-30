@@ -3,7 +3,7 @@ import { Manrope, Inter, Anek_Bangla, Hind_Siliguri } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/lib/i18n";
-import { FAQ } from "@/lib/content";
+import { FAQ, GLOSSARY, GLOSSARY_LABELS } from "@/lib/content";
 
 const manrope = Manrope({
   variable: "--font-display-en",
@@ -93,6 +93,20 @@ function StructuredData() {
       "https://www.facebook.com/nexfundbd",
     ],
   };
+  /* R7: glossary hub as a DefinedTermSet — mirrors the in-page dialog (AEO) */
+  const glossarySchema = {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    name: "NexFund Investment Glossary",
+    description:
+      "Plain-language English and Bangla definitions of investment terms used across NexFund.",
+    hasDefinedTerm: Object.entries(GLOSSARY).map(([key, def]) => ({
+      "@type": "DefinedTerm",
+      name: GLOSSARY_LABELS[key]?.en ?? key,
+      alternateName: GLOSSARY_LABELS[key]?.bn,
+      description: def.en,
+    })),
+  };
   return (
     <>
       <script
@@ -102,6 +116,10 @@ function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(glossarySchema) }}
       />
     </>
   );

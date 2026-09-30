@@ -1,0 +1,868 @@
+     1→"use client";
+     2→
+     3→import Image from "next/image";
+     4→import { useEffect, useMemo, useRef, useState } from "react";
+     5→import type { ReactNode } from "react";
+     6→import { useQuery } from "@tanstack/react-query";
+     7→import { AnimatePresence, motion } from "framer-motion";
+     8→import {
+     9→  AlertTriangle,
+    10→  ArrowUpRight,
+    11→  BadgeCheck,
+    12→  Calendar,
+    13→  CircleCheck,
+    14→  FileQuestion,
+    15→  Loader2,
+    16→  Lock,
+    17→  MapPin,
+    18→  Minus,
+    19→  Share2,
+    20→  Check,
+    21→  ShieldCheck,
+    22→  Sparkles,
+    23→  TrendingDown,
+    24→  TrendingUp,
+    25→  Users,
+    26→  Briefcase,
+    27→  LineChart,
+    28→  Wallet,
+    29→  Info,
+    30→  Activity,
+    31→} from "lucide-react";
+    32→import type { LucideIcon } from "lucide-react";
+    33→import { cn } from "@/lib/utils";
+    34→import { useLanguage } from "@/lib/i18n";
+    35→import { useDialogStore } from "@/lib/dialog-store";
+    36→import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, SIM, SCEN, SHARE, OPPS, type BadgeKey, type ScenAssumption } from "@/lib/content";
+    37→import { formatTk, formatTkRange, bnNum } from "@/lib/format";
+    38→import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+    39→import { Input } from "@/components/ui/input";
+    40→import { Label } from "@/components/ui/label";
+    41→import { Textarea } from "@/components/ui/textarea";
+    42→import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+    43→import { G } from "@/components/site/glossary";
+    44→import type { OpportunityDTO } from "@/components/site/opportunities";
+    45→
+    46→type UseOfFundsItem = { item: { en: string; bn: string }; pct: number };
+    47→
+    48→export function OpportunityDialog() {
+    49→  const { lang, t } = useLanguage();
+    50→  const dialog = useDialogStore((s) => s.dialog);
+    51→  const slug = useDialogStore((s) => s.opportunitySlug);
+    52→  const close = useDialogStore((s) => s.close);
+    53→  const open = useDialogStore((s) => s.open);
+    54→  const openOpportunity = useDialogStore((s) => s.openOpportunity);
+    55→  const isOpen = dialog === "opportunity";
+    56→
+    57→  /* ── Express-interest inline flow (actions ⇄ form ⇄ success) ── */
+    58→  const [xiView, setXiView] = useState<"actions" | "form" | "success">("actions");
+    59→  const [xiEmail, setXiEmail] = useState("");
+    60→  const [xiName, setXiName] = useState("");
+    61→  const [xiNote, setXiNote] = useState("");
+    62→  const [xiSending, setXiSending] = useState(false);
+    63→  const [xiError, setXiError] = useState("");
+    64→
+    65→  /* ── R6: listing permalink share ── */
+    66→  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
+    67→  const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    68→
+    69→  useEffect(() => {
+    70→    return () => {
+    71→      if (shareTimer.current) clearTimeout(shareTimer.current);
+    72→    };
+    73→  }, []);
+    74→
+    75→  /* R6: deep-link — #opp=<slug> opens the listing directly (permalink).
+    76→     Unknown slugs fall through to the not-found state below (data loaded,
+    77→     no match) instead of spinning forever. */
+    78→  useEffect(() => {
+    79→    const m = /^#opp=([a-z0-9-]+)$/i.exec(window.location.hash);
+    80→    if (!m) return;
+    81→    const raf = requestAnimationFrame(() => openOpportunity(m[1]));
+    82→    return () => cancelAnimationFrame(raf);
+    83→  }, [openOpportunity]);
+    84→
+    85→  const share = async () => {
+    86→    if (!slug) return;
+    87→    const url = `${window.location.origin}${window.location.pathname}#opp=${slug}`;
+    88→    if (typeof navigator.share === "function") {
+    89→      try {
+    90→        await navigator.share({ title: document.title, url });
+    91→        return;
+    92→      } catch {
+    93→        // sheet dismissed or failed → fall through to clipboard
+    94→      }
+    95→    }
+    96→    let ok = false;
+    97→    try {
+    98→      await navigator.clipboard.writeText(url);
+    99→      ok = true;
+   100→    } catch {
+   101→      try {
+   102→        const ta = document.createElement("textarea");
+   103→        ta.value = url;
+   104→        ta.style.position = "fixed";
+   105→        ta.style.opacity = "0";
+   106→        document.body.appendChild(ta);
+   107→        ta.focus();
+   108→        ta.select();
+   109→        ok = document.execCommand("copy");
+   110→        document.body.removeChild(ta);
+   111→      } catch {
+   112→        ok = false;
+   113→      }
+   114→    }
+   115→    setShareState(ok ? "copied" : "failed");
+   116→    if (shareTimer.current) clearTimeout(shareTimer.current);
+   117→    shareTimer.current = setTimeout(() => setShareState("idle"), 2600);
+   118→  };
+   119→
+   120→  // Reset the flow whenever the dialog closes or switches to another listing
+   121→  useEffect(() => {
+   122→    setXiView("actions");
+   123→    setXiEmail("");
+   124→    setXiName("");
+   125→    setXiNote("");
+   126→    setXiError("");
+   127→    setXiSending(false);
+   128→    setShareState("idle");
+   129→    if (shareTimer.current) clearTimeout(shareTimer.current);
+   130→  }, [isOpen, slug]);
+   131→
+   132→  const { data } = useQuery<OpportunityDTO[]>({
+   133→    queryKey: ["opportunities"],
+   134→    queryFn: async () => {
+   135→      const res = await fetch("/api/opportunities");
+   136→      if (!res.ok) throw new Error("failed");
+   137→      return res.json();
+   138→    },
+   139→    enabled: isOpen,
+   140→    staleTime: 60_000,
+   141→  });
+   142→
+   143→  const o = useMemo(() => data?.find((x) => x.slug === slug), [data, slug]);
+   144→
+   145→  const TAB_KEYS = ["overview", "model", "financials", "scenarios", "team", "funds", "risks"] as const;
+   146→  const tabIcons = [Info, Briefcase, LineChart, Activity, Users, Wallet, AlertTriangle];
+   147→
+   148→  if (!o) {
+   149→    // R6: data loaded but no match → friendly not-found (bad/stale permalink);
+   150→    // otherwise still fetching → loading state
+   151→    const notFound = Array.isArray(data) && data.length > 0;
+   152→    return (
+   153→      <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
+   154→        <DialogContent
+   155→          className={notFound ? "rounded-3xl p-0 sm:max-w-[440px]" : "rounded-3xl p-0 sm:max-w-[640px]"}
+   156→          aria-describedby={undefined}
+   157→        >
+   158→          {notFound ? (
+   159→            <div className="p-8 text-center">
+   160→              <FileQuestion className="mx-auto h-10 w-10 text-nx-cyan-500" aria-hidden="true" />
+   161→              <DialogTitle className="mt-3 text-base font-bold leading-relaxed text-nx-navy-900">
+   162→                {t(OPPS.notFoundTitle)}
+   163→              </DialogTitle>
+   164→              <p className="mt-2 text-sm leading-relaxed text-slate-600">{t(OPPS.notFoundSub)}</p>
+   165→              <button
+   166→                onClick={close}
+   167→                className="mt-5 rounded-full bg-nx-navy-700 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+   168→              >
+   169→                {lang === "bn" ? "বর্তমান সুযোগ দেখুন" : "Browse current opportunities"}
+   170→              </button>
+   171→            </div>
+   172→          ) : (
+   173→            <div className="space-y-3 p-8 text-center">
+   174→              {/* a11y: Radix requires a title even in the loading state */}
+   175→              <DialogTitle className="sr-only">
+   176→                {lang === "bn" ? "সুযোগটি লোড হচ্ছে…" : "Loading opportunity…"}
+   177→              </DialogTitle>
+   178→              <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-nx-navy-100" />
+   179→              <p className="text-sm text-slate-500">
+   180→                {lang === "bn" ? "সুযোগটি লোড হচ্ছে…" : "Loading opportunity…"}
+   181→              </p>
+   182→            </div>
+   183→          )}
+   184→        </DialogContent>
+   185→      </Dialog>
+   186→    );
+   187→  }
+   188→
+   189→  const useOfFunds = (o.useOfFunds ?? []) as UseOfFundsItem[];
+   190→  const stageDots = [1, 2, 3, 4, 5];
+   191→
+   192→  const backToActions = () => {
+   193→    setXiView("actions");
+   194→    setXiError("");
+   195→  };
+   196→
+   197→  const finishSuccess = () => {
+   198→    setXiView("actions");
+   199→    setXiEmail("");
+   200→    setXiName("");
+   201→    setXiNote("");
+   202→    setXiError("");
+   203→  };
+   204→
+   205→  const submitInterest = async () => {
+   206→    const email = xiEmail.trim();
+   207→    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+   208→      setXiError(t(EXPRESS.errEmail));
+   209→      return;
+   210→    }
+   211→    setXiSending(true);
+   212→    setXiError("");
+   213→    try {
+   214→      const res = await fetch("/api/interest", {
+   215→        method: "POST",
+   216→        headers: { "Content-Type": "application/json" },
+   217→        body: JSON.stringify({
+   218→          opportunitySlug: o.slug,
+   219→          email,
+   220→          name: xiName.trim(),
+   221→          note: xiNote.trim(),
+   222→          language: lang,
+   223→        }),
+   224→      });
+   225→      if (!res.ok) throw new Error("failed");
+   226→      setXiView("success");
+   227→    } catch {
+   228→      setXiError(t(EXPRESS.errGeneric));
+   229→    } finally {
+   230→      setXiSending(false);
+   231→    }
+   232→  };
+   233→
+   234→  return (
+   235→    <Dialog open={isOpen} onOpenChange={(v) => !v && close()}>
+   236→      <DialogContent
+   237→        className="nx-scroll max-h-[90vh] gap-0 overflow-y-auto rounded-3xl p-0 sm:max-w-[680px]"
+   238→        aria-describedby={undefined}
+   239→      >
+   240→        {/* ── Header: oval + identity + illustrative badge ── */}
+   241→        <DialogHeader className="border-b border-nx-navy-100 px-6 pb-4 pt-6">
+   242→          <div className="flex items-start gap-4">
+   243→            <div className="oval oval-ring hidden w-[92px] shrink-0 bg-nx-navy-100 sm:block">
+   244→              <Image
+   245→                src={o.image}
+   246→                alt={`${o.codeName}`}
+   247→                fill
+   248→                sizes="92px"
+   249→                className="object-cover"
+   250→              />
+   251→            </div>
+   252→            <div className="min-w-0 flex-1">
+   253→              <div className="flex flex-wrap items-center gap-2">
+   254→                <DialogTitle className="nx-num text-2xl font-extrabold text-nx-navy-900">
+   255→                  {o.codeName}
+   256→                </DialogTitle>
+   257→                <Tooltip>
+   258→                  <TooltipTrigger asChild>
+   259→                    <span className="inline-flex cursor-help items-center gap-1 rounded-full border border-nx-cyan-300 bg-nx-cyan-50 px-2.5 py-0.5 text-[11px] font-bold text-nx-cyan-700">
+   260→                      <Sparkles className="h-3 w-3" aria-hidden="true" />
+   261→                      {t(OPP_DLG.illustrative)}
+   262→                    </span>
+   263→                  </TooltipTrigger>
+   264→                  <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
+   265→                    {t(OPP_DLG.illustrativeTip)}
+   266→                  </TooltipContent>
+   267→                </Tooltip>
+   268→                {/* R6: share permalink — native sheet on mobile, clipboard elsewhere */}
+   269→                <button
+   270→                  type="button"
+   271→                  onClick={share}
+   272→                  aria-live="polite"
+   273→                  className="inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-2.5 py-0.5 text-[11px] font-bold text-nx-navy-700 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400"
+   274→                >
+   275→                  {shareState === "copied" ? (
+   276→                    <Check className="h-3 w-3" aria-hidden="true" />
+   277→                  ) : (
+   278→                    <Share2 className="h-3 w-3" aria-hidden="true" />
+   279→                  )}
+   280→                  {shareState === "copied"
+   281→                    ? t(SHARE.linkCopied)
+   282→                    : shareState === "failed"
+   283→                      ? t(SHARE.copyFailed)
+   284→                      : t(OPPS.shareListing)}
+   285→                </button>
+   286→              </div>
+   287→              <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-nx-cyan-700 uppercase">
+   288→                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+   289→                {(lang === "bn" ? o.sectorBn : o.sector) + " · " + (lang === "bn" ? o.locationBn : o.location)}
+   290→              </p>
+   291→              <p className="mt-1.5 text-sm leading-snug text-slate-600">
+   292→                {lang === "bn" ? o.headlineBn : o.headline}
+   293→              </p>
+   294→              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+   295→                <TooltipProvider delayDuration={120}>
+   296→                  {o.badges.map((b) => (
+   297→                    <Tooltip key={b}>
+   298→                      <TooltipTrigger asChild>
+   299→                        <span className="inline-flex cursor-help items-center gap-1 rounded-full bg-nx-verified-bg px-2 py-0.5 text-[11px] font-bold text-nx-verified">
+   300→                          <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+   301→                          {t(BADGES[b as BadgeKey])}
+   302→                        </span>
+   303→                      </TooltipTrigger>
+   304→                      <TooltipContent className="max-w-[220px] text-xs leading-relaxed">
+   305→                        {t(BADGE_TIPS[b as BadgeKey])}
+   306→                      </TooltipContent>
+   307→                    </Tooltip>
+   308→                  ))}
+   309→                </TooltipProvider>
+   310→              </div>
+   311→            </div>
+   312→          </div>
+   313→        </DialogHeader>
+   314→
+   315→        {/* ── Sticky key-facts strip ── */}
+   316→        <div className="sticky top-0 z-10 border-b border-nx-navy-100 bg-white/95 px-6 py-3 backdrop-blur">
+   317→          <dl className="grid grid-cols-2 gap-2 text-[12px] sm:grid-cols-4">
+   318→            <div>
+   319→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP_DLG.seekingLabel)}</dt>
+   320→              <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
+   321→                {formatTkRange(o.seekingMin, o.seekingMax, lang)}
+   322→              </dd>
+   323→            </div>
+   324→            <div>
+   325→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP_DLG.revenueLabel)}</dt>
+   326→              <dd className="nx-num mt-0.5 font-extrabold text-nx-navy-800">
+   327→                {lang === "bn" ? o.revenueBn : o.revenue}
+   328→              </dd>
+   329→            </div>
+   330→            <div>
+   331→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP_DLG.instrumentLabel)}</dt>
+   332→              <dd className="mt-0.5 font-semibold text-nx-navy-800">
+   333→                {lang === "bn" ? o.instrumentBn : o.instrument}
+   334→              </dd>
+   335→            </div>
+   336→            <div>
+   337→              <dt className="font-bold tracking-wide text-slate-400 uppercase">{t(OPP.verificationProgress)}</dt>
+   338→              <dd className="mt-1 flex items-center gap-1" aria-label={`${o.stage}/5`}>
+   339→                {stageDots.map((s) => (
+   340→                  <span
+   341→                    key={s}
+   342→                    className={cn(
+   343→                      "h-1.5 w-4 rounded-full",
+   344→                      s <= o.stage ? "bg-nx-cyan-500" : "bg-nx-navy-100"
+   345→                    )}
+   346→                  />
+   347→                ))}
+   348→              </dd>
+   349→            </div>
+   350→          </dl>
+   351→        </div>
+   352→
+   353→        {/* ── Tabbed content ── */}
+   354→        <Tabs tabs={OPP_DLG.tabs.map((x) => t(x))} tabKeys={TAB_KEYS} tabIcons={tabIcons}>
+   355→          {(tab) => (
+   356→            <AnimatePresence mode="wait">
+   357→              <motion.div
+   358→                key={tab}
+   359→                initial={{ opacity: 0, y: 10 }}
+   360→                animate={{ opacity: 1, y: 0 }}
+   361→                exit={{ opacity: 0, y: -10 }}
+   362→                transition={{ duration: 0.22 }}
+   363→                className="px-6 py-6"
+   364→              >
+   365→                {tab === "overview" && (
+   366→                  <div className="space-y-4">
+   367→                    <p className="leading-relaxed text-slate-600">
+   368→                      {lang === "bn" ? o.overviewBn ?? o.descriptionBn : o.overview ?? o.description}
+   369→                    </p>
+   370→                  </div>
+   371→                )}
+   372→                {tab === "model" && (
+   373→                  <p className="leading-relaxed text-slate-600">
+   374→                    {lang === "bn" ? o.modelNoteBn : o.modelNote}
+   375→                  </p>
+   376→                )}
+   377→                {tab === "financials" && (
+   378→                  <div className="rounded-2xl border border-nx-navy-100 bg-nx-mist/60 p-5">
+   379→                    <p className="leading-relaxed text-slate-600">
+   380→                      {lang === "bn" ? o.financialNoteBn : o.financialNote}
+   381→                    </p>
+   382→                    <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-slate-500">
+   383→                      <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-nx-navy-500" aria-hidden="true" />
+   384→                      {t(OPP_DLG.ndaNote)}
+   385→                    </p>
+   386→                  </div>
+   387→                )}
+   388→                {tab === "scenarios" && <ScenariosPanel o={o} />}
+   389→                {tab === "team" && (
+   390→                  <p className="leading-relaxed text-slate-600">
+   391→                    {lang === "bn" ? o.teamNoteBn : o.teamNote}
+   392→                  </p>
+   393→                )}
+   394→                {tab === "funds" && (
+   395→                  <ul className="space-y-3">
+   396→                    {useOfFunds.map((f, i) => (
+   397→                      <li key={f.item.en}>
+   398→                        <div className="flex items-center justify-between text-sm">
+   399→                          <span className="font-semibold text-nx-ink">{t(f.item)}</span>
+   400→                          <span className="nx-num font-extrabold text-nx-navy-700">
+   401→                            {lang === "bn" ? `${bnNum(f.pct)}%` : `${f.pct}%`}
+   402→                          </span>
+   403→                        </div>
+   404→                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-nx-navy-100">
+   405→                          <motion.div
+   406→                            initial={{ width: 0 }}
+   407→                            animate={{ width: `${f.pct}%` }}
+   408→                            transition={{ duration: 0.6, delay: i * 0.08, ease: [0.2, 0.8, 0.2, 1] }}
+   409→                            className={cn(
+   410→                              "h-full rounded-full",
+   411→                              f.pct >= 50 ? "bg-nx-navy-700" : f.pct >= 20 ? "bg-nx-cyan-500" : "bg-nx-cyan-300"
+   412→                            )}
+   413→                          />
+   414→                        </div>
+   415→                      </li>
+   416→                    ))}
+   417→                  </ul>
+   418→                )}
+   419→                {tab === "risks" && (
+   420→                  <div className="rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-5">
+   421→                    <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-warn uppercase">
+   422→                      <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+   423→                      {t(OPP.keyRisks)}
+   424→                    </p>
+   425→                    <ul className="mt-3 space-y-2.5">
+   426→                      {o.risks.map((r) => (
+   427→                        <li key={r.en} className="flex items-start gap-2.5 text-sm leading-relaxed text-nx-ink/90">
+   428→                          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-nx-warn" aria-hidden="true" />
+   429→                          {lang === "bn" ? r.bn : r.en}
+   430→                        </li>
+   431→                      ))}
+   432→                    </ul>
+   433→                    <p className="mt-4 border-t border-nx-warn/30 pt-3 text-xs leading-relaxed text-nx-warn/90">
+   434→                      {t(VETTING_DISCLAIMER)}
+   435→                    </p>
+   436→                  </div>
+   437→                )}
+   438→              </motion.div>
+   439→            </AnimatePresence>
+   440→          )}
+   441→        </Tabs>
+   442→
+   443→        {/* ── Advisor review ── */}
+   444→        <div className="mx-6 mb-2 rounded-2xl border border-nx-cyan-200 bg-gradient-to-br from-nx-cyan-50 to-white p-5">
+   445→          <p className="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-nx-cyan-700 uppercase">
+   446→            <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+   447→            {t(OPP_DLG.advisorTitle)}
+   448→          </p>
+   449→          <p className="mt-2 text-sm leading-relaxed text-nx-ink/85">
+   450→            {lang === "bn" ? o.advisorNoteBn : o.advisorNote}
+   451→          </p>
+   452→        </div>
+   453→
+   454→        {/* ── Actions ⇄ Express-interest inline flow ── */}
+   455→        <div className="sticky bottom-0 border-t border-nx-navy-100 bg-white/95 px-6 py-4 backdrop-blur">
+   456→          <AnimatePresence mode="wait">
+   457→            {xiView === "actions" && (
+   458→              <motion.div
+   459→                key="actions"
+   460→                initial={{ opacity: 0, y: 10 }}
+   461→                animate={{ opacity: 1, y: 0 }}
+   462→                exit={{ opacity: 0, y: -10 }}
+   463→                transition={{ duration: 0.22 }}
+   464→              >
+   465→                <div className="flex flex-col gap-2 sm:flex-row">
+   466→                  <button
+   467→                    onClick={() => setXiView("form")}
+   468→                    className="nx-arrow-btn inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+   469→                  >
+   470→                    {t(OPP_DLG.expressInterest)}
+   471→                    <span className="nx-arrow">
+   472→                      <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+   473→                    </span>
+   474→                  </button>
+   475→                  <button
+   476→                    onClick={() => open("contact")}
+   477→                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500"
+   478→                  >
+   479→                    <Calendar className="h-4 w-4" aria-hidden="true" />
+   480→                    {t(OPP_DLG.bookAdvisorCall)}
+   481→                  </button>
+   482→                </div>
+   483→                <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+   484→                  <Lock className="h-3 w-3" aria-hidden="true" />
+   485→                  {t(OPP_DLG.expressNote)}
+   486→                </p>
+   487→              </motion.div>
+   488→            )}
+   489→
+   490→            {xiView === "form" && (
+   491→              <motion.div
+   492→                key="form"
+   493→                initial={{ opacity: 0, y: 10 }}
+   494→                animate={{ opacity: 1, y: 0 }}
+   495→                exit={{ opacity: 0, y: -10 }}
+   496→                transition={{ duration: 0.22 }}
+   497→              >
+   498→                <p className="text-xs font-extrabold tracking-wide text-nx-navy-900 uppercase">
+   499→                  {t(EXPRESS.title)}
+   500→                </p>
+   501→                <p className="mt-1 text-xs leading-relaxed text-slate-500">{t(EXPRESS.sub)}</p>
+   502→                <form
+   503→                  className="mt-3 space-y-3"
+   504→                  noValidate
+   505→                  onSubmit={(e) => {
+   506→                    e.preventDefault();
+   507→                    void submitInterest();
+   508→                  }}
+   509→                >
+   510→                  <div className="grid gap-3 sm:grid-cols-2">
+   511→                    <div>
+   512→                      <Label htmlFor="xi-email">{t(EXPRESS.email)} *</Label>
+   513→                      <Input
+   514→                        id="xi-email"
+   515→                        type="email"
+   516→                        dir="ltr"
+   517→                        autoFocus
+   518→                        autoComplete="email"
+   519→                        value={xiEmail}
+   520→                        onChange={(e) => setXiEmail(e.target.value)}
+   521→                        aria-invalid={xiError ? true : undefined}
+   522→                        className="mt-1.5"
+   523→                      />
+   524→                    </div>
+   525→                    <div>
+   526→                      <Label htmlFor="xi-name">{t(EXPRESS.name)}</Label>
+   527→                      <Input
+   528→                        id="xi-name"
+   529→                        autoComplete="name"
+   530→                        value={xiName}
+   531→                        onChange={(e) => setXiName(e.target.value)}
+   532→                        className="mt-1.5"
+   533→                      />
+   534→                    </div>
+   535→                  </div>
+   536→                  <div>
+   537→                    <Label htmlFor="xi-note">{t(EXPRESS.note)}</Label>
+   538→                    <Textarea
+   539→                      id="xi-note"
+   540→                      rows={2}
+   541→                      value={xiNote}
+   542→                      onChange={(e) => setXiNote(e.target.value)}
+   543→                      placeholder={t(EXPRESS.notePlaceholder)}
+   544→                      className="mt-1.5 resize-none"
+   545→                    />
+   546→                  </div>
+   547→                  {xiError && (
+   548→                    <p role="alert" className="text-sm font-semibold text-nx-danger">
+   549→                      {xiError}
+   550→                    </p>
+   551→                  )}
+   552→                  <div className="flex flex-col-reverse gap-2 sm:flex-row">
+   553→                    <button
+   554→                      type="button"
+   555→                      onClick={backToActions}
+   556→                      disabled={xiSending}
+   557→                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 px-5 py-3 text-sm font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+   558→                    >
+   559→                      {lang === "bn" ? "বাতিল" : "Cancel"}
+   560→                    </button>
+   561→                    <button
+   562→                      type="submit"
+   563→                      disabled={xiSending}
+   564→                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600 disabled:cursor-not-allowed disabled:opacity-70"
+   565→                    >
+   566→                      {xiSending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+   567→                      {xiSending ? t(EXPRESS.submitting) : t(EXPRESS.submit)}
+   568→                    </button>
+   569→                  </div>
+   570→                </form>
+   571→              </motion.div>
+   572→            )}
+   573→
+   574→            {xiView === "success" && (
+   575→              <motion.div
+   576→                key="success"
+   577→                initial={{ opacity: 0, y: 10 }}
+   578→                animate={{ opacity: 1, y: 0 }}
+   579→                exit={{ opacity: 0, y: -10 }}
+   580→                transition={{ duration: 0.22 }}
+   581→                className="text-center"
+   582→              >
+   583→                <motion.span
+   584→                  initial={{ scale: 0 }}
+   585→                  animate={{ scale: 1 }}
+   586→                  transition={{ delay: 0.1, type: "spring", bounce: 0.5 }}
+   587→                  className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-nx-verified-bg"
+   588→                >
+   589→                  <CircleCheck className="h-7 w-7 text-nx-verified" aria-hidden="true" />
+   590→                </motion.span>
+   591→                <h3 className="mt-3 text-base font-extrabold text-nx-navy-900">
+   592→                  {t(EXPRESS.successTitle)}
+   593→                </h3>
+   594→                <p className="mt-1 text-sm leading-relaxed text-slate-600">{t(EXPRESS.successBody)}</p>
+   595→                <button
+   596→                  type="button"
+   597→                  onClick={finishSuccess}
+   598→                  className="mt-4 inline-flex items-center justify-center rounded-full bg-nx-navy-700 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-nx-navy-600"
+   599→                >
+   600→                  {t(EXPRESS.successAnother)}
+   601→                </button>
+   602→              </motion.div>
+   603→            )}
+   604→          </AnimatePresence>
+   605→        </div>
+   606→      </DialogContent>
+   607→    </Dialog>
+   608→  );
+   609→}
+   610→
+   611→const VETTING_DISCLAIMER = {
+   612→  en: "Verification reduces risk. It does not remove it.",
+   613→  bn: "যাচাই ঝুঁকি কমায়, কিন্তু ঝুঁকি সম্পূর্ণ দূর করে না।",
+   614→};
+   615→
+   616→/* ── R4-1: per-listing illustrative scenarios (blueprint §5.5 —
+   617→     "downside scenario chart alongside the upside") ── */
+   618→function ScenariosPanel({ o }: { o: OpportunityDTO }) {
+   619→  const { t, lang } = useLanguage();
+   620→  const close = useDialogStore((s) => s.close);
+   621→
+   622→  const listing = SCEN.listings[o.slug];
+   623→  const mode: "equity" | "revshare" = listing?.mode ?? "equity";
+   624→  const years = listing?.years ?? SCEN.equityFallback.years;
+   625→  const ticket = listing?.ticket ?? Math.round((o.seekingMin + o.seekingMax) / 2);
+   626→
+   627→  const fallback = (key: "down" | "base" | "up"): ScenAssumption => {
+   628→    const g = SCEN.equityFallback.baseGrowth;
+   629→    return {
+   630→      growth: key === "down" ? g - 15 : key === "up" ? g + 8 : g,
+   631→      multiple:
+   632→        key === "down" ? SCEN.equityFallback.down : key === "up" ? SCEN.equityFallback.up : SCEN.equityFallback.base,
+   633→      note: SIM.scenarios[key].desc,
+   634→    };
+   635→  };
+   636→  const assumptions: Record<"down" | "base" | "up", ScenAssumption> = listing
+   637→    ? { down: listing.down, base: listing.base, up: listing.up }
+   638→    : { down: fallback("down"), base: fallback("base"), up: fallback("up") };
+   639→
+   640→  const computed = (key: "down" | "base" | "up") => {
+   641→    const a = assumptions[key];
+   642→    const multiple =
+   643→      mode === "revshare" ? a.multiple : Math.pow(1 + (a.growth ?? 0) / 100, years) * a.multiple;
+   644→    return { multiple, proceeds: ticket * multiple };
+   645→  };
+   646→  const res = { down: computed("down"), base: computed("base"), up: computed("up") };
+   647→  const maxVal = Math.max(res.up.proceeds, res.base.proceeds, res.down.proceeds, ticket);
+   648→  const ticketPct = (ticket / maxVal) * 100;
+   649→
+   650→  const signedPct = (v: number) => {
+   651→    const s = v < 0 ? "−" : v > 0 ? "+" : "";
+   652→    return lang === "bn" ? `${s}${bnNum(Math.abs(v))}%` : `${s}${Math.abs(v)}%`;
+   653→  };
+   654→  const fmtMultiple = (m: number) => (lang === "bn" ? `${bnNum(m.toFixed(2))}×` : `${m.toFixed(2)}×`);
+   655→
+   656→  const meta: { key: "down" | "base" | "up"; icon: typeof TrendingDown; barClass: string; chipClass: string; lead: boolean }[] = [
+   657→    { key: "down", icon: TrendingDown, barClass: "nx-warm-to-loss", chipClass: "text-nx-warn", lead: true },
+   658→    { key: "base", icon: Minus, barClass: "bg-nx-navy-600", chipClass: "text-nx-navy-600", lead: false },
+   659→    { key: "up", icon: TrendingUp, barClass: "bg-nx-cyan-500", chipClass: "text-nx-cyan-600", lead: false },
+   660→  ];
+   661→
+   662→  const assumptionLine = (a: ScenAssumption) =>
+   663→    mode === "revshare"
+   664→      ? lang === "bn"
+   665→        ? `রিটার্ন ${fmtMultiple(a.multiple)} · ${bnNum(years)} বছর`
+   666→        : `return ${fmtMultiple(a.multiple)} · ${years} yrs`
+   667→      : lang === "bn"
+   668→        ? `বৃদ্ধি ${signedPct(a.growth ?? 0)}/বছর · এক্সিট ${fmtMultiple(a.multiple)} · ${bnNum(years)} বছর`
+   669→        : `growth ${signedPct(a.growth ?? 0)}/yr · exit ${fmtMultiple(a.multiple)} · ${years} yrs`;
+   670→
+   671→  const goToSimulator = () => {
+   672→    close();
+   673→    // wait for the dialog unmount before smooth-scrolling
+   674→    setTimeout(() => {
+   675→      document.getElementById("simulator")?.scrollIntoView({ behavior: "smooth" });
+   676→    }, 90);
+   677→  };
+   678→
+   679→  return (
+   680→    <div className="space-y-4">
+   681→      {/* chips: model · horizon · modeled ticket */}
+   682→      <div className="flex flex-wrap items-center gap-2">
+   683→        <span
+   684→          className={cn(
+   685→            "rounded-full border px-3 py-1 text-[11px] font-bold",
+   686→            mode === "revshare"
+   687→              ? "border-nx-cyan-200 bg-nx-cyan-50 text-nx-cyan-700"
+   688→              : "border-nx-navy-200 bg-nx-navy-50 text-nx-navy-800"
+   689→          )}
+   690→        >
+   691→          {t(mode === "revshare" ? SCEN.modeRevshare : SCEN.modeEquity)}
+   692→        </span>
+   693→        <span className="rounded-full border border-nx-navy-100 bg-nx-mist px-3 py-1 text-[11px] font-bold text-slate-600">
+   694→          {t(SCEN.horizon(years))}
+   695→        </span>
+   696→        <span className="nx-num rounded-full bg-nx-navy-900 px-3 py-1 text-[11px] font-extrabold text-white">
+   697→          {formatTk(ticket, lang)}
+   698→          <span className="ml-1.5 font-semibold text-white/60">{t(SCEN.ticketModeled)}</span>
+   699→        </span>
+   700→      </div>
+   701→
+   702→      {mode === "revshare" && (
+   703→        <div className="flex items-start gap-2 rounded-xl border border-nx-cyan-200 bg-nx-cyan-50 p-3.5 text-xs leading-relaxed text-nx-ink/80">
+   704→          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-nx-cyan-600" aria-hidden="true" />
+   705→          {t(SCEN.revshareNote)}
+   706→        </div>
+   707→      )}
+   708→
+   709→      <div className="space-y-3.5">
+   710→        {meta.map(({ key, icon: Icon, barClass, chipClass, lead }) => {
+   711→          const r = res[key];
+   712→          const isLoss = r.multiple < 1;
+   713→          const pctChange = Math.round((r.multiple - 1) * 100);
+   714→          const widthPct = Math.max((r.proceeds / maxVal) * 100, 2);
+   715→          return (
+   716→            <div
+   717→              key={key}
+   718→              className={cn(
+   719→                "rounded-2xl border p-4",
+   720→                lead ? "border-nx-warn/50 bg-nx-warn-bg/50" : "border-nx-navy-100 bg-white"
+   721→              )}
+   722→            >
+   723→              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+   724→                <p className="flex items-center gap-1.5 text-sm font-extrabold text-nx-navy-900">
+   725→                  <Icon className={cn("h-4 w-4", chipClass)} aria-hidden="true" />
+   726→                  {t(SIM.scenarios[key].name)}
+   727→                  {lead && (
+   728→                    <span className="ml-1 rounded-full bg-nx-warn/15 px-2 py-0.5 text-[10px] font-bold text-nx-warn">
+   729→                      {lang === "bn" ? "আগে দেখুন" : "look here first"}
+   730→                    </span>
+   731→                  )}
+   732→                </p>
+   733→                <p className="nx-num text-[11px] font-semibold text-slate-500">{assumptionLine(assumptions[key])}</p>
+   734→              </div>
+   735→              <p className="mt-0.5 text-xs leading-snug text-slate-500">{t(assumptions[key].note)}</p>
+   736→
+   737→              {/* bar with break-even marker */}
+   738→              <div className="relative mt-3">
+   739→                <div className="h-8 overflow-hidden rounded-xl bg-nx-navy-50">
+   740→                  <motion.div
+   741→                    initial={{ width: 0 }}
+   742→                    animate={{ width: `${widthPct}%` }}
+   743→                    transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
+   744→                    className={cn("flex h-full items-center justify-end rounded-xl pr-2.5", barClass)}
+   745→                  >
+   746→                    {widthPct > 24 && (
+   747→                      <span className="nx-num text-[11px] font-extrabold text-white">
+   748→                        {formatTk(Math.round(r.proceeds), lang)}
+   749→                      </span>
+   750→                    )}
+   751→                  </motion.div>
+   752→                </div>
+   753→                {ticketPct > 6 && ticketPct < 97 && (
+   754→                  <div
+   755→                    className="pointer-events-none absolute inset-y-0"
+   756→                    style={{ left: `${ticketPct}%` }}
+   757→                    aria-hidden="true"
+   758→                  >
+   759→                    <div className="h-full w-0 border-l-2 border-dashed border-nx-navy-900/45" />
+   760→                  </div>
+   761→                )}
+   762→              </div>
+   763→
+   764→              <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+   765→                <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">{t(SIM.exitValue)}</p>
+   766→                <p className="flex items-baseline gap-2.5">
+   767→                  <span className="nx-num text-sm font-extrabold text-nx-navy-900">
+   768→                    {formatTk(Math.round(r.proceeds), lang)}
+   769→                  </span>
+   770→                  <span
+   771→                    className={cn(
+   772→                      "nx-num rounded-full px-2 py-0.5 text-[11px] font-extrabold",
+   773→                      isLoss ? "bg-nx-danger/10 text-nx-danger" : "bg-nx-verified-bg text-nx-verified"
+   774→                    )}
+   775→                  >
+   776→                    {lang === "bn"
+   777→                      ? `${fmtMultiple(r.multiple)} · ${t(SIM.changeLabel)} ${signedPct(pctChange)} ${isLoss ? t(SIM.loss) : t(SIM.gain)}`
+   778→                      : `${fmtMultiple(r.multiple)} · ${signedPct(pctChange)} ${isLoss ? t(SIM.loss) : t(SIM.gain)} ${t(SIM.changeLabel)}`}
+   779→                  </span>
+   780→                </p>
+   781→              </div>
+   782→            </div>
+   783→          );
+   784→        })}
+   785→      </div>
+   786→
+   787→      {/* legend + honesty footnote */}
+   788→      <p className="flex items-center gap-2 text-[11px] text-slate-500">
+   789→        <span className="inline-block h-3.5 w-0 border-l-2 border-dashed border-nx-navy-900/45" aria-hidden="true" />
+   790→        {t(SCEN.breakEven)}
+   791→      </p>
+   792→      <p className="flex items-start gap-2 rounded-xl border border-nx-warn/40 bg-nx-warn-bg px-3.5 py-3 text-[11px] leading-relaxed text-nx-warn">
+   793→        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+   794→        {t(SCEN.footnote)}
+   795→      </p>
+   796→
+   797→      <button
+   798→        onClick={goToSimulator}
+   799→        className="nx-arrow-btn inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-nx-navy-200 px-4 py-2 text-xs font-bold text-nx-navy-800 transition-all hover:border-nx-cyan-500 hover:text-nx-cyan-700"
+   800→      >
+   801→        {t(SCEN.tryYourOwn)}
+   802→        <span className="nx-arrow">
+   803→          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+   804→        </span>
+   805→      </button>
+   806→    </div>
+   807→  );
+   808→}
+   809→
+   810→/** Small internal tabs controller for the detail dialog */
+   811→function Tabs({
+   812→  tabs,
+   813→  tabKeys,
+   814→  tabIcons,
+   815→  children,
+   816→}: {
+   817→  tabs: string[];
+   818→  tabKeys: readonly string[];
+   819→  tabIcons: LucideIcon[];
+   820→  children: (tab: string) => ReactNode;
+   821→}) {
+   822→  const [active, setActive] = useState(tabKeys[0]);
+   823→  return (
+   824→    <div>
+   825→      <div
+   826→        role="tablist"
+   827→        aria-label="Opportunity sections"
+   828→        className="nx-scroll flex gap-1 overflow-x-auto border-b border-nx-navy-100 px-4 pt-4"
+   829→      >
+   830→        {tabs.map((label, i) => {
+   831→          const Icon = tabIcons[i];
+   832→          const key = tabKeys[i];
+   833→          const isActive = active === key;
+   834→          const isRisk = key === "risks";
+   835→          return (
+   836→            <button
+   837→              key={key}
+   838→              role="tab"
+   839→              aria-selected={isActive}
+   840→              onClick={() => setActive(key)}
+   841→              className={cn(
+   842→                "relative flex shrink-0 items-center gap-1.5 rounded-t-xl px-3.5 py-2.5 text-[13px] font-bold transition-colors",
+   843→                isActive
+   844→                  ? "text-nx-navy-900"
+   845→                  : "text-slate-500 hover:bg-nx-mist hover:text-nx-navy-700",
+   846→                isRisk && !isActive && "text-nx-warn hover:text-nx-warn"
+   847→              )}
+   848→            >
+   849→              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+   850→              {label}
+   851→              {isActive && (
+   852→                <motion.span
+   853→                  layoutId="opp-tab-underline"
+   854→                  className={cn(
+   855→                    "absolute inset-x-2 -bottom-px h-[2.5px] rounded-full",
+   856→                    isRisk ? "bg-nx-warn" : "bg-nx-cyan-500"
+   857→                  )}
+   858→                />
+   859→              )}
+   860→            </button>
+   861→          );
+   862→        })}
+   863→      </div>
+   864→      {children(active)}
+   865→    </div>
+   866→  );
+   867→}
+   868→

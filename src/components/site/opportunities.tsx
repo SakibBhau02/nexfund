@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage, type L } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { OPP, BADGES, BADGE_TIPS, CMP, type BadgeKey } from "@/lib/content";
+import { OPP, BADGES, BADGE_TIPS, CMP, CMP_SHARE, type BadgeKey } from "@/lib/content";
 import { formatTkRange, bnNum } from "@/lib/format";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
@@ -75,6 +75,13 @@ const MIN_TWO: L = {
   bn: "তুলনা করতে অন্তত ২টি তালিকা বাছাই করুন",
 };
 
+/* ── R7: compare shortlist persistence + #cmp= permalink hydration ──────
+   localStorage key for the saved shortlist (survives reloads). */
+const LS_KEY = "nx-compare";
+/** Module-scope (not useRef): the BN⇄EN remount must NOT re-apply the hash —
+   otherwise every language toggle would re-open the shared comparison. */
+let cmpHashApplied = false;
+
 export function Opportunities() {
   const { t, lang } = useLanguage();
   const openInvestor = useDialogStore((s) => s.openInvestor);
@@ -87,10 +94,21 @@ export function Opportunities() {
      store so the language cross-fade (key={lang} remount) keeps the picks. ── */
   const compare = useDialogStore((s) => s.compareSlugs);
   const setCompare = useDialogStore((s) => s.setCompareSlugs);
-  const [compareOpen, setCompareOpen] = useState(false);
+  /* R7: open flag lifted into the store — the cross-fade remount used to
+     close the dialog mid-comparison (and race the #cmp= permalink flow). */
+  const compareOpen = useDialogStore((s) => s.compareOpen);
+  const setCompareOpen = useDialogStore((s) => s.setCompareOpen);
   const [capToast, setCapToast] = useState(false);
   const toastTimer = useRef<number | null>(null);
   const reduce = useReducedMotion();
+
+  /* R7: "loaded a shared comparison ✓" pill in the tray (6s, like #sim=) */
+  const [sharedLoaded, setSharedLoaded] = useState(false);
+  const sharedTimer = useRef<number | null>(null);
+  /* R7: hydrate the shortlist from localStorage exactly once per mount;
+     first save-effect run is skipped so hydration is never overwritten. */
+  const hydratedRef = useRef(false);
+  const skipFirstSaveRef = useRef(true);
 
   const flashCapToast = () => {
     setCapToast(true);
@@ -98,10 +116,11 @@ export function Opportunities() {
     toastTimer.current = window.setTimeout(() => setCapToast(false), 2800);
   };
 
-  // clear the pending toast timer on unmount
+  // clear the pending toast/share timers on unmount
   useEffect(() => {
     return () => {
       if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+      if (sharedTimer.current !== null) window.clearTimeout(sharedTimer.current);
     };
   }, []);
 
@@ -147,6 +166,63 @@ export function Opportunities() {
     [compare, data]
   );
 
+  /* ── R7: #cmp=slug1,slug2 permalink → hydrate the shortlist + open the
+     dialog (≥2 valid slugs). Waits for the query cache, applies once per
+     page load via rAF (same post-hydration pattern as #sim=/#insight=). */
+  useEffect(() => {
+    if (cmpHashApplied || !data) return;
+    cmpHashApplied = true;
+    const m = /^#cmp=([a-z0-9-]+(?:,[a-z0-9-]+){0,2})$/i.exec(window.location.hash);
+    if (!m) return;
+    const wanted = m[1].split(",").filter((s) => data.some((o) => o.slug === s));
+    if (wanted.length === 0) return; // stale link → degrade to the normal page
+    const raf = requestAnimationFrame(() => {
+      setCompare(wanted.slice(0, MAX_COMPARE));
+      if (wanted.length >= 2) setCompareOpen(true);
+      setSharedLoaded(true);
+      if (sharedTimer.current !== null) window.clearTimeout(sharedTimer.current);
+      sharedTimer.current = window.setTimeout(() => setSharedLoaded(false), 6000);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [data, setCompare, setCompareOpen]);
+
+  /* ── R7: restore the saved shortlist from localStorage (a shared #cmp=
+     link wins). Re-runs per BN⇄EN remount, but the store already matches LS
+     because every change is persisted below — so it's a no-op after reload. */
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    if (/^#cmp=/i.test(window.location.hash)) return;
+    try {
+      const raw = window.localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const saved: unknown = JSON.parse(raw);
+      if (Array.isArray(saved)) {
+        const slugs = saved
+          .filter((s): s is string => typeof s === "string")
+          .slice(0, MAX_COMPARE);
+        if (slugs.length > 0) setCompare(slugs);
+      }
+    } catch {
+      /* corrupt/unavailable storage — ignore */
+    }
+  }, [setCompare]);
+
+  /* ── R7: persist every shortlist change (the first post-mount run is
+     skipped so it can't clear storage before hydration has applied). */
+  useEffect(() => {
+    if (skipFirstSaveRef.current) {
+      skipFirstSaveRef.current = false;
+      return;
+    }
+    try {
+      if (compare.length > 0) window.localStorage.setItem(LS_KEY, JSON.stringify(compare));
+      else window.localStorage.removeItem(LS_KEY);
+    } catch {
+      /* storage unavailable — non-fatal */
+    }
+  }, [compare]);
+
   return (
     <section id="opportunities" className="bg-nx-mist py-20 md:py-24" aria-labelledby="opp-title">
       <div className="mx-auto max-w-[1200px] px-5 md:px-6">
@@ -188,14 +264,14 @@ export function Opportunities() {
               {[0, 1, 2].map((i) => (
                 <div key={i} className="rounded-3xl border border-nx-navy-100 bg-white p-6">
                   <div className="flex gap-4">
-                    <Skeleton className="h-24 w-20 rounded-full" />
+                    <Skeleton className="nx-shimmer h-24 w-20 rounded-full" />
                     <div className="flex-1 space-y-2.5">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                      <Skeleton className="h-3 w-2/3" />
+                      <Skeleton className="nx-shimmer h-4 w-3/4" />
+                      <Skeleton className="nx-shimmer h-3 w-1/2" />
+                      <Skeleton className="nx-shimmer h-3 w-2/3" />
                     </div>
                   </div>
-                  <Skeleton className="mt-5 h-16 w-full rounded-xl" />
+                  <Skeleton className="nx-shimmer mt-5 h-16 w-full rounded-xl" />
                 </div>
               ))}
             </div>
@@ -455,6 +531,12 @@ export function Opportunities() {
               <span className="nx-num shrink-0 rounded-full bg-nx-navy-700 px-2.5 py-1.5 text-[11px] font-extrabold text-white">
                 {t(CMP.selected(compare.length))}
               </span>
+              {/* R7: shown briefly when a shared #cmp= link hydrated the picks */}
+              {sharedLoaded && (
+                <span className="shrink-0 rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-2.5 py-1.5 text-[11px] font-bold text-nx-cyan-700">
+                  {t(CMP_SHARE.loadedPill)}
+                </span>
+              )}
               {/* code names of the picked listings */}
               <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
                 {compareItems.map((o) => (

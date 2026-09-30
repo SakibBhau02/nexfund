@@ -1672,3 +1672,65 @@ export const READERTOC = {
     bn: m <= 0 ? "সম্পন্ন" : `~${bnDigit(m)} মিনিট বাকি`,
   }),
 } as const;
+
+/* ── R7: Glossary hub dialog — full plain-language term index ── */
+export const GLOSSARY_HUB = {
+  /** pill button under the FAQ search input */
+  cta: { en: "All definitions", bn: "সব সংজ্ঞা" } as L,
+  footerLink: { en: "Glossary", bn: "শব্দকোষ" } as L,
+  title: { en: "Investment Glossary", bn: "বিনিয়োগ শব্দকোষ" } as L,
+  sub: {
+    en: "Plain-language definitions of every term used across this site — in both languages.",
+    bn: "এই সাইটে ব্যবহৃত প্রতিটি শব্দের সহজ ভাষায় সংজ্ঞা — দুই ভাষাতেই।",
+  } as L,
+  count: (n: number): L => ({
+    en: `${n} terms`,
+    bn: `${bnDigit(n)}টি শব্দ`,
+  }) as L,
+  /** shown under the other language's term name (cross-reference chip) */
+  alsoKnown: { en: "in Bangla", bn: "ইংরেজিতে" } as L,
+  footnote: {
+    en: "Definitions are educational — they are not investment advice.",
+    bn: "সংজ্ঞাগুলো শিক্ষামূলক — এগুলো বিনিয়োগ পরামর্শ নয়।",
+  } as L,
+} as const;
+
+/* ── R7: compare permalink + share (reuse SHARE.linkCopied / SHARE.copyFailed) ── */
+export const CMP_SHARE = {
+  share: { en: "Share comparison", bn: "তুলনা শেয়ার করুন" } as L,
+  loadedPill: { en: "Loaded a shared comparison ✓", bn: "শেয়ার করা তুলনা লোড হয়েছে ✓" } as L,
+} as const;
+
+/* ── R7-PRINT: opportunity print / save-PDF one-pager (opportunity-dialog) ── */
+export const PRINT = {
+  button: { en: "Print / Save PDF", bn: "প্রিন্ট / PDF সেভ" } as L,
+  buttonAria: {
+    en: "Print or save this listing summary as PDF",
+    bn: "এই লিস্টিং সারসংক্ষেপ প্রিন্ট বা PDF হিসেবে সেভ করুন",
+  } as L,
+  header: { en: "NexFund — Listing Summary", bn: "নেক্সফান্ড — লিস্টিং সারসংক্ষেপ" } as L,
+  prepared: { en: "Prepared", bn: "প্রস্তুতকরণ" } as L,
+  illustrative: { en: "Illustrative listing — not a live offer.", bn: "উদাহরণমূলক লিস্টিং — এটি লাইভ অফার নয়।" } as L,
+  disclaimer: {
+    en: "This summary is for information only. Read the full risk summary before any decision. Investments can lose value.",
+    bn: "এই সারসংক্ষেপ কেবল তথ্যের জন্য। সিদ্ধান্তের আগে সম্পূর্ণ ঝুঁকি-সারসংক্ষেপ পড়ুন। বিনিয়োগে মূল্য হারানোর ঝুঁকি আছে।",
+  } as L,
+  contact: {
+    en: "Questions? hello@nexfund.example · nexfund.example",
+    bn: "প্রশ্ন আছে? hello@nexfund.example · nexfund.example",
+  } as L,
+} as const;
+
+/* ── R7-FEEDBK: FAQ "was this answer helpful" (faq-cta + POST /api/feedback) ── */
+export const FEEDBK = {
+  label: { en: "Was this answer helpful?", bn: "এই উত্তরটি কি সহায়ক ছিল?" } as L,
+  yes: { en: "Yes", bn: "হ্যাঁ" } as L,
+  no: { en: "Not really", bn: "খুব একটা না" } as L,
+  thanks: { en: "Thanks — your feedback is noted.", bn: "ধন্যবাদ — আপনার মতামত রেকর্ড হয়েছে।" } as L,
+} as const;
+
+/* ── R7: WhatsApp prefill message (mobile CTA bar deep link) ── */
+export const WHATSAPP_MSG: L = {
+  en: "Hello NexFund — I'd like to talk about investing in verified Bangladeshi businesses.",
+  bn: "হ্যালো নেক্সফান্ড — যাচাইকৃত বাংলাদেশি ব্যবসায় বিনিয়োগ নিয়ে কথা বলতে চাই।",
+};

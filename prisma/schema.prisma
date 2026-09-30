@@ -104,6 +104,17 @@ model OpportunityInterest {
   @@index([opportunitySlug])
 }
 
+/// FAQ "was this answer helpful?" feedback (R7) — questionId is the stable FAQ q.en key
+model FAQFeedback {
+  id         Int      @id @default(autoincrement())
+  questionId String // FAQ.items[].q.en — the stable accordion value
+  helpful    Boolean
+  language   String   @default("bn") // bn | en
+  createdAt  DateTime @default(now())
+
+  @@index([questionId, createdAt])
+}
+
 /// Priority-list / newsletter capture
 model NewsletterSubscriber {
   id        String   @id @default(cuid())

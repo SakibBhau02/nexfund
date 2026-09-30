@@ -16,6 +16,7 @@ import {
   Lock,
   MapPin,
   Minus,
+  Printer,
   Share2,
   Check,
   ShieldCheck,
@@ -33,7 +34,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { OPP_DLG, OPP, BADGES, BADGE_TIPS, EXPRESS, SIM, SCEN, SHARE, OPPS, type BadgeKey, type ScenAssumption } from "@/lib/content";
+import { OPP_DLG, OPP, BADGES, BADGE_TIPS, BRAND, EXPRESS, PRINT, SIM, SCEN, SHARE, OPPS, type BadgeKey, type ScenAssumption } from "@/lib/content";
 import { formatTk, formatTkRange, bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -282,6 +283,17 @@ export function OpportunityDialog() {
                     : shareState === "failed"
                       ? t(SHARE.copyFailed)
                       : t(OPPS.shareListing)}
+                </button>
+                {/* R7-7: print / save-PDF one-pager (the print sheet lives at the
+                    end of the dialog; the print CSS in globals.css takes over) */}
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  title={t(PRINT.buttonAria)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-2.5 py-0.5 text-[11px] font-bold text-nx-navy-700 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400"
+                >
+                  <Printer className="h-3 w-3" aria-hidden="true" />
+                  {t(PRINT.button)}
                 </button>
               </div>
               <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-nx-cyan-700 uppercase">
@@ -603,6 +615,11 @@ export function OpportunityDialog() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* ── R7-7: print / save-PDF one-pager — display:none on screen; when
+            printing with the dialog open, the guarded @media print block in
+            globals.css makes this the ONLY printed content ── */}
+        <PrintSheet o={o} />
       </DialogContent>
     </Dialog>
   );
@@ -863,5 +880,245 @@ function Tabs({
       </div>
       {children(active)}
     </div>
+  );
+}
+
+/* ── R7-7: print / save-PDF one-pager ──────────────────────────────────────
+   Rendered as the last child of DialogContent but `hidden print:block` —
+   invisible on screen. When the dialog is open, the guarded @media print block
+   at the end of globals.css makes this sheet the ONLY printed content (with no
+   dialog open, #opp-print doesn't exist, the :has() guards fail and normal
+   page printing is untouched). Plain DOM only (no framer-motion), ink-friendly:
+   white background, navy headings, thin borders, no fills or images, one
+   scroll-free flow (no max-height constraints). */
+const PRINT_MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const PRINT_MONTHS_BN = [
+  "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+];
+
+/** The per-listing illustrative scenario math — the exact model ScenariosPanel
+ *  uses (equity: ticket×(1+g/100)^years×multiple; revshare: ticket×multiple),
+ *  extracted so the print sheet recomputes identical numbers. */
+function scenModel(o: OpportunityDTO) {
+  const listing = SCEN.listings[o.slug];
+  const mode: "equity" | "revshare" = listing?.mode ?? "equity";
+  const years = listing?.years ?? SCEN.equityFallback.years;
+  const ticket = listing?.ticket ?? Math.round((o.seekingMin + o.seekingMax) / 2);
+  const g = SCEN.equityFallback.baseGrowth;
+  const assumptions: Record<"down" | "base" | "up", ScenAssumption> = listing
+    ? { down: listing.down, base: listing.base, up: listing.up }
+    : {
+        down: { growth: g - 15, multiple: SCEN.equityFallback.down, note: SIM.scenarios.down.desc },
+        base: { growth: g, multiple: SCEN.equityFallback.base, note: SIM.scenarios.base.desc },
+        up: { growth: g + 8, multiple: SCEN.equityFallback.up, note: SIM.scenarios.up.desc },
+      };
+  // downside first — the honest starting point (blueprint §5.5)
+  const rows = (["down", "base", "up"] as const).map((key) => {
+    const a = assumptions[key];
+    const multiple = mode === "revshare" ? a.multiple : Math.pow(1 + (a.growth ?? 0) / 100, years) * a.multiple;
+    return { key, a, multiple, proceeds: ticket * multiple };
+  });
+  return { mode, years, ticket, rows };
+}
+
+function PrintSheet({ o }: { o: OpportunityDTO }) {
+  const { lang, t } = useLanguage();
+  const useOfFunds = (o.useOfFunds ?? []) as UseOfFundsItem[];
+  const scen = scenModel(o);
+
+  // today's date — Bangla month names + bnNum digits for BN
+  const now = new Date();
+  const dateStr =
+    lang === "bn"
+      ? `${bnNum(now.getDate())} ${PRINT_MONTHS_BN[now.getMonth()]} ${bnNum(now.getFullYear())}`
+      : `${now.getDate()} ${PRINT_MONTHS_EN[now.getMonth()]} ${now.getFullYear()}`;
+
+  // tiny formatters mirroring ScenariosPanel's (kept local — print-only twin)
+  const signedPct = (v: number) => {
+    const s = v < 0 ? "−" : v > 0 ? "+" : "";
+    return lang === "bn" ? `${s}${bnNum(Math.abs(v))}%` : `${s}${Math.abs(v)}%`;
+  };
+  const fmtMultiple = (m: number) => (lang === "bn" ? `${bnNum(m.toFixed(2))}×` : `${m.toFixed(2)}×`);
+  const scenAssumption = (a: ScenAssumption) =>
+    scen.mode === "revshare"
+      ? lang === "bn"
+        ? `রিটার্ন ${fmtMultiple(a.multiple)} · ${bnNum(scen.years)} বছর`
+        : `return ${fmtMultiple(a.multiple)} · ${scen.years} yrs`
+      : lang === "bn"
+        ? `বৃদ্ধি ${signedPct(a.growth ?? 0)}/বছর · এক্সিট ${fmtMultiple(a.multiple)} · ${bnNum(scen.years)} বছর`
+        : `growth ${signedPct(a.growth ?? 0)}/yr · exit ${fmtMultiple(a.multiple)} · ${scen.years} yrs`;
+
+  const label = "text-[10px] font-bold uppercase tracking-wide text-slate-500";
+  const heading =
+    "mt-4 border-b border-nx-navy-200 pb-0.5 text-[14px] font-extrabold uppercase tracking-wide text-nx-navy-900";
+  const body = "mt-1.5 text-[13px] leading-relaxed";
+
+  return (
+    <section id="opp-print" aria-hidden="true" className="hidden print:block text-nx-ink">
+      {/* brand header */}
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 break-inside-avoid border-b-2 border-nx-navy-900 pb-2">
+        <div>
+          <p className="text-[17px] font-extrabold text-nx-navy-900">{t(PRINT.header)}</p>
+          <p className="mt-0.5 text-[11px] font-bold text-nx-cyan-700">{t(BRAND.trustLine)}</p>
+        </div>
+        <p className="text-[11px] text-slate-600">
+          {t(PRINT.prepared)}: <span className="nx-num font-semibold text-nx-ink">{dateStr}</span>
+        </p>
+      </header>
+
+      {/* listing identity */}
+      <div className="mt-3 break-inside-avoid">
+        <p className="nx-num text-[15px] font-extrabold text-nx-navy-900">{o.codeName}</p>
+        <p className="mt-0.5 text-[13px] leading-snug">{lang === "bn" ? o.headlineBn : o.headline}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-slate-600">
+          {lang === "bn" ? o.sectorBn : o.sector} · {lang === "bn" ? o.locationBn : o.location}
+        </p>
+      </div>
+
+      {/* key facts */}
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 break-inside-avoid border border-nx-navy-200 px-3 py-2.5 sm:grid-cols-4">
+        <div>
+          <dt className={label}>{t(OPP_DLG.seekingLabel)}</dt>
+          <dd className="nx-num mt-0.5 text-[13px] font-extrabold text-nx-navy-900">
+            {formatTkRange(o.seekingMin, o.seekingMax, lang)}
+          </dd>
+        </div>
+        <div>
+          <dt className={label}>{t(OPP_DLG.instrumentLabel)}</dt>
+          <dd className="mt-0.5 text-[12px] font-bold text-nx-navy-900">
+            {lang === "bn" ? o.instrumentBn : o.instrument}
+          </dd>
+        </div>
+        <div>
+          <dt className={label}>{t(OPP.verificationProgress)}</dt>
+          <dd className="nx-num mt-0.5 text-[13px] font-extrabold text-nx-navy-900">
+            {lang === "bn" ? `${bnNum(o.stage)}/৫` : `${o.stage}/5`}
+          </dd>
+        </div>
+        <div>
+          <dt className={label}>{t(OPP_DLG.revenueLabel)}</dt>
+          <dd className="mt-0.5 text-[12px] font-bold text-nx-navy-900">
+            {(lang === "bn" ? o.revenueBn ?? o.revenue : o.revenue) ?? "—"}
+          </dd>
+        </div>
+      </dl>
+
+      {/* Overview */}
+      <section className="break-inside-avoid">
+        <h3 className={heading}>{t(OPP_DLG.tabs[0])}</h3>
+        <p className={body}>{lang === "bn" ? o.overviewBn ?? o.descriptionBn : o.overview ?? o.description}</p>
+      </section>
+
+      {/* Business Model */}
+      {(lang === "bn" ? o.modelNoteBn : o.modelNote) && (
+        <section className="break-inside-avoid">
+          <h3 className={heading}>{t(OPP_DLG.tabs[1])}</h3>
+          <p className={body}>{lang === "bn" ? o.modelNoteBn : o.modelNote}</p>
+        </section>
+      )}
+
+      {/* Financials */}
+      {(lang === "bn" ? o.financialNoteBn : o.financialNote) && (
+        <section className="break-inside-avoid">
+          <h3 className={heading}>{t(OPP_DLG.tabs[2])}</h3>
+          <p className={body}>{lang === "bn" ? o.financialNoteBn : o.financialNote}</p>
+          <p className="mt-1 text-[10.5px] leading-relaxed text-slate-500">{t(OPP_DLG.ndaNote)}</p>
+        </section>
+      )}
+
+      {/* Team */}
+      {(lang === "bn" ? o.teamNoteBn : o.teamNote) && (
+        <section className="break-inside-avoid">
+          <h3 className={heading}>{t(OPP_DLG.tabs[4])}</h3>
+          <p className={body}>{lang === "bn" ? o.teamNoteBn : o.teamNote}</p>
+        </section>
+      )}
+
+      {/* Use of Funds */}
+      {useOfFunds.length > 0 && (
+        <section className="break-inside-avoid">
+          <h3 className={heading}>{t(OPP_DLG.tabs[5])}</h3>
+          <ul className="mt-1.5">
+            {useOfFunds.map((f) => (
+              <li
+                key={f.item.en}
+                className="flex items-baseline justify-between gap-4 border-b border-dotted border-slate-400 py-1 text-[13px]"
+              >
+                <span>{t(f.item)}</span>
+                <span className="nx-num font-extrabold text-nx-navy-900">
+                  {lang === "bn" ? `${bnNum(f.pct)}%` : `${f.pct}%`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Advisor note */}
+      {(lang === "bn" ? o.advisorNoteBn : o.advisorNote) && (
+        <section className="break-inside-avoid">
+          <h3 className={heading}>{t(OPP_DLG.advisorTitle)}</h3>
+          <p className={body}>{lang === "bn" ? o.advisorNoteBn : o.advisorNote}</p>
+        </section>
+      )}
+
+      {/* Key Risks — ALL of them, numbered (warn tone) */}
+      {o.risks.length > 0 && (
+        <section className="break-inside-avoid">
+          <h3 className={heading}>{t(OPP_DLG.tabs[6])}</h3>
+          <ol className="mt-1.5 space-y-1">
+            {o.risks.map((r, i) => (
+              <li key={r.en} className="flex gap-2 text-[13px] leading-relaxed">
+                <span className="nx-num shrink-0 font-extrabold text-nx-warn">
+                  {lang === "bn" ? `${bnNum(i + 1)}.` : `${i + 1}.`}
+                </span>
+                <span>{lang === "bn" ? r.bn : r.en}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-1.5 text-[10.5px] font-semibold text-nx-warn">{t(VETTING_DISCLAIMER)}</p>
+        </section>
+      )}
+
+      {/* Illustrative exit scenarios — same math as ScenariosPanel, downside first */}
+      <section className="break-inside-avoid">
+        <h3 className={heading}>{t(SCEN.eyebrow)}</h3>
+        <p className="mt-1 text-[11px] font-semibold text-slate-600">
+          {t(scen.mode === "revshare" ? SCEN.modeRevshare : SCEN.modeEquity)} · {t(SCEN.horizon(scen.years))} ·{" "}
+          {t(SCEN.ticketModeled)}:{" "}
+          <span className="nx-num font-extrabold text-nx-navy-900">{formatTk(scen.ticket, lang)}</span>
+        </p>
+        <div className="mt-1.5 space-y-1.5">
+          {scen.rows.map(({ key, a, multiple, proceeds }) => (
+            <div
+              key={key}
+              className={cn(
+                "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-l-2 py-0.5 pl-2.5",
+                key === "down" ? "border-l-nx-warn" : "border-l-nx-navy-200"
+              )}
+            >
+              <p className="text-[13px]">
+                <span className={cn("font-extrabold", key === "down" ? "text-nx-warn" : "text-nx-navy-900")}>
+                  {t(SIM.scenarios[key].name)}
+                </span>
+                <span className="nx-num ml-2 text-[11px] font-semibold text-slate-500">{scenAssumption(a)}</span>
+              </p>
+              <p className="nx-num text-[13px] font-extrabold text-nx-navy-900">
+                {formatTk(Math.round(proceeds), lang)}
+                <span className="ml-2 font-bold text-nx-ink">{fmtMultiple(multiple)}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* footer */}
+      <footer className="mt-5 break-inside-avoid border-t-2 border-nx-navy-900 pt-2">
+        <p className="text-[11px] font-extrabold text-nx-navy-900">{t(PRINT.illustrative)}</p>
+        <p className="mt-1 text-[10.5px] leading-relaxed text-slate-600">{t(PRINT.disclaimer)}</p>
+        <p className="mt-1 text-[10.5px] font-semibold text-slate-600">{t(PRINT.contact)}</p>
+      </footer>
+    </section>
   );
 }

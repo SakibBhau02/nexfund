@@ -4,10 +4,13 @@ import { useState } from "react";
 import { Linkedin, Facebook, Youtube, Mail, Phone, MapPin, AlertTriangle, ShieldCheck, Scale, Lock, Send } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { FOOTER, NAV, NEWSLETTER, UI } from "@/lib/content";
+import { FOOTER, NAV, NEWSLETTER, UI, GLOSSARY_HUB, WHATSAPP_MSG } from "@/lib/content";
 import { Logo } from "./brand";
 
 const WHATSAPP_URL = "https://wa.me/8801700000000";
+/** R7: deep link opens the chat with a prefilled, language-aware greeting */
+const whatsappUrl = (msg: string) =>
+  `${WHATSAPP_URL}?text=${encodeURIComponent(msg)}`;
 
 function LegalDialog({
   open,
@@ -78,6 +81,7 @@ function LegalDialog({
 export function Footer() {
   const { t, lang } = useLanguage();
   const openDialog = useDialogStore((s) => s.open);
+  const openGlossary = useDialogStore((s) => s.openGlossary);
   const [legal, setLegal] = useState<"privacy" | "terms" | "risk" | null>(null);
 
   const go = (id: string) =>
@@ -220,6 +224,12 @@ export function Footer() {
                   {lang === "bn" ? "প্রশ্নোত্তর" : "FAQ"}
                 </button>
               </li>
+              {/* R7: glossary hub dialog (same terms as the in-page tooltips) */}
+              <li>
+                <button onClick={openGlossary} className="text-white/70 transition-colors hover:text-white">
+                  {t(GLOSSARY_HUB.footerLink)}
+                </button>
+              </li>
               <li>
                 <button onClick={() => openDialog("contact")} className="text-white/70 transition-colors hover:text-white">
                   {t({ en: "Contact", bn: "যোগাযোগ" })}
@@ -339,6 +349,7 @@ function NewsletterForm() {
 export function MobileCtaBar() {
   const { t } = useLanguage();
   const open = useDialogStore((s) => s.open);
+  const whatsappHref = whatsappUrl(t(WHATSAPP_MSG));
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-40 border-t border-nx-navy-100 bg-white/95 px-4 pb-[env(safe-area-inset-bottom)] pt-2.5 backdrop-blur md:hidden"
@@ -346,7 +357,7 @@ export function MobileCtaBar() {
     >
       <div className="mx-auto flex max-w-md items-center gap-2.5">
         <a
-          href={WHATSAPP_URL}
+          href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           className="flex flex-1 items-center justify-center gap-2 rounded-full border-[1.5px] border-nx-navy-200 bg-white py-3 text-sm font-bold text-nx-navy-800"

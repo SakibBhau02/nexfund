@@ -125,7 +125,7 @@ export function SectionHeading({
     <div className={cn("max-w-2xl", align === "center" ? "mx-auto text-center" : "text-left")}>
       <p
         className={cn(
-          "text-xs font-bold tracking-[0.22em] uppercase",
+          "nx-eyebrow text-xs font-bold tracking-[0.22em] uppercase",
           dark ? "text-nx-cyan-400" : "text-nx-cyan-600"
         )}
       >

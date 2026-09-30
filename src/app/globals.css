@@ -285,3 +285,98 @@ a:focus-visible, button:focus-visible, [role="button"]:focus-visible,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── R7 styling details ─────────────────────────────────────────────────── */
+
+/* On-brand text selection (cyan lens) */
+::selection {
+  background: #C5ECF7;
+  color: #061F4A;
+}
+
+/* Cyan tap flash on touch devices — replaces the browser-default grey box */
+html {
+  -webkit-tap-highlight-color: rgba(38, 183, 216, 0.18);
+}
+
+/* Section eyebrows get a leading cyan dash (currentColor → adapts light/dark) */
+.nx-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.nx-eyebrow::before {
+  content: "";
+  width: 1.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+/* Skeleton shimmer sweep — replaces the default pulse on class-ed skeletons.
+   Unlayered rules outrank Tailwind's animate-pulse/bg utilities, so a single
+   nx-shimmer class fully takes over. The blanket prefers-reduced-motion block
+   above freezes the sweep automatically (animation-duration: 0.01ms). */
+.nx-shimmer {
+  background: linear-gradient(100deg, #E9EFF7 30%, #F7FAFE 50%, #E9EFF7 70%);
+  background-size: 200% 100%;
+  animation: nx-shimmer 1.5s linear infinite;
+}
+@keyframes nx-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+
+/* ── R7-7: print / save-PDF one-pager (opportunity dialog) ─────────────────
+   When the listing dialog is OPEN, printing (or Save-as-PDF) yields only the
+   #opp-print summary sheet; when it is NOT open, #opp-print doesn't exist,
+   every :has() guard below fails, and normal page printing is untouched.
+
+   Technique note (a deliberate refinement of the classic visibility:hidden
+   overlay): visibility:hidden siblings still occupy space — hidden dialog
+   chrome + the hidden page under the overlay would paginate into trailing
+   blank pages. Instead everything except the sheet is collapsed with
+   display:none and #opp-print stays IN FLOW inside a fully neutralized
+   dialog-content, so document height, pagination and break-inside-avoid are
+   all exact. This Radix version portals the dialog-content itself as a direct
+   child of <body> (no wrapper div), so the one body child that hosts
+   #opp-print is re-enabled via :has(). */
+@media print {
+  /* hide every direct child of <body> (page root, dev overlay, other portals) … */
+  body:has(#opp-print) > * { display: none !important; }
+  /* … except the dialog-content that hosts the print sheet */
+  body:has(#opp-print) > *:has(#opp-print) { display: block !important; }
+
+  /* drop the dimmed overlay entirely */
+  body:has(#opp-print) [data-slot="dialog-overlay"] { display: none !important; }
+
+  /* neutralize the dialog's centered/scrolling/animated chrome.
+     NOTE: LightningCSS (Tailwind v4's transformer) silently drops
+     `translate: none !important` — so the -50%,-50% centering is killed by
+     overriding Tailwind's --tw-translate-* custom properties instead (belt:
+     a literal `translate: 0 0` too), and `transition: none` makes the print
+     state apply instantly instead of racing the dialog's 200ms transition. */
+  body:has(#opp-print) [data-slot="dialog-content"] {
+    position: static !important;
+    inset: auto !important;
+    --tw-translate-x: 0 !important;
+    --tw-translate-y: 0 !important;
+    translate: 0 0 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* collapse the dialog's screen UI — only the sheet stays in flow */
+  body:has(#opp-print) [data-slot="dialog-content"] > *:not(#opp-print) { display: none !important; }
+}

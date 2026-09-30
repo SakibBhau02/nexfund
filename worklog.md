@@ -336,3 +336,113 @@ Unresolved / next-phase recommendations:
 4. Permalink family is now: #sim=, #insight=, #opp= — consider a tiny "copied link opens the right thing" regression script (curl hash → title assertion) when a 4th hash kind appears
 5. FAQ search query survives BN⇄EN via a module-scope mirror (subagent deviation) — if more cross-remount state appears, consider a dedicated UI-state zustand slice instead
 6. The pre-existing informational LCP dev notice (insight card image) is dev-only and correct to ignore (below fold); do NOT add loading=eager
+
+---
+Task ID: R7 (main agent round 7, part 1) — main agent
+Agent: main (Z.ai Code)
+Task: Scheduled review — entry QA, glossary hub, compare permalinks/share/persistence, styling details, permalink regression script (subagents r7-6/r7-7 launched after this entry)
+
+Work Log:
+- Entry QA: dev.log all 200s, lint clean, agent-browser sweep (all 10 sections, overflowX 0 desktop + 375 mobile, opportunity dialog 7 tabs, compare tray/dialog, #insight= permalink auto-open, zero console/page errors). Verdict: STABLE → feature round.
+- Groundwork FIRST (R4 pattern): content.ts atomic EOF append — GLOSSARY_HUB (dialog + cta + footerLink + count(n) bnDigit + alsoKnown + footnote), CMP_SHARE (share + loadedPill; reuses SHARE.linkCopied/copyFailed), PRINT (button/buttonAria/header/prepared/illustrative/disclaimer/contact for r7-7), FEEDBK (label/yes/no/thanks for r7-6), WHATSAPP_MSG (deep-link greeting).
+- DB groundwork for r7-6: prisma schema += FAQFeedback (id autoincrement, questionId = stable FAQ q.en key, helpful Boolean, language, createdAt, @@index([questionId, createdAt])) → bun run db:push → client regenerated → dev server RESTARTED (killed old PIDs, double-fork `( setsid bun run dev >> dev.log ... )`) → / + /api/opportunities 200 → fresh-client check script confirms db.fAQFeedback queries work (0 rows).
+- Styling pre-settle (globals.css append + shared components, BEFORE subagent launch): ::selection cyan (#C5ECF7/#061F4A); html -webkit-tap-highlight-color cyan tint; .nx-eyebrow::before cyan dash (brand.tsx SectionHeading eyebrow got the class — currentColor adapts light/dark); .nx-shimmer gradient sweep keyframes (unlayered rules outrank Tailwind utilities → single class replaces Skeleton's animate-pulse; blanket reduced-motion block freezes it automatically); ui/dialog.tsx overlay bg-black/50 → bg-nx-navy-950/60 + backdrop-blur-[2px] (matches footer LegalDialog, applies site-wide).
+- R7-2 Glossary hub (new src/components/site/dialogs/glossary-dialog.tsx): full index of all 11 GLOSSARY terms; row title from GLOSSARY_LABELS, body = definition with leading "Term — " prefix stripped; cross-language chip (other language's term, lang attr, LTR both scripts — dir="rtl" bug caught & fixed during QA); alphabetical sort per locale; count chip (১১টি শব্দ / 11 terms); per-row stagger (reduced-motion aware); honesty footnote; store kind "glossary" + openGlossary() (dialog-store.ts); triggers: FAQ search helper row pill "সব সংজ্ঞা/All definitions" (faq-cta.tsx) + footer Company column "শব্দকোষ/Glossary" (footer.tsx); mounted in page.tsx. Verified BN + EN from both triggers, 11 sections each, zero console errors.
+- R7-2 SEO: layout.tsx StructuredData += DefinedTermSet JSON-LD (name/alternateName/description per term from GLOSSARY + GLOSSARY_LABELS) — third ld+json script; verified present in server HTML via curl.
+- R7-3 Compare permalinks + share + persistence:
+  - #cmp=slug1,slug2[,slug3] hydration in opportunities.tsx (regex-validated against live query data, waits for cache, rAF-deferred, module-scope cmpHashApplied flag so BN⇄EN remounts don't re-apply; ≥2 valid slugs auto-opens the dialog; 0 valid → degrade to normal page); "Loaded a shared comparison ✓" pill in the tray for 6s.
+  - ShareCompareButton in compare-dialog.tsx (inside DialogContent → unmounts+resets on close — avoids set-state-in-effect lint): copies #cmp= link, clipboard → execCommand fallback, "লিংক কপি হয়েছে ✓" 2.6s. Real-click verified.
+  - localStorage persistence: hydrate on mount (hash wins over LS), save on every change (first-run skip guard prevents clearing LS pre-hydration); verified shortlist survives full reload.
+  - BUG FOUND & FIXED: with lang=en in localStorage, the post-hydration bn→en cross-fade remount reset the section-local compareOpen state → #cmp= dialog opened then instantly closed (module-scope flag blocked re-apply). Fix: compareOpen + setCompareOpen lifted into the zustand dialog-store (same pattern as compareSlugs R5 / sectorFilter R6). This ALSO fixes the R5 limitation — the compare dialog now survives the BN⇄EN toggle in place (title swaps পাশাপাশি তুলনা ⇄ Side-by-side), screenshot qa/r7-cmp-langswitch-kept.png.
+- R7-4 WhatsApp prefill: footer.tsx WHATSAPP_URL → whatsappUrl(msg) helper; MobileCtaBar href now wa.me/...?text=<encoded t(WHATSAPP_MSG)> — verified EN + BN encoded URLs on mobile 375.
+- R7-5 Regression script qa/permalinks.sh: all 4 hash kinds + bad-slug degradation, isolated --session permacheck, EN forced via localStorage. TWO script bugs found while writing: (1) agent-browser `open` does SAME-DOCUMENT navigation for hash-only changes (mount-time hash effects never re-run) → every case now opens + reloads for a cold load; (2) #sim= test values initially equaled the DEFAULTS (100/10/12/5) → vacuous pass; switched to 75/8/6/7. Result: 6/6 pass.
+- Self-QA: glossary BN/EN both triggers; #cmp= hydration + share + LS reload; eyebrow dash computed (22.4px cyan ::before); DefinedTermSet in HTML; mobile 375 overflowX 0; lint clean; tsc clean in src/; zero console/page errors (only the known informational LCP dev notice).
+- NOTE for future rounds: multiple concurrent agent-browser sessions crashed the browser daemon (CDP connect reset) — close sessions when done (`agent-browser --session X close`), and after `close --all` everything relaunches fine.
+
+Stage Summary:
+- 3 user-facing features live: glossary hub dialog (bilingual index, 2 triggers, JSON-LD), compare permalinks #cmp= + share + reload persistence, WhatsApp prefilled greeting
+- 1 real bug fixed (compareOpen lost to the language remount — store lift; also upgrades R5 compare to survive BN⇄EN like every other dialog)
+- Styling: eyebrow dashes, cyan selection, shimmer skeletons, cyan tap highlight, navy dialog overlay tint
+- Infra: FAQFeedback table live + dev server restarted with fresh client; qa/permalinks.sh 6/6 green
+- Subagents launched after this entry: r7-6 FAQ feedback (api/feedback + faq-cta UI), r7-7 print/PDF summary (opportunity-dialog + globals.css print block)
+
+---
+Task ID: r7-6
+Agent: full-stack-developer
+Task: FAQ "Was this answer helpful?" feedback — POST /api/feedback + per-answer pill row in faq-cta.tsx, DB-backed (FAQFeedback table)
+
+Work Log:
+- Read worklog (R7 entries), interest/route.ts pattern, content.ts FEEDBK copy, schema.prisma FAQFeedback model, globals.css (global button:focus-visible cyan outline confirmed, line 248).
+- Verified prisma client property with a throwaway script inside the project (deleted after): `db.fAQFeedback` is live, 0 rows at start.
+- NEW src/app/api/feedback/route.ts: POST-only, zod {questionId: string 1..300, helpful: boolean, language: enum default bn}; questionId validated against FAQ.items[].q.en (unknown → 400 with zod-style issues JSON {questionId:["Unknown question"]}); db.fAQFeedback.create; 201/400/500 exactly like interest route; no GET (counts private — Next auto-405s other methods).
+- faq-cta.tsx: added module-scope `savedVotes = new Map<string,"yes"|"no">()` next to savedQuery (survives BN⇄EN remount); new `FaqFeedback` component rendered inside every AccordionContent BELOW the glossary terms row — lazy useState init from the Map, Map synced ONLY in the click handler (no effect → set-state-in-effect lint safe); optimistic swap to thanks state (role=status aria-live=polite + cyan CircleCheck), fetch POST {questionId: q.en, helpful, language}; on non-ok/network failure silently deletes from Map + reverts to buttons (no fake success, no banner). Yes/No = ThumbsUp/ThumbsDown pills (rounded-full border-nx-navy-200 bg-white, hover cyan, min-h-7 = 28px), row = border-t border-nx-navy-100 pt-3 mt-3, text-[11px] font-bold; transition-colors 150ms only.
+- QA via isolated agent-browser --session fbqa (closed at end): BN row ("এই উত্তরটি কি সহায়ক ছিল?" + হ্যাঁ / খুব একটা না) → click হ্যাঁ → thanks + aria-live in DOM, buttons gone; 2nd item voted "খুব একটা না" independently; item-1 thanks persists through close/reopen; BN⇄EN toggle via header aria-pressed=false button → same items show "Thanks — your feedback is noted." in EN, unvoted 3rd item shows EN Yes/Not really buttons; mobile 375 (EN+BN): overflowX 0 (doc + section), buttons 28px; fresh reload: 0 page errors, console only benign React-DevTools/HMR infos.
+- curl: valid → 201 {"ok":true}; missing helpful → 400 issues.helpful; unknown questionId → 400 issues.questionId ["Unknown question"]; GET → 405.
+- DB verified: 3 rows (curl YES bn; real click YES bn; real click NO bn).
+- bun run lint: 0 errors. dev.log: POST /api/feedback 201 in 26ms.
+
+Stage Summary:
+- Files: NEW src/app/api/feedback/route.ts, MODIFIED src/components/site/faq-cta.tsx (nothing else touched; content.ts/globals.css/schema untouched per brief).
+- Screenshots: qa/r7-fb-1-bn.png (BN feedback row + thanks), qa/r7-fb-2-en.png (EN thanks after language cross-fade), qa/r7-fb-3-mobile.png (mobile 375 BN row).
+- All brief requirements met; no deviations. Votes are per-page-session (module Map) — deliberate: no cookie/localStorage so a reload lets a visitor vote again per session, while every vote persists server-side.
+
+---
+Task ID: r7-7
+Agent: full-stack-developer (timed out before writing its own entry — recorded & verified by main agent)
+Task: Opportunity print / save-PDF one-pager summary (print button + hidden print sheet + print CSS)
+
+Work Log (reconstructed from the delivered code + artifacts; all claims below re-verified by the main agent):
+- opportunity-dialog.tsx: "Print / Save PDF" pill button (Printer icon, PRINT.button + buttonAria) added next to the share pill in the dialog header chip row (same pill styling); a hidden print:block section id="opp-print" inside DialogContent renders a full bilingual one-pager: brand header (PRINT.header + "Proof before promise" + PRINT.prepared + date with BN months/numerals), codeName + headline + sector·location, key facts row (ticket via formatTkRange, instrument, stage n/5, revenue), all content sections (Overview / Business Model / Financials / Team / Use of Funds with pct list / advisor note / ALL risks, not truncated), illustrative exit scenarios recomputed with the exact ScenariosPanel math (downside-first, assumption lines), honesty footer (illustrative badge + disclaimer + contact). Plain DOM only (no framer-motion) in the sheet.
+- globals.css (EOF append only): @media print block using the visibility technique GUARDED by body:has(#opp-print) so normal page printing (no dialog open) is untouched; neutralizes the Radix dialog chrome (position/static, --tw-translate overrides because LightningCSS drops `translate:none !important`, overflow/border/shadow/padding reset) and collapses all non-sheet DialogContent children.
+- QA artifacts left by the subagent: qa/r7-print-1-dialog-button.png, r7-print-2-bn.png, r7-print-3-en.png, r7-print-4-mobile.png, r7-print-rmg.pdf (235KB), r7-print-rmg-bn.pdf (49KB), r7-print-nodialog.pdf (3.3MB — guard proof).
+
+Main-agent verification (after the timeout):
+- bun run lint 0 errors after deleting the subagent's 3 leftover qa/r7-printprobe*.js scratch scripts (require() imports tripped eslint — scratch files only, no source issue)
+- pdftotext extraction: EN sheet contains header, prepared date, RMG-201, full overview paragraph, advisor note, KEY RISKS, downside assumptions (−5%/yr · 0.60× · 5 yrs), disclaimer, contact; BN sheet contains নেক্সফান্ড — লিস্টিং সারসংক্ষেপ + ৩০ সেপ্টেম্বর ২০২৬ + প্রতিশ্রুতির আগে প্রমাণ
+- Browser: #opp=agf-105-poultry-eggs → dialog opens, print button present, #opp-print display:none on screen with 7 list items; button click (window.print) does NOT crash headless (page alive, dialog still open); fresh agent-browser pdf qa/r7-print-agf.pdf (227KB) contains AGF-105 + ৳60–90 lakh + Revenue share
+- No-dialog PDF renders the normal page (guard works); mobile 375 print button visible, overflowX 0; zero console/page errors
+
+Stage Summary:
+- The R2 "PDF-style export view" recommendation is DONE: every listing can be printed/saved as a clean bilingual one-pager with all risks + scenarios + disclaimers — a genuine conversion lever for advisors
+- Files: opportunity-dialog.tsx (button + sheet), globals.css (print block EOF append). content.ts untouched (PRINT block was pre-settled by main agent)
+- Deviation note: subagent hit the orchestration context deadline before appending its worklog entry — main agent verified everything above and recorded this entry; leftover probe scripts removed
+
+---
+Task ID: R7-FINAL (main agent round 7, part 2 — integration QA + handover)
+Agent: main (Z.ai Code)
+Task: Integration QA of all R7 features, final handover document
+
+Work Log:
+- Subagent r7-6 (FAQ feedback) re-verified in the main session: BN feedback row renders ("এই উত্তরটি কি সহায়ক ছিল?" + হ্যাঁ/খুব একটা না), vote → "ধন্যবাদ — আপনার মতামত রেকর্ড হয়েছে।" with aria-live polite region; 3 DB rows confirmed by subagent (2 yes / 1 no); API 201/400/405 all verified
+- Subagent r7-7 (print/PDF) verified after timeout — see r7-7 entry above
+- Final fresh-load sweeps: desktop 1440 (BN default, all 10 sections, overflowX 0, zero console/page errors) + mobile 375 (overflowX 0, WhatsApp CTA bar with prefilled href); qa/r7-final-desktop.png, qa/r7-final-mobile.png
+- qa/permalinks.sh: 6/6 pass (all four hash kinds + bad-slug degradation)
+- bun run lint: 0 errors. bunx tsc --noEmit: no errors in src/ (only pre-existing skills/ examples). dev.log: all 200s + POST /api/feedback 201s, no errors
+- R7 total: 5 user-facing features (glossary hub, compare permalinks+share, compare persistence, FAQ feedback, print/PDF summary) + WhatsApp prefill + 1 real bug fixed (compareOpen lost to language remount → store lift, which also fixed the R5 "compare closes on BN⇄EN" limitation) + styling batch (eyebrow dashes, cyan ::selection, shimmer skeletons, cyan tap highlight, navy dialog overlay tint) + DefinedTermSet JSON-LD + regression script
+
+════════════════════════════════════════════════════════════════════
+R7 HANDOVER DOCUMENT (three sections, per review-round requirements)
+════════════════════════════════════════════════════════════════════
+
+1) CURRENT PROJECT STATUS / ASSESSMENT
+- NexFund is a complete, stable, fully bilingual (BN default ⇄ EN) single-route investor–entrepreneur matchmaking site: 10 sections, 7 tabs of listing detail, 3 full insight articles, scenario simulator + per-listing scenarios, compare (now permalink-shareable + persistent), MatchMe, 6 dialogs, 7 API routes (opportunities, investors, quiz, contact, newsletter, interest, feedback), 7 Prisma models, 12 brand images, JSON-LD (FAQPage + FinancialService + DefinedTermSet) + llms.txt
+- Health at handover: dev server healthy (fresh client after R7 restart), lint 0 errors, tsc clean in src/, zero console/page errors on cold loads in both languages, overflowX 0 at 1440 and 375, qa/permalinks.sh 6/6
+- Every interactive flow has been end-to-end verified with DB persistence where applicable
+
+2) CURRENT GOALS / COMPLETED MODIFICATIONS / VERIFICATION RESULTS (R7)
+- Glossary hub dialog: all 11 terms indexed bilingually with cross-language chips, triggered from FAQ helper row + footer, DefinedTermSet JSON-LD added to layout — verified BN/EN from both triggers
+- Compare upgrade: #cmp= permalinks (auto-open ≥2 valid slugs, honest degradation), share pill (clipboard→execCommand), shortlist persists in localStorage across reloads, "Loaded a shared comparison ✓" pill; BUG FIXED: compareOpen lifted to zustand store — dialog now survives BN⇄EN (was a known R5 limitation) and the EN-remount race no longer kills the #cmp= auto-open (found via the new regression script)
+- FAQ "was this helpful": per-question thumbs → thanks state (aria-live), POST /api/feedback zod-validated against FAQ items, FAQFeedback table live, votes survive BN⇄EN via module Map — verified incl. 3 DB rows + 201/400/405
+- Print / Save PDF one-pager: full bilingual listing summary (all risks, use of funds, scenarios with assumptions, disclaimers, contact) behind a print button; print CSS guarded by body:has(#opp-print) so normal printing is untouched — verified via pdftotext on exported PDFs + no-crash click + guard PDF diff
+- Styling details: section eyebrows got cyan dashes (site-wide via SectionHeading), ::selection cyan, skeleton shimmer sweep (reduced-motion safe via the existing blanket rule), cyan tap-highlight on touch, dialog overlays tinted navy with subtle blur
+- WhatsApp deep link now opens the chat with a prefilled bilingual greeting
+- Regression script qa/permalinks.sh (all hash kinds + bad slug) — 6/6; discovered 2 script-level gotchas (same-document hash nav needs reload; don't test #sim= with default values)
+
+3) UNRESOLVED ISSUES / RISKS + NEXT-PHASE PRIORITY RECOMMENDATIONS
+1. Admin review workflow for OpportunityInterest + FAQFeedback rows remains DB-only — still the biggest structural gap; needs auth before any UI (FAQFeedback now gives it a second dataset worth reviewing)
+2. Scenario assumptions still live in content.ts keyed by slug — move into the Opportunity model when real listings launch (scenarios + compare + print sheet all read them now)
+3. Compare shortlist is device-local (localStorage) — cross-device sync would need an account; fine pre-launch
+4. The #cmp= module-scope applied flag means a stale hash never re-applies after the user manually clears/rebuilds their shortlist in the same page load — acceptable, but if a 5th hash kind appears consider a tiny shared hash-router helper instead of per-component regexes
+5. Print sheet prints the CURRENT language only (bilingual sheet would double length — deliberate; revisit if advisors ask)
+6. qa/permalinks.sh should gain a case for #cmp= with 1 valid + 1 stale slug (partial-degradation path is code-verified but not script-covered)
+7. Pre-existing: LCP dev notice on the insight card image is dev-only and intentionally ignored (below fold)

@@ -5,14 +5,17 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowUpRight,
   BookMarked,
+  CircleCheck,
   Languages,
   Search,
   SearchX,
+  ThumbsDown,
+  ThumbsUp,
   X,
 } from "lucide-react";
 import { useLanguage, type Lang } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { FAQ, FAQS, FINAL_CTA, GLOSSARY_LABELS } from "@/lib/content";
+import { FAQ, FAQS, FEEDBK, FINAL_CTA, GLOSSARY_HUB, GLOSSARY_LABELS } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./brand";
 import { Reveal } from "./reveal";
@@ -38,6 +41,78 @@ const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
  *  (page.tsx keys every section by lang; same wart R5-CMP fixed for the
  *  compare shortlist by lifting it into the store — this one stays local). */
 let savedQuery = "";
+
+/* ── R7-6: per-answer "was this helpful?" micro-poll ─────────────────────── */
+
+/** Module-scope votes mirror — survives the BN⇄EN cross-fade remount
+ *  (same wart-fixing pattern as savedQuery above). Keyed by the stable
+ *  FAQ q.en key (also the accordion value), synced ONLY inside the click
+ *  handler — no effect, so the set-state-in-effect lint stays quiet. */
+const savedVotes = new Map<string, "yes" | "no">();
+
+/** Compact feedback row rendered inside every AccordionContent, below the
+ *  glossary terms row. Optimistic swap to a "thanks" state; silently reverts
+ *  to the buttons if the POST fails (low-stakes micro-interaction — no banner). */
+function FaqFeedback({ questionId }: { questionId: string }) {
+  const { t, lang } = useLanguage();
+  // lazy init from the module-scope mirror → remounts (language toggle) keep the thanks state
+  const [vote, setVote] = useState<"yes" | "no" | null>(() => savedVotes.get(questionId) ?? null);
+
+  const castVote = (choice: "yes" | "no") => {
+    setVote(choice);
+    savedVotes.set(questionId, choice);
+    fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questionId, helpful: choice === "yes", language: lang }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`status ${res.status}`);
+      })
+      .catch(() => {
+        // network / server failure: no fake success — quietly offer the buttons again
+        savedVotes.delete(questionId);
+        setVote(null);
+      });
+  };
+
+  if (vote === null) {
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-nx-navy-100 pt-3 text-[11px] font-bold text-slate-500">
+        <span className="flex items-center gap-1.5">{t(FEEDBK.label)}</span>
+        <button
+          type="button"
+          onClick={() => castVote("yes")}
+          className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-3 py-1 font-bold text-nx-navy-700 transition-colors duration-150 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+        >
+          <ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />
+          {t(FEEDBK.yes)}
+        </button>
+        <button
+          type="button"
+          onClick={() => castVote("no")}
+          className="inline-flex min-h-7 items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-3 py-1 font-bold text-nx-navy-700 transition-colors duration-150 hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+        >
+          <ThumbsDown className="h-3.5 w-3.5" aria-hidden="true" />
+          {t(FEEDBK.no)}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center border-t border-nx-navy-100 pt-3">
+      <span
+        role="status"
+        aria-live="polite"
+        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-nx-cyan-700"
+      >
+        <CircleCheck className="h-4 w-4" aria-hidden="true" />
+        {t(FEEDBK.thanks)}
+      </span>
+    </div>
+  );
+}
 
 /** Escape regex metacharacters so queries like "(", "[" or "a+" split safely. */
 function escapeRegExp(s: string): string {
@@ -78,6 +153,7 @@ function highlight(text: string, query: string, lang: Lang): ReactNode {
 export function Faq() {
   const { t, lang } = useLanguage();
   const open = useDialogStore((s) => s.open);
+  const openGlossary = useDialogStore((s) => s.openGlossary);
   const reduce = useReducedMotion();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(savedQuery);
@@ -161,10 +237,22 @@ export function Faq() {
               </AnimatePresence>
             </form>
             <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-2">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-                <Languages className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
-                {t(FAQS.searchBoth)}
-              </p>
+              <span className="flex flex-wrap items-center gap-2.5">
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                  <Languages className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
+                  {t(FAQS.searchBoth)}
+                </span>
+                {/* R7: glossary hub — every term on the site, in both languages */}
+                <button
+                  type="button"
+                  onClick={openGlossary}
+                  aria-haspopup="dialog"
+                  className="inline-flex items-center gap-1 rounded-full border border-nx-navy-200 bg-white px-2.5 py-1 text-[11px] font-bold text-nx-navy-700 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700"
+                >
+                  <BookMarked className="h-3 w-3" aria-hidden="true" />
+                  {t(GLOSSARY_HUB.cta)}
+                </button>
+              </span>
               {/* persistent live region → reliable SR announcements on every keystroke */}
               <span role="status" aria-live="polite">
                 {queryActive && (
@@ -243,6 +331,8 @@ export function Faq() {
                         ))}
                       </p>
                     )}
+                    {/* R7-6: "was this answer helpful?" micro-poll — always present */}
+                    <FaqFeedback questionId={item.q.en} />
                   </AccordionContent>
                 </AccordionItem>
               ))}

@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   ArrowUpRight,
+  Check,
   Info,
   Minus,
+  Share2,
   ShieldCheck,
   TrendingDown,
   TrendingUp,
@@ -13,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { BADGES, CMP, SCEN, type ScenAssumption } from "@/lib/content";
+import { BADGES, CMP, CMP_SHARE, SCEN, SHARE, type ScenAssumption } from "@/lib/content";
 import { formatTk, formatTkRange, bnNum } from "@/lib/format";
 import {
   Dialog,
@@ -34,6 +37,71 @@ import type { OpportunityDTO } from "@/components/site/opportunities";
    dialog store) with props only. */
 
 type ScenarioKey = "down" | "base" | "up";
+
+/** R7: share-permalink pill — lives INSIDE DialogContent so it unmounts
+ *  (and resets its state) whenever the dialog closes. #cmp=slug1,slug2
+ *  carries the whole comparison; clipboard → execCommand fallback. */
+function ShareCompareButton({ items }: { items: OpportunityDTO[] }) {
+  const { t } = useLanguage();
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
+  const shareTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (shareTimer.current) clearTimeout(shareTimer.current);
+    },
+    []
+  );
+
+  const share = async () => {
+    if (items.length === 0) return;
+    const url = `${window.location.origin}${window.location.pathname}#cmp=${items
+      .map((o) => o.slug)
+      .join(",")}`;
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      ok = true;
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+    setShareState(ok ? "copied" : "failed");
+    if (shareTimer.current) clearTimeout(shareTimer.current);
+    shareTimer.current = setTimeout(() => setShareState("idle"), 2600);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={share}
+      aria-live="polite"
+      className="inline-flex items-center gap-1.5 rounded-full border border-nx-navy-200 bg-white px-2.5 py-1 text-[11px] font-bold text-nx-navy-700 transition-colors hover:border-nx-cyan-400 hover:text-nx-cyan-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nx-cyan-400"
+    >
+      {shareState === "copied" ? (
+        <Check className="h-3 w-3" aria-hidden="true" />
+      ) : (
+        <Share2 className="h-3 w-3" aria-hidden="true" />
+      )}
+      {shareState === "copied"
+        ? t(SHARE.linkCopied)
+        : shareState === "failed"
+          ? t(SHARE.copyFailed)
+          : t(CMP_SHARE.share)}
+    </button>
+  );
+}
 
 /**
  * Illustrative exit outcome for one scenario — identical computation to
@@ -113,7 +181,7 @@ export function CompareDialog({
           <DialogDescription className="text-left leading-relaxed">
             {t(CMP.sub)}
           </DialogDescription>
-          {/* removable chip per selected listing */}
+          {/* removable chip per selected listing + R7 share permalink */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             {items.map((o) => (
               <span
@@ -132,6 +200,7 @@ export function CompareDialog({
                 </button>
               </span>
             ))}
+            <ShareCompareButton items={items} />
           </div>
         </DialogHeader>
 
