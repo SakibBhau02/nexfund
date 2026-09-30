@@ -68,6 +68,14 @@ cold "$BASE/#opp=does-not-exist"
 out=$(agent-browser --session "$S" eval "(() => { const d=document.querySelector('[role=dialog]'); return d ? (d.textContent.includes('Listing not found') ? 'not-found' : d.textContent.slice(0,40)) : 'no-dialog'; })()" 2>&1 | tail -1)
 check "#opp=<bad slug> shows not-found" "not-found" "$out"
 
+# ── #cmp= partial degradation: 1 valid + 1 stale slug ────────────────────────
+# (R9, closes the R8 rec: code-verified path now script-covered). With only
+# ONE resolvable slug the compare dialog must NOT auto-open (needs ≥2) — the
+# shortlist silently adopts the valid listing and the tray shows 1 selected.
+cold "$BASE/#cmp=rmg-201-denim-knitwear,does-not-exist"
+out=$(agent-browser --session "$S" eval "(() => { const dlg=document.querySelector('[role=dialog]'); if (dlg) return 'dialog-opened'; const tray=document.querySelector('[aria-label=\"Compare tray\"]'); if (!tray) return 'no-tray'; const ok=tray.textContent.includes('RMG-201') && tray.textContent.includes('1 selected'); return ok ? 'tray-1-selected' : tray.textContent.slice(0,40); })()" 2>&1 | tail -1)
+check "#cmp= 1 valid + 1 stale → tray w/ 1 selected, no dialog" "tray-1-selected" "$out"
+
 # ── #admin= → locked admin workspace (R8; locked view title) ────────────────
 cold "$BASE/#admin="
 out=$(agent-browser --session "$S" eval "(() => { const d=document.querySelector('[role=dialog]'); return d ? (d.textContent.includes('Review workspace') || d.textContent.includes('রিভিউ ওয়ার্কস্পেস') ? 'admin-locked' : d.textContent.slice(0,40)) : 'no-dialog'; })()" 2>&1 | tail -1)

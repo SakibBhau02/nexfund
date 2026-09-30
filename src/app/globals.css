@@ -168,13 +168,18 @@ html[lang="bn"] h1, html[lang="bn"] h2, html[lang="bn"] h3, html[lang="bn"] h4 {
 }
 html[lang="en"] body { line-height: 1.6; }
 
-/* ── Oval Lens (signature shape, blueprint §2.4 / Appendix A) ── */
+/* ── Oval Lens (signature shape, blueprint §2.4 / Appendix A) ──
+   R9 FIX: overflow:hidden used to clip the .oval-ring::after offset ring
+   (inset:-7px lives OUTSIDE the bounds) — the ring never rendered. The
+   images now self-clip via their own border-radius, so the signature cyan
+   offset ring finally shows, and a soft navy box-shadow (follows the 50%
+   border-radius) lifts the oval off the page. */
 .oval {
   position: relative;
   aspect-ratio: 4 / 5;
   border-radius: 50%;
-  overflow: hidden;
   isolation: isolate;
+  box-shadow: 0 18px 30px -12px rgba(6, 31, 74, 0.2);
 }
 .oval-ring::after {
   content: "";
@@ -192,6 +197,7 @@ html[lang="en"] body { line-height: 1.6; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%; /* self-clip — replaces the old overflow:hidden */
 }
 
 /* Slow cross-fade carousel inside ovals (3 imgs × 7s = 21s) */
@@ -427,4 +433,34 @@ html {
     padding: 0 !important;
   }
   body:has(#cmp-print) [data-slot="dialog-content"] > *:not(#cmp-print) { display: none !important; }
+}
+
+/* ── R9: insight reader print sheet (#insight-print) — third instance of the
+   #opp-print / #cmp-print display:none technique: hijacks printing ONLY while
+   the insight reader dialog is open; normal page printing is untouched (the
+   :has() guards fail when the sheet isn't in the DOM). */
+@media print {
+  body:has(#insight-print) > * { display: none !important; }
+  body:has(#insight-print) > *:has(#insight-print) { display: block !important; }
+  body:has(#insight-print) [data-slot="dialog-overlay"] { display: none !important; }
+  body:has(#insight-print) [data-slot="dialog-content"] {
+    position: static !important;
+    inset: auto !important;
+    --tw-translate-x: 0 !important;
+    --tw-translate-y: 0 !important;
+    translate: 0 0 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  body:has(#insight-print) [data-slot="dialog-content"] > *:not(#insight-print) { display: none !important; }
 }

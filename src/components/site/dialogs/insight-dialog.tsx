@@ -12,13 +12,14 @@ import {
   CircleCheck,
   Clock,
   FileQuestion,
+  Printer,
   Share2,
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE, READERTOC, READER_FONT } from "@/lib/content";
+import { INSIGHTS, READER, ARTICLES, GLOSSARY_LABELS, SHARE, READERTOC, READER_FONT, READER_PRINT, BRAND } from "@/lib/content";
 import { bnNum } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { G } from "@/components/site/glossary";
@@ -236,6 +237,13 @@ function ReaderContent({
 
   const updated = lang === "bn" ? bnNum(article.updated) : article.updated;
 
+  /* R9: print sheet date — native locale, mirroring the compare print sheet */
+  const preparedDate = new Date().toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <>
       {/* ── Reading progress (thin, sticky at very top) + remaining-time pill ── */}
@@ -310,6 +318,17 @@ function ReaderContent({
                 : shareState === "failed"
                   ? t(SHARE.copyFailed)
                   : t(SHARE.shareArticle)}
+            </button>
+            {/* R9: print / save-PDF of the full article (sheet at the end of
+                the dialog; the :has()-guarded print CSS takes over) */}
+            <button
+              type="button"
+              onClick={() => window.print()}
+              title={t(READER_PRINT.button)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <Printer className="h-3 w-3" aria-hidden="true" />
+              {t(READER_PRINT.button)}
             </button>
           </div>
         </div>
@@ -512,6 +531,114 @@ function ReaderContent({
           </button>
         </div>
       </div>
+
+      {/* ── R9: print-only article sheet (#insight-print) — mirrors the
+          #opp-print / #cmp-print technique: display:none on screen, and the
+          :has()-guarded print block in globals.css hijacks printing ONLY
+          while this reader dialog is open. Ink-friendly, no images. ── */}
+      <section id="insight-print" aria-hidden="true" className="hidden print:block text-nx-ink">
+        {/* brand header */}
+        <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 break-inside-avoid border-b-2 border-nx-navy-900 pb-2">
+          <div>
+            <p className="text-[17px] font-extrabold text-nx-navy-900">{t(READER_PRINT.header)}</p>
+            <p className="mt-0.5 text-[11px] font-bold text-nx-cyan-700">{t(BRAND.trustLine)}</p>
+          </div>
+          <p className="text-[11px] text-slate-600">
+            {t(READER_PRINT.prepared)}:{" "}
+            <span className="nx-num font-semibold text-nx-ink">{preparedDate}</span>
+          </p>
+        </header>
+
+        {/* article identity */}
+        <div className="mt-3 break-inside-avoid">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            {t(card.category)}
+          </p>
+          <h2 className="mt-1 text-[16px] font-extrabold leading-snug text-nx-navy-900">
+            {t(card.title)}
+          </h2>
+          <p className="nx-num mt-1 text-[11px] font-semibold text-slate-600">
+            {t(READER_PRINT.readTime(card.minutes))} · {t(READER.updatedLabel)} {updated}
+          </p>
+        </div>
+
+        {/* short answer */}
+        <div className="mt-3 break-inside-avoid border border-nx-navy-200 px-3 py-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            {t(INSIGHTS.shortAnswer)}
+          </p>
+          <p className="mt-1 text-[12px] leading-relaxed">{t(card.short)}</p>
+        </div>
+
+        {/* body sections */}
+        {article.sections.map((sec, i) => {
+          const num = String(i + 1).padStart(2, "0");
+          return (
+            <section key={sec.h.en} className="mt-3 break-inside-avoid">
+              <h3 className="border-b border-nx-navy-200 pb-0.5 text-[13px] font-extrabold text-nx-navy-900">
+                <span className="nx-num">{lang === "bn" ? bnNum(num) : num}.</span> {t(sec.h)}
+              </h3>
+              {t(sec.body)
+                .split("\n\n")
+                .map((p, j) => (
+                  <p key={j} className="mt-1.5 text-[11.5px] leading-relaxed">
+                    {p}
+                  </p>
+                ))}
+              {sec.list && (
+                <ul className="mt-1.5 space-y-1">
+                  {sec.list.map((li) => (
+                    <li key={li.en} className="flex items-start gap-2 text-[11.5px] leading-relaxed">
+                      <span
+                        className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-nx-navy-700"
+                        aria-hidden="true"
+                      />
+                      {t(li)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          );
+        })}
+
+        {/* glossary terms (plain text — chips don't belong on paper) */}
+        <section className="mt-4 break-inside-avoid">
+          <h3 className="border-b border-nx-navy-200 pb-0.5 text-[13px] font-extrabold text-nx-navy-900">
+            {t(READER.termsLabel)}
+          </h3>
+          <p className="mt-1.5 text-[11.5px] leading-relaxed text-slate-600">
+            {article.terms
+              .map((term) => t(GLOSSARY_LABELS[term] ?? { en: term, bn: term }))
+              .join(" · ")}
+          </p>
+        </section>
+
+        {/* key takeaways */}
+        <section className="mt-4 break-inside-avoid border border-nx-navy-200 px-3 py-2.5">
+          <h3 className="text-[13px] font-extrabold text-nx-navy-900">
+            {t(READER.keyTakeawaysTitle)}
+          </h3>
+          <ul className="mt-1.5 space-y-1.5">
+            {article.takeaways.map((tk) => (
+              <li key={tk.en} className="flex items-start gap-2 text-[11.5px] leading-relaxed">
+                <span
+                  className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-nx-navy-700"
+                  aria-hidden="true"
+                />
+                {t(tk)}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* footer */}
+        <footer className="mt-4 break-inside-avoid border-t border-nx-navy-200 pt-2">
+          <p className="text-[10.5px] leading-relaxed text-slate-600">
+            {t(READER_PRINT.disclaimer)}
+          </p>
+        </footer>
+      </section>
     </>
   );
 }

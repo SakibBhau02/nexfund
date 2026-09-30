@@ -1,0 +1,64 @@
+NexFund R9 — admin gate rate-limit/lockout + CSV export curl matrix (2026-09-30, localhost:3000)
+Passphrase used from .env ADMIN_PASSPHRASE only in request bodies (never echoed).
+
+GET  /api/admin/export                                        -> 405 (POST-only, no GET)
+
+── Phase A — key 198.51.100.1 (X-Forwarded-For), overview route ──
+POST /api/admin/overview  wrong #1  -> 401 {"error":"Unauthorized","attemptsLeft":4}
+POST /api/admin/overview  wrong #2  -> 401 {"error":"Unauthorized","attemptsLeft":3}
+POST /api/admin/overview  wrong #3  -> 401 {"error":"Unauthorized","attemptsLeft":2}
+POST /api/admin/overview  wrong #4  -> 401 {"error":"Unauthorized","attemptsLeft":1}
+POST /api/admin/overview  wrong #5  -> 429 {"error":"Too many attempts","retryAfter":300}   ← lockout starts AT the 5th failure
+POST /api/admin/overview  CORRECT pass while locked -> 429 {"error":"Too many attempts","retryAfter":294}
+headers on 429: HTTP/1.1 429 Too Many Requests + `retry-after: 294` (standard Retry-After header present)
+POST /api/admin/export     CORRECT pass, same key while locked -> 429   ← gate-check runs BEFORE the passphrase check (export included)
+
+── Phase B — key 198.51.100.2, shared-limiter + reset-on-success proof ──
+POST /api/admin/overview  wrong #1 -> 401 attemptsLeft:4
+POST /api/admin/overview  wrong #2 -> 401 attemptsLeft:3
+POST /api/admin/overview  CORRECT  -> 200 (reset recorded)
+POST /api/admin/overview  wrong    -> 401 attemptsLeft:4   ← count restarted from scratch ⇒ reset() on success works
+PATCH /api/admin/interests/[id] wrong -> 401 attemptsLeft:3   ← same shared limiter across routes
+POST /api/admin/export     wrong    -> 401 attemptsLeft:2   ← and the export route shares it too
+
+── Phase C — 'local' key (no X-Forwarded-For, curl direct), all three routes ──
+POST /api/admin/overview  wrong ×5 -> 401,401,401,401 then 429 retryAfter:300
+POST /api/admin/export    while locked -> 429 retryAfter:300
+PATCH /api/admin/interests/[id] while locked -> 429 retryAfter:300
+   (dev server restarted with the double-fork setsid recipe to clear the in-memory
+    limiter instead of waiting out the 5-minute lockout — documented choice; lockout
+    duration untouched in code. Expiry/re-lock logic additionally proven with the
+    fake-clock harness below.)
+POST /api/admin/overview  CORRECT after restart -> 200 {interests:5, feedback:4, feedbackAgg:2}
+POST /api/admin/overview  wrong after restart   -> 401 attemptsLeft:4  ← attempts reset confirmed
+POST /api/admin/overview  CORRECT               -> 200 (gate left clean)
+
+── Fake-clock harness (bun /tmp/r9-gate-logic.ts, Date.now monkey-patched; no app files touched) ──
+after 1st failure : {"allowed":true,"attemptsLeft":4}
+after 2nd failure : {"allowed":true,"attemptsLeft":3}
+after 3rd failure : {"allowed":true,"attemptsLeft":2}
+after 4th failure : {"allowed":true,"attemptsLeft":1}
+after 5th failure : {"allowed":false,"retryAfter":300}     ← 429 ON the 5th failed attempt
+1s into lockout   : {"allowed":false,"retryAfter":299}
+300s (expiry)     : {"allowed":true,"attemptsLeft":0}      ← lockout expiry reopens the gate
+6th failure       : {"allowed":false,"retryAfter":300}     ← strict sliding window: stale in-window failures re-lock
+lockout expired   : {"allowed":true,"attemptsLeft":0}
+after reset()     : {"allowed":true,"attemptsLeft":5}
+window slid past  : {"allowed":true,"attemptsLeft":5}      ← stale entry pruned (bounded Map)
+
+── CSV export verification (correct pass, key 198.51.100.3) ──
+POST /api/admin/export -> 200
+content-type:        text/csv; charset=utf-8
+content-disposition: attachment; filename="nexfund-interests-20260930.csv"   ← real export date (UTC)
+first 3 bytes:       ef bb bf  (UTF-8 BOM present → Bangla opens correctly in Excel)
+header row:          id,received,status,listing,email,name,note,lang
+rows:                6 total lines = header + 5 interest rows (4 pre-existing + 1 new Bangla test row), createdAt desc
+dates:              ISO strings (e.g. 2026-09-30T01:46:03.008Z)
+Bangla intact:       name সাকিব ভেরিফিকেশন, note "আমি এই সেক্টরে আগেও বিনিয়োগ করেছি, আবার করতে আগ্রহী।" (comma → field quoted)
+escaping probe row (temp, deleted after):  Esc, "Quote" Test  ->  "Esc, ""Quote"" Test"
+                                          note with \n + comma -> quoted, newline preserved inside quotes
+line endings:        CRLF (RFC 4180)
+
+── 503 locked-env branch ──
+code-verified only (same as R8 per brief): env unset → 503 {"locked":true,...} before any passphrase logic;
+rate-limit check precedes it so an already-locked IP still sees 429. Not live-tested (dev env has the passphrase set).

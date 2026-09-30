@@ -465,7 +465,7 @@ export function ScenarioSimulator() {
                   })}
                 </div>
 
-                <p className="mt-5 flex items-start gap-2 rounded-2xl border border-nx-warn/40 bg-nx-warn-bg px-4 py-3 text-[11px] leading-relaxed text-nx-warn-700">
+                <p className="mt-5 flex items-start gap-2 rounded-2xl border border-nx-warn/40 bg-nx-warn-bg px-4 py-3 text-[11px] leading-relaxed text-nx-warn-700 shadow-[0_10px_30px_-18px_rgba(183,121,31,0.4)]">
                   <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   {t(SIM.footnote)}
                 </p>

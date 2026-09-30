@@ -413,7 +413,7 @@ export function Opportunities() {
                       </div>
 
                       {/* Key risks — ALWAYS visible (blueprint trust rule) */}
-                      <div className="mt-4 flex-1 rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-4 shadow-[inset_0_1px_0_rgba(183,121,31,0.08)]">
+                      <div className="mt-4 flex-1 rounded-2xl border border-nx-warn/60 bg-nx-warn-bg p-4 shadow-[inset_0_1px_0_rgba(183,121,31,0.08),0_12px_32px_-20px_rgba(183,121,31,0.5)]">
                         <p className="flex items-center gap-1.5 text-[11px] font-extrabold tracking-wide text-nx-warn-700 uppercase">
                           <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
                           {t(OPP.keyRisks)}

@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import {
   CircleCheck,
   CircleX,
+  Download,
   Inbox,
   LockKeyhole,
   LockKeyholeOpen,
@@ -14,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage, type L } from "@/lib/i18n";
 import { useDialogStore } from "@/lib/dialog-store";
-import { ADMIN } from "@/lib/content";
+import { ADMIN, ADMIN_CSV, ADMIN_GATE } from "@/lib/content";
 import { Logo } from "@/components/site/brand";
 import {
   Dialog,
@@ -36,7 +37,14 @@ import { Skeleton } from "@/components/ui/skeleton";
    inside DialogContent it unmounts (and forgets everything) whenever the
    dialog closes or "lock again" is pressed. All state changes happen in
    event handlers (unlock / refresh / status change) — no effect-driven
-   setState, per the react-hooks/set-state-in-effect lint rule. */
+   setState, per the react-hooks/set-state-in-effect lint rule.
+
+   R9 hardening: the gate is rate-limited server-side (5 wrong passphrases
+   per IP / 15 min → 5-min lockout) — the locked view shows an amber
+   attempts-left pill on 401s and a rate-limited notice with a ticking
+   countdown (component state only, wiped on unmount) on 429s; the interests
+   tab gained a CSV export of the full record table (blob download, the
+   passphrase reused from memory — never re-prompted). */
 
 const STATUSES = ["new", "reviewed", "introduced", "declined"] as const;
 type Status = (typeof STATUSES)[number];
@@ -95,19 +103,63 @@ function AdminWorkspace() {
   const [data, setData] = useState<OverviewData | null>(null);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<"interests" | "feedback">("interests");
-  /** gate error kind — wrong passphrase / locked server / load failure */
-  const [gateErr, setGateErr] = useState<"wrong" | "locked" | "load" | null>(null);
+  /** gate error kind — wrong passphrase / locked server / load failure / rate-limited */
+  const [gateErr, setGateErr] = useState<"wrong" | "locked" | "load" | "rate" | null>(null);
   /** id of the interest whose status just changed (flash message) */
   const [flash, setFlash] = useState<string | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* ── R9: rate-limit notices on the locked gate ── */
+  /** failed attempts left before lockout (from the 401 body) — null = nothing to show */
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  /** seconds left in a 429 lockout countdown — null = not counting (input re-enabled) */
+  const [lockSecs, setLockSecs] = useState<number | null>(null);
+  /** the server-supplied retryAfter behind the current lockout (alert copy) */
+  const [lockFrom, setLockFrom] = useState(0);
+  const lockTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lockRef = useRef<number | null>(null);
+
+  /* ── R9: CSV export flash / in-flight state ── */
+  const [csvFlash, setCsvFlash] = useState<"done" | "failed" | null>(null);
+  const [csvBusy, setCsvBusy] = useState(false);
+  const csvTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* timer cleanup only — no setState in effects (lint rule) */
   useEffect(
     () => () => {
       if (flashTimer.current) clearTimeout(flashTimer.current);
+      if (csvTimer.current) clearTimeout(csvTimer.current);
+      if (lockTimer.current) clearInterval(lockTimer.current);
     },
     []
   );
+
+  /** stop the lockout countdown without touching the render state (call sites decide) */
+  const stopLockTick = () => {
+    if (lockTimer.current) clearInterval(lockTimer.current);
+    lockTimer.current = null;
+    lockRef.current = null;
+  };
+
+  /** 429 received — rate-limited notice + one-second ticking countdown (state only, never localStorage) */
+  const startLock = (secs: number) => {
+    stopLockTick();
+    lockRef.current = secs;
+    setLockFrom(secs);
+    setLockSecs(secs);
+    lockTimer.current = setInterval(() => {
+      const next = (lockRef.current ?? 0) - 1;
+      if (next <= 0) {
+        // countdown finished → gate open again: stop the tick, drop the notice
+        stopLockTick();
+        setLockSecs(null);
+        setGateErr(null);
+      } else {
+        lockRef.current = next;
+        setLockSecs(next);
+      }
+    }, 1000);
+  };
 
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", {
@@ -125,11 +177,26 @@ function AdminWorkspace() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passphrase }),
       });
+      setAttemptsLeft(null); // re-populated below only when this attempt draws a 401
+      if (res.status === 429) {
+        // R9: rate-limited by the server gate — notice + ticking countdown
+        const j = (await res.json().catch(() => null)) as { retryAfter?: number } | null;
+        const retry = typeof j?.retryAfter === "number" && j.retryAfter > 0 ? j.retryAfter : 0;
+        setGateErr("rate");
+        setUnlocked(false);
+        setData(null);
+        if (retry > 0) startLock(retry);
+        return;
+      }
       if (res.status === 503 || res.status === 401) {
         // locked server or wrong passphrase → back to (or stay on) the gate
         setGateErr(res.status === 503 ? "locked" : "wrong");
         setUnlocked(false);
         setData(null);
+        if (res.status === 401) {
+          const j = (await res.json().catch(() => null)) as { attemptsLeft?: number } | null;
+          setAttemptsLeft(typeof j?.attemptsLeft === "number" ? j.attemptsLeft : null);
+        }
         return;
       }
       if (!res.ok) {
@@ -140,6 +207,8 @@ function AdminWorkspace() {
       setData(json);
       setUnlocked(true);
       setGateErr(null);
+      stopLockTick();
+      setLockSecs(null);
     } catch {
       setGateErr("load");
     } finally {
@@ -149,18 +218,23 @@ function AdminWorkspace() {
 
   const unlock = (e: FormEvent) => {
     e.preventDefault();
-    if (busy || !pass.trim()) return;
+    if (busy || lockSecs !== null || !pass.trim()) return;
     void load(pass);
   };
 
   const lockAgain = () => {
     if (flashTimer.current) clearTimeout(flashTimer.current);
+    if (csvTimer.current) clearTimeout(csvTimer.current);
+    stopLockTick();
     setPass("");
     setUnlocked(false);
     setData(null);
     setGateErr(null);
     setFlash(null);
     setTab("interests");
+    setAttemptsLeft(null);
+    setLockSecs(null);
+    setCsvFlash(null);
   };
 
   /** optimistic status PATCH — flashes ADMIN.statusChanged, reverts on failure */
@@ -192,6 +266,42 @@ function AdminWorkspace() {
             }
           : d
       );
+    }
+  };
+
+  /** R9: POST /api/admin/export → CSV blob download. The passphrase is reused
+      from component state (never localStorage, never re-prompted — the
+      workspace is already unlocked); the response blob is downloaded via
+      URL.createObjectURL + a temporary <a download> click + revokeObjectURL. */
+  const exportCsv = async () => {
+    if (csvBusy || !pass) return;
+    setCsvBusy(true);
+    setCsvFlash(null);
+    try {
+      const res = await fetch("/api/admin/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passphrase: pass }),
+      });
+      if (!res.ok) throw new Error("export failed");
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") ?? "";
+      const filename = /filename="([^"]+)"/.exec(cd)?.[1] ?? "nexfund-interests.csv";
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setCsvFlash("done");
+    } catch {
+      setCsvFlash("failed");
+    } finally {
+      setCsvBusy(false);
+      if (csvTimer.current) clearTimeout(csvTimer.current);
+      csvTimer.current = setTimeout(() => setCsvFlash(null), 2500);
     }
   };
 
@@ -229,11 +339,13 @@ function AdminWorkspace() {
               onChange={(e) => {
                 setPass(e.target.value);
                 if (gateErr) setGateErr(null);
+                if (attemptsLeft !== null) setAttemptsLeft(null);
               }}
               placeholder={t(ADMIN.passPlaceholder)}
               autoFocus
               autoComplete="off"
               dir="ltr"
+              disabled={lockSecs !== null}
               aria-invalid={gateErr === "wrong" || undefined}
               className="mt-1.5 h-11 rounded-xl border-nx-navy-200 bg-white px-4 text-[15px] font-semibold text-nx-navy-900 placeholder:font-normal placeholder:text-slate-500 focus-visible:border-nx-cyan-400 focus-visible:ring-[3px] focus-visible:ring-nx-cyan-100"
             />
@@ -241,7 +353,7 @@ function AdminWorkspace() {
 
           <button
             type="submit"
-            disabled={busy || !pass.trim()}
+            disabled={busy || lockSecs !== null || !pass.trim()}
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-nx-navy-700 px-5 py-3 font-bold text-white transition-colors hover:bg-nx-navy-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? (
@@ -259,9 +371,27 @@ function AdminWorkspace() {
             >
               {gateErr === "wrong"
                 ? t(ADMIN.wrongPass)
-                : gateErr === "locked"
-                  ? t(ADMIN.locked)
-                  : t(ADMIN.loadErr)}
+                : gateErr === "rate"
+                  ? t(ADMIN_GATE.rateLimited(lockFrom))
+                  : gateErr === "locked"
+                    ? t(ADMIN.locked)
+                    : t(ADMIN.loadErr)}
+            </p>
+          )}
+
+          {/* R9: amber gate notices — attempts left (401) / lockout countdown (429) */}
+          {gateErr === "wrong" && attemptsLeft !== null && attemptsLeft > 0 && (
+            <p className="mt-2.5 text-center">
+              <span className="inline-flex items-center rounded-full bg-nx-warn-bg px-3 py-1 text-[12px] font-bold text-nx-warn-700">
+                {t(ADMIN_GATE.attemptsLeft(attemptsLeft))}
+              </span>
+            </p>
+          )}
+          {gateErr === "rate" && lockSecs !== null && lockSecs > 0 && (
+            <p className="mt-2.5 text-center">
+              <span className="inline-flex items-center rounded-full bg-nx-warn-bg px-3 py-1 text-[12px] font-bold text-nx-warn-700">
+                {t(ADMIN_GATE.countdown(lockSecs))}
+              </span>
             </p>
           )}
         </motion.form>
@@ -280,9 +410,25 @@ function AdminWorkspace() {
   const tdClass = "border-b border-nx-navy-100 px-3 py-3 align-top text-[13px] leading-snug";
 
   const interestsPanel = () => {
+    /* optimistic flash line — polite live region shared by status changes (R8)
+       and the CSV export result (R9) */
+    const flashLine = (
+      <div aria-live="polite" role="status" className="flex min-h-[20px] items-center">
+        {flash && (
+          <p className="text-[12px] font-bold text-nx-verified-700">{t(ADMIN.statusChanged)}</p>
+        )}
+        {!flash && csvFlash === "done" && (
+          <p className="text-[12px] font-bold text-nx-verified-700">{t(ADMIN_CSV.done)}</p>
+        )}
+        {!flash && csvFlash === "failed" && (
+          <p className="text-[12px] font-bold text-nx-danger-700">{t(ADMIN_CSV.failed)}</p>
+        )}
+      </div>
+    );
     if (!data) {
       return (
         <div className="space-y-2.5">
+          {flashLine}
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="nx-shimmer h-14 w-full rounded-2xl" />
           ))}
@@ -291,32 +437,33 @@ function AdminWorkspace() {
     }
     if (gateErr === "load") {
       return (
-        <div className="rounded-2xl bg-nx-warn-bg p-4">
-          <p role="alert" className="text-sm font-bold leading-relaxed text-nx-warn-700">
-            {t(ADMIN.loadErr)}
-          </p>
-          <button type="button" onClick={() => void load(pass)} className={cn(pillBtn, "mt-3")}>
-            <RefreshCw className={cn("h-3 w-3", busy && "animate-spin")} aria-hidden="true" />
-            {t(ADMIN.refresh)}
-          </button>
-        </div>
+        <>
+          {flashLine}
+          <div className="rounded-2xl bg-nx-warn-bg p-4">
+            <p role="alert" className="text-sm font-bold leading-relaxed text-nx-warn-700">
+              {t(ADMIN.loadErr)}
+            </p>
+            <button type="button" onClick={() => void load(pass)} className={cn(pillBtn, "mt-3")}>
+              <RefreshCw className={cn("h-3 w-3", busy && "animate-spin")} aria-hidden="true" />
+              {t(ADMIN.refresh)}
+            </button>
+          </div>
+        </>
       );
     }
     if (data.interests.length === 0) {
       return (
-        <p className="rounded-2xl border border-dashed border-nx-navy-200 bg-nx-mist px-4 py-8 text-center text-sm font-semibold text-slate-600">
-          {t(ADMIN.empty)}
-        </p>
+        <>
+          {flashLine}
+          <p className="rounded-2xl border border-dashed border-nx-navy-200 bg-nx-mist px-4 py-8 text-center text-sm font-semibold text-slate-600">
+            {t(ADMIN.empty)}
+          </p>
+        </>
       );
     }
     return (
       <>
-        {/* optimistic status-change flash — polite live region */}
-        <div aria-live="polite" role="status" className="flex min-h-[20px] items-center">
-          {flash && (
-            <p className="text-[12px] font-bold text-nx-verified-700">{t(ADMIN.statusChanged)}</p>
-          )}
-        </div>
+        {flashLine}
 
         <div className="nx-scroll overflow-x-auto rounded-2xl border border-nx-navy-100">
           <table className="w-full min-w-[780px] border-separate border-spacing-0">
@@ -529,7 +676,25 @@ function AdminWorkspace() {
           <span className="inline-flex items-center rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-3 py-1 text-[11px] font-bold text-nx-cyan-700">
             {t(ADMIN.entryHint)}
           </span>
-          <span className="ml-auto flex gap-1.5">
+          <span className="ml-auto flex flex-wrap justify-end gap-1.5">
+            {/* R9: CSV export pill — interests tab header area, next to Refresh */}
+            {tab === "interests" && (
+              <button
+                type="button"
+                onClick={() => void exportCsv()}
+                disabled={csvBusy}
+                aria-busy={csvBusy || undefined}
+                aria-label={t(ADMIN_CSV.ariaHint)}
+                title={t(ADMIN_CSV.ariaHint)}
+                className={pillBtn}
+              >
+                <Download
+                  className={cn("h-3 w-3", csvBusy && "animate-pulse")}
+                  aria-hidden="true"
+                />
+                {t(ADMIN_CSV.button)}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => void load(pass)}

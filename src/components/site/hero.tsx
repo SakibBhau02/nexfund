@@ -71,7 +71,7 @@ export function Hero() {
             initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 rounded-full border border-nx-cyan-200 bg-nx-cyan-50 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.18em] text-nx-cyan-700 uppercase"
+            className="inline-flex items-center gap-2 rounded-full border border-nx-cyan-300 bg-nx-cyan-50 px-4 py-2 text-[11px] font-bold tracking-[0.18em] text-nx-cyan-700 uppercase shadow-[0_10px_24px_-12px_rgba(38,183,216,0.55)]"
           >
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-nx-cyan-500" aria-hidden="true" />
             {t(HERO.eyebrow)}

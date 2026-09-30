@@ -1799,3 +1799,45 @@ export const ADMIN = {
   }) as L,
   loadErr: { en: "Couldn't load records. Try refresh.", bn: "রেকর্ড লোড করা যায়নি। রিফ্রেশ করুন।" } as L,
 } as const;
+
+/* ── R9: admin gate rate limiting / lockout copy ── */
+export const ADMIN_GATE = {
+  attemptsLeft: (n: number): L => ({
+    en: `${n} attempt${n === 1 ? "" : "s"} left`,
+    bn: `আরও ${bnDigit(n)} বার চেষ্টা করা যাবে`,
+  }) as L,
+  rateLimited: (secs: number): L => ({
+    en: `Too many wrong attempts — locked for ${secs}s.`,
+    bn: `বারবার ভুল চেষ্টা — ${bnDigit(secs)} সেকেন্ডের জন্য লক করা।`,
+  }) as L,
+  countdown: (secs: number): L => ({
+    en: `Locked · try again in ${Math.ceil(secs / 60)} min`,
+    bn: `লক করা · ${bnDigit(Math.ceil(secs / 60))} মিনিট পর আবার চেষ্টা করুন`,
+  }) as L,
+} as const;
+
+/* ── R9: admin CSV export copy ── */
+export const ADMIN_CSV = {
+  button: { en: "Export CSV", bn: "CSV এক্সপোর্ট" } as L,
+  ariaHint: {
+    en: "Download all interest records as a CSV file",
+    bn: "সব আগ্রহের রেকর্ড একটি CSV ফাইলে ডাউনলোড করুন",
+  } as L,
+  done: { en: "CSV downloaded ✓", bn: "CSV ডাউনলোড হয়েছে ✓" } as L,
+  failed: { en: "Export failed — try again.", bn: "এক্সপোর্ট ব্যর্থ — আবার চেষ্টা করুন।" } as L,
+} as const;
+
+/* ── R9: insight reader print / save-PDF copy ── */
+export const READER_PRINT = {
+  button: { en: "Print / save PDF", bn: "প্রিন্ট / PDF সেভ" } as L,
+  header: { en: "NexFund — Investor Insight", bn: "নেক্সফান্ড — ইনভেস্টর ইনসাইট" } as L,
+  prepared: { en: "Prepared", bn: "প্রস্তুতকরণ" } as L,
+  readTime: (mins: number): L => ({
+    en: `${mins} min read`,
+    bn: `${bnDigit(mins)} মিনিট পড়া`,
+  }) as L,
+  disclaimer: {
+    en: "Educational insight from NexFund, the investor–entrepreneur matchmaking platform of Bangladesh. Not investment advice. Figures are illustrative. hello@nexfund.example · nexfund.example",
+    bn: "বাংলাদেশের ইনভেস্টর–উদ্যোক্তা ম্যাচমেকিং প্ল্যাটফর্ম নেক্সফান্ডের শিক্ষামূলক ইনসাইট। এটি বিনিয়োগ পরামর্শ নয়। সংখ্যাগুলো উদাহরণমূলক। hello@nexfund.example · nexfund.example",
+  } as L,
+} as const;
